@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, type ReactNode } from "react"
+import { useActionState, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { ChevronDown } from "lucide-react"
 
@@ -22,32 +22,20 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { createAcquiredVehicle, previewAcquiredVehicle } from "./actions"
+import {
+  getVehicleDisplayTitle,
+  getVehicleSummary,
+} from "./acquisition-presentation"
 import { AcquisitionPhotoGallery } from "./photo-gallery"
 import { AcquisitionProgress } from "./acquisition-progress"
 import { getDisplayedCharacteristics } from "./characteristic-labels"
+import { DataCompleteness } from "./data-completeness"
 import { initialAcquisitionState } from "./state"
 import type { DraftVehicle } from "./types"
 
 type GarageOption = {
   id: string
   name: string
-}
-
-function getVehicleTitle(draft: DraftVehicle) {
-  const provider = draft.provider.toLocaleLowerCase("fr")
-  const uniqueParts = [draft.brand, draft.model, draft.trim]
-    .map((part) => part?.trim())
-    .filter((part): part is string => Boolean(part))
-    .filter((part) => part.toLocaleLowerCase("fr") !== provider)
-    .filter(
-      (part, index, parts) =>
-        parts.findIndex(
-          (candidate) =>
-            candidate.toLocaleLowerCase("fr") === part.toLocaleLowerCase("fr")
-        ) === index
-    )
-
-  return uniqueParts.join(" ") || "Véhicule importé"
 }
 
 function getProviderName(provider: string) {
@@ -57,9 +45,9 @@ function getProviderName(provider: string) {
 }
 
 function DraftPreview({ draft }: { draft: DraftVehicle }) {
-  const title = getVehicleTitle(draft)
+  const title = getVehicleDisplayTitle(draft)
   const characteristics = getDisplayedCharacteristics(draft.characteristics)
-  const descriptionPreview = draft.description?.trim().slice(0, 240)
+  const summary = getVehicleSummary(draft)
 
   return (
     <Card>
@@ -97,10 +85,11 @@ function DraftPreview({ draft }: { draft: DraftVehicle }) {
           <div>
             <h3 className="mb-3 font-semibold">Caractéristiques du véhicule</h3>
             <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {characteristics.map(({ key, label, value }) => (
+              {characteristics.map(({ key, label, icon: Icon, value }) => (
                 <div key={key} className="rounded-lg border p-3">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {label}
+                  <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <Icon className="size-4" aria-hidden="true" />
+                    <span>{label}</span>
                   </dt>
                   <dd className="mt-1 font-medium">{value}</dd>
                 </div>
@@ -114,12 +103,9 @@ function DraftPreview({ draft }: { draft: DraftVehicle }) {
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 font-semibold marker:content-none">
               <span>
                 Description
-                {descriptionPreview && (
-                  <span className="mt-1 block line-clamp-2 text-sm font-normal text-muted-foreground group-open:hidden">
-                    {descriptionPreview}
-                    {draft.description.length > descriptionPreview.length ? "…" : ""}
-                  </span>
-                )}
+                <span className="mt-1 block text-sm font-normal leading-6 text-muted-foreground group-open:hidden">
+                  {summary}
+                </span>
               </span>
               <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-primary">
                 <span className="group-open:hidden">Afficher la description complète</span>
@@ -148,6 +134,7 @@ function AcquisitionReview({
 }) {
   const action = createAcquiredVehicle.bind(null, draft)
   const [state, formAction, pending] = useActionState(action, initialAcquisitionState)
+  const [purchasePrice, setPurchasePrice] = useState("")
   const finalStep = pending || (state.success && Boolean(state.vehicleId))
 
   return (
@@ -155,6 +142,12 @@ function AcquisitionReview({
       <AcquisitionProgress currentStep={finalStep ? 3 : 2} />
       {importCard}
       <DraftPreview draft={draft} />
+      <DataCompleteness
+        draft={draft}
+        purchasePriceComplete={
+          purchasePrice.trim() !== "" && Number(purchasePrice) >= 0
+        }
+      />
 
       {state.success && state.vehicleId ? (
         <Card className="border-emerald-200 bg-emerald-50/60">
@@ -176,6 +169,9 @@ function AcquisitionReview({
               Les données publiques de l’annonce sont déjà préremplies. Ajoute uniquement
               les informations internes nécessaires à ton stock.
             </CardDescription>
+            <p className="mt-2 font-medium text-foreground">
+              Le véhicule est prêt à rejoindre votre stock.
+            </p>
           </CardHeader>
           <CardContent>
             <form action={formAction} className="space-y-6">
@@ -213,7 +209,9 @@ function AcquisitionReview({
                     type="number"
                     min={0}
                     step="0.01"
-                    defaultValue={draft.advertisedPrice ?? ""}
+                    value={purchasePrice}
+                    onChange={(event) => setPurchasePrice(event.target.value)}
+                    placeholder="Ex. 35 000"
                     required
                   />
                   <p className="text-xs text-muted-foreground">
