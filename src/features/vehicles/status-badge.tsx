@@ -8,13 +8,17 @@ export type VehicleStatus =
   | "MODIFIED"
   | "SOLD"
 
-const labels: Record<VehicleStatus, string> = {
-  PURCHASED: "Achat",
-  PREPARATION: "Préparation",
+export const vehicleStatusLabels: Record<VehicleStatus, string> = {
+  PURCHASED: "Acheté",
+  PREPARATION: "En préparation",
   PUBLISHED: "Publié",
-  PRICE_DROP: "Baisse prix",
-  MODIFIED: "Modification",
+  PRICE_DROP: "Baisse de prix",
+  MODIFIED: "Modifié",
   SOLD: "Vendu",
+}
+
+export function getVehicleStatusLabel(status: VehicleStatus) {
+  return vehicleStatusLabels[status]
 }
 
 type StatusBadgeProps = {
@@ -22,5 +26,5 @@ type StatusBadgeProps = {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  return <Badge>{labels[status]}</Badge>
+  return <Badge variant="secondary">{getVehicleStatusLabel(status)}</Badge>
 }

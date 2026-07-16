@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { vehicleImageCategorySchema } from "./image-category"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const MAX_FILES_PER_UPLOAD = 10
@@ -101,7 +102,7 @@ export async function uploadVehicleImages(formData: FormData) {
           vehicle_id: vehicleId,
           storage_path: storagePath,
           url: publicUrl,
-          type: "EXTERIOR",
+          type: "UNCLASSIFIED",
           is_primary: !primaryImage && index === 0,
         })
         .select("id")
@@ -209,4 +210,37 @@ export async function deleteVehicleImage(formData: FormData) {
   if (storageError) {
     throw new Error(storageError.message)
   }
+}
+
+export async function updateVehicleImageCategory(
+  imageId: string,
+  category: string
+): Promise<{ success: boolean; message?: string }> {
+  const parsedCategory = vehicleImageCategorySchema.safeParse(category)
+  if (!parsedCategory.success) {
+    return { success: false, message: "Catégorie de photo invalide." }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, message: "Utilisateur non authentifié." }
+
+  const { data: image, error } = await supabase
+    .from("vehicle_images")
+    .update({ type: parsedCategory.data })
+    .eq("id", imageId)
+    .select("vehicle_id")
+    .maybeSingle()
+
+  if (error || !image) {
+    return {
+      success: false,
+      message: error?.message ?? "Image introuvable ou inaccessible.",
+    }
+  }
+
+  revalidatePath(`/stock/${image.vehicle_id}`)
+  return { success: true }
 }

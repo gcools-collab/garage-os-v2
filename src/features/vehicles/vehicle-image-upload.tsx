@@ -1,6 +1,8 @@
 import { uploadVehicleImages } from "./image-actions"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Camera, Upload } from "lucide-react"
+
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type VehicleImageUploadProps = {
   vehicleId: string
@@ -12,26 +14,31 @@ export function VehicleImageUpload({
   return (
     <form
       action={uploadVehicleImages}
-      className="flex flex-col gap-3 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 sm:flex-row sm:items-center"
     >
       <input type="hidden" name="vehicleId" value={vehicleId} />
 
-      <div className="flex-1 space-y-2">
-        <label htmlFor="vehicle-images" className="text-sm font-medium">
-          Ajouter des photos
-        </label>
-
-        <Input
+      <div className="flex-1">
+        <input
           id="vehicle-images"
           name="images"
           type="file"
           accept="image/jpeg,image/png,image/webp"
           multiple
           required
+          className="peer sr-only"
         />
+        <label
+          htmlFor="vehicle-images"
+          className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer")}
+        >
+          <Camera aria-hidden="true" />
+          Choisir des photos
+        </label>
+        <p className="mt-2 text-xs text-muted-foreground">JPG, PNG ou WebP · sélection multiple.</p>
       </div>
 
-      <Button type="submit">Importer les photos</Button>
+      <Button type="submit"><Upload aria-hidden="true" />Importer</Button>
     </form>
   )
 }

@@ -114,7 +114,7 @@ async function importPhoto(
     vehicle_id: vehicleId,
     storage_path: storagePath,
     url: publicUrl,
-    type: "EXTERIOR",
+    type: "UNCLASSIFIED",
     is_primary: isPrimary,
   })
 
@@ -133,6 +133,7 @@ export async function createAcquiredVehicle(
   const parsedDetails = acquisitionDetailsSchema.safeParse({
     garageId: formData.get("garageId"),
     purchasePrice: formData.get("purchasePrice"),
+    sellingPrice: formData.get("sellingPrice"),
     notes: formData.get("notes") ?? "",
   })
 
@@ -175,6 +176,7 @@ export async function createAcquiredVehicle(
     p_year: vehicle.year,
     p_mileage: vehicle.mileage,
     p_purchase_price: parsedDetails.data.purchasePrice,
+    p_selling_price: parsedDetails.data.sellingPrice,
     p_description: vehicle.description,
     p_notes: parsedDetails.data.notes || null,
     p_trim: vehicle.trim,

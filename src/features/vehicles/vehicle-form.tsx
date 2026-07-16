@@ -23,6 +23,7 @@ export type VehicleFormVehicle = {
   year: number | null
   mileage: number | null
   purchase_price: number | string | null
+  selling_price: number | string | null
   vin: string | null
   registration_number: string | null
   color: string | null
@@ -87,9 +88,9 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
   const prefix = mode === "edit" ? "edit-vehicle" : "create-vehicle"
 
   return (
-    <form action={formAction} className="space-y-8">
-      <fieldset disabled={pending} className="space-y-8">
-        <div className="space-y-4">
+    <form action={formAction} className="space-y-5">
+      <fieldset disabled={pending} className="grid gap-5 lg:grid-cols-2">
+        <div className="space-y-4 rounded-xl border bg-white p-5">
           <div>
             <h3 className="font-semibold">Informations essentielles</h3>
             <p className="text-sm text-muted-foreground">
@@ -97,7 +98,7 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Marque" name="brand" errors={state.errors}>
               <Input
                 id={`${prefix}-brand`}
@@ -162,10 +163,25 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
                 aria-invalid={Boolean(state.errors?.purchasePrice)}
               />
             </Field>
+            <Field
+              label="Prix de vente affiché (€)"
+              name="sellingPrice"
+              errors={state.errors}
+            >
+              <Input
+                id={`${prefix}-selling-price`}
+                name="sellingPrice"
+                type="number"
+                min={0}
+                step="0.01"
+                defaultValue={vehicle?.selling_price ?? ""}
+                aria-invalid={Boolean(state.errors?.sellingPrice)}
+              />
+            </Field>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white p-5">
           <div>
             <h3 className="font-semibold">Identification administrative</h3>
             <p className="text-sm text-muted-foreground">
@@ -173,7 +189,7 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="VIN" name="vin" errors={state.errors}>
               <Input
                 id={`${prefix}-vin`}
@@ -236,7 +252,7 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white p-5 lg:col-span-2">
           <div>
             <h3 className="font-semibold">Caractéristiques techniques</h3>
             <p className="text-sm text-muted-foreground">
@@ -244,7 +260,7 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Motorisation" name="engine" errors={state.errors}>
               <Input
                 id={`${prefix}-engine`}
@@ -266,6 +282,14 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
                 defaultValue={vehicle?.gearbox ?? ""}
               />
             </Field>
+          </div>
+
+          <details className="group rounded-lg border bg-muted/20">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium marker:content-none">
+              Informations techniques secondaires
+              <span className="ml-2 text-xs font-normal text-muted-foreground group-open:hidden">Afficher</span>
+            </summary>
+            <div className="grid gap-4 border-t p-4 sm:grid-cols-2 lg:grid-cols-4">
             <Field
               label="Transmission"
               name="transmission"
@@ -367,7 +391,8 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
                 defaultValue={vehicle?.euro_standard ?? ""}
               />
             </Field>
-          </div>
+            </div>
+          </details>
         </div>
       </fieldset>
 

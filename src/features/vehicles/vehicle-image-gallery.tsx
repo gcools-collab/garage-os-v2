@@ -6,11 +6,13 @@ import {
   deleteVehicleImage,
   setVehiclePrimaryImage,
 } from "./image-actions"
+import { VehicleImageCategorySelect } from "./components/vehicle-image-category-select"
+import type { VehicleImageCategory } from "./image-category"
 
 type VehicleImage = {
   id: string
   url: string | null
-  type: string
+  type: VehicleImageCategory
   is_primary: boolean
 }
 
@@ -36,12 +38,12 @@ export function VehicleImageGallery({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       {images.map((image) =>
         image.url ? (
           <article
             key={image.id}
-            className="group relative aspect-[4/3] overflow-hidden rounded-xl border bg-zinc-100"
+            className="group relative aspect-[4/3] overflow-hidden rounded-lg border bg-zinc-100"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -52,7 +54,7 @@ export function VehicleImageGallery({
 
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/80 to-transparent p-3 pt-10">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{image.type}</Badge>
+                <VehicleImageCategorySelect imageId={image.id} category={image.type} />
                 {image.is_primary && <Badge>Principale</Badge>}
               </div>
 

@@ -41,6 +41,10 @@ export const vehicleSchema = z
       .max(currentYear + 1, "L'année ne peut pas dépasser l'année prochaine."),
     mileage: z.coerce.number().int().min(0, "Le kilométrage doit être positif."),
     purchasePrice: z.coerce.number().min(0, "Le prix d'achat doit être positif."),
+    sellingPrice: z.preprocess(
+      (value) => (value === "" || value === null ? undefined : value),
+      z.coerce.number().min(0, "Le prix de vente doit être positif.").optional()
+    ),
     vin: z.preprocess(
       (value) =>
         typeof value === "string" && value.trim() === ""
@@ -113,6 +117,7 @@ export function parseVehicleFormData(formData: FormData) {
     year: formData.get("year"),
     mileage: formData.get("mileage"),
     purchasePrice: formData.get("purchasePrice"),
+    sellingPrice: formData.get("sellingPrice"),
     vin: formData.get("vin"),
     registrationNumber: formData.get("registrationNumber"),
     color: formData.get("color"),

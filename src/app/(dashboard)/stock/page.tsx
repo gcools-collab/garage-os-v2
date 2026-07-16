@@ -1,181 +1,121 @@
-import { createClient } from "@/lib/supabase/server"
-import { VehicleForm } from "@/features/vehicles/vehicle-form"
 import Link from "next/link"
+import { Plus, Upload } from "lucide-react"
+import { redirect } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
-
-
-export default async function StockPage(){
-
-
-const supabase = await createClient()
-
-
-const {
-data:{
-user
-}
-
-}=await supabase.auth.getUser()
-
-
-
-const {
-data:member
-}=await supabase
-
-.from("garage_members")
-
-.select("garage_id")
-
-.eq(
-"user_id",
-user?.id
-)
-
-.single()
-
-
-
-const {
-data:vehicles
-}=await supabase
-
-.from("vehicles")
-
-.select("*")
-
-.eq(
-"garage_id",
-member?.garage_id
-)
-
-.order(
-"created_at",
-{
-ascending:false
-}
-
-)
-
-
-
-return (
-
-<div className="space-y-8">
-
-
-<div className="flex justify-between">
-
-<div>
-
-<h1 className="text-3xl font-bold">
-
-Stock véhicules
-
-</h1>
-
-
-<p className="text-muted-foreground">
-
-Gestion de votre parc automobile
-
-</p>
-
-</div>
-
-<Button asChild>
-<Link href="/stock/import">Importer une annonce</Link>
-</Button>
-
-</div>
-
-
-
-<div className="rounded-xl border bg-white p-6">
-
-<h2 className="font-semibold mb-4">
-
-Ajouter un véhicule
-
-</h2>
-
-
-<VehicleForm/>
-
-
-</div>
-
-
-
-<div>
-
-<h2 className="text-xl font-semibold mb-4">
-
-Véhicules en stock ({vehicles?.length ?? 0})
-
-</h2>
-
-
-
-<div className="grid gap-4">
-
-{
-vehicles?.map((vehicle)=>(
-
-<Link
-key={vehicle.id}
-href={`/stock/${vehicle.id}`}
-className="
-rounded-xl
-border
-bg-white
-p-5
-"
->
-
-<h3 className="font-bold">
-
-{vehicle.brand}
-{" "}
-{vehicle.model}
-
-</h3>
-
-
-<p>
-
-{vehicle.year}
-{" "}
--
-{" "}
-{vehicle.mileage} km
-
-</p>
-
-
-<p className="mt-2">
-
-Achat :
-{" "}
-{vehicle.purchase_price} €
-
-</p>
-
-
-</Link>
-
-))
-
-}
-
-</div>
-
-
-</div>
-
-
-</div>
-
-)
-
+import {
+  StockVehicleList,
+  type StockVehicle,
+} from "@/features/vehicles/stock-vehicle-list"
+import { createClient } from "@/lib/supabase/server"
+
+export default async function StockPage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/register")
+
+  const { data: memberships, error: membershipError } = await supabase
+    .from("garage_members")
+    .select("garage_id")
+    .eq("user_id", user.id)
+
+  if (membershipError) {
+    console.error("Unable to read current user garage memberships", {
+      code: membershipError.code,
+      message: membershipError.message,
+    })
+    throw new Error("Impossible de déterminer les garages accessibles.")
+  }
+
+  const garageIds = [
+    ...new Set(
+      (memberships ?? []).flatMap((membership) =>
+        membership.garage_id ? [membership.garage_id] : []
+      )
+    ),
+  ]
+  if (garageIds.length === 0) {
+    throw new Error("Aucun garage n'est associé à cet utilisateur.")
+  }
+
+  const { data: vehicleData, error: vehicleError } = await supabase
+    .from("vehicles")
+    .select(`
+      id, brand, model, trim, year, mileage, status,
+      purchase_price, selling_price,
+      vehicle_costs (amount),
+      vehicle_images (url, is_primary, created_at)
+    `)
+    .in("garage_id", garageIds)
+    .order("created_at", { ascending: false })
+
+  if (vehicleError) {
+    console.error("Unable to read vehicles for accessible garages", {
+      garageIds,
+      code: vehicleError.code,
+      message: vehicleError.message,
+    })
+    throw new Error("Impossible de charger le stock véhicules.")
+  }
+
+  const vehicles = (vehicleData ?? []) as StockVehicle[]
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-8">
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Stock véhicules</h1>
+          <p className="mt-2 text-muted-foreground">
+            Consultez et gérez les véhicules de votre garage.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild>
+            <Link href="/stock/import">
+              <Upload className="size-4" aria-hidden="true" />
+              Importer une annonce
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/stock/new">
+              <Plus className="size-4" aria-hidden="true" />
+              Ajouter manuellement
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold">
+            Véhicules en stock
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {vehicles.length}
+            </span>
+          </h2>
+        </div>
+
+        {vehicles.length > 0 ? (
+          <StockVehicleList vehicles={vehicles} />
+        ) : (
+          <div className="rounded-xl border border-dashed bg-white px-6 py-16 text-center">
+            <h2 className="text-xl font-semibold">Aucun véhicule dans le stock</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Importez une annonce ou ajoutez votre premier véhicule manuellement.
+            </p>
+            <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
+              <Button asChild>
+                <Link href="/stock/import">Importer une annonce</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/stock/new">Ajouter manuellement</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+      </section>
+    </div>
+  )
 }

@@ -16,6 +16,7 @@ function toVehicleRow(vehicle: VehicleInput) {
     year: vehicle.year,
     mileage: vehicle.mileage,
     purchase_price: vehicle.purchasePrice,
+    selling_price: vehicle.sellingPrice ?? null,
     vin: vehicle.vin ?? null,
     registration_number: vehicle.registrationNumber ?? null,
     color: vehicle.color ?? null,
@@ -134,4 +135,68 @@ export async function updateVehicle(
   revalidatePath("/stock")
   revalidatePath(`/stock/${vehicleId}`)
   return { success: true, message: "Informations mises à jour." }
+}
+
+export async function deleteVehicle(
+  vehicleId: string
+): Promise<import("./delete-state").DeleteVehicleResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, message: "Utilisateur non authentifié." }
+  }
+
+  const { data: vehicle, error: vehicleError } = await supabase
+    .from("vehicles")
+    .select("id, vehicle_images(storage_path)")
+    .eq("id", vehicleId)
+    .single()
+
+  if (vehicleError || !vehicle) {
+    return {
+      success: false,
+      message: "Véhicule introuvable ou inaccessible.",
+    }
+  }
+
+  const storagePaths = (vehicle.vehicle_images ?? []).flatMap((image) =>
+    image.storage_path ? [image.storage_path] : []
+  )
+  const { error: deleteError } = await supabase
+    .from("vehicles")
+    .delete()
+    .eq("id", vehicleId)
+
+  if (deleteError) {
+    return { success: false, message: deleteError.message }
+  }
+
+  let warning: string | undefined
+  if (storagePaths.length > 0) {
+    const { error: storageError } = await supabase.storage
+      .from("vehicle-images")
+      .remove(storagePaths)
+
+    if (storageError) {
+      warning =
+        "Le véhicule a été supprimé, mais certaines photos n'ont pas pu être nettoyées du Storage."
+      console.error("Vehicle Storage cleanup failed", {
+        vehicleId,
+        storagePaths,
+        error: storageError.message,
+      })
+    }
+  }
+
+  revalidatePath("/stock")
+  revalidatePath("/dashboard")
+
+  return {
+    success: true,
+    message: "Véhicule supprimé du stock.",
+    warning,
+  }
 }

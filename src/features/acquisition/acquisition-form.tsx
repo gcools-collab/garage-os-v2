@@ -145,6 +145,9 @@ function AcquisitionReview({
   const action = createAcquiredVehicle.bind(null, editableDraft)
   const [state, formAction, pending] = useActionState(action, initialAcquisitionState)
   const [purchasePrice, setPurchasePrice] = useState("")
+  const [sellingPrice, setSellingPrice] = useState(
+    draft.advertisedPrice?.toString() ?? ""
+  )
   const finalStep = pending || (state.success && Boolean(state.vehicleId))
   const draftIsValid = editableDraftVehicleSchema.safeParse(editableDraft).success
 
@@ -189,7 +192,7 @@ function AcquisitionReview({
           <CardContent>
             <form action={formAction} className="space-y-6">
               <DraftVehicleEditor draft={editableDraft} onChange={setEditableDraft} />
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid gap-5 md:grid-cols-3">
                 <div className="space-y-2">
                   <label htmlFor="garageId" className="text-sm font-medium">
                     Garage de destination
@@ -234,6 +237,29 @@ function AcquisitionReview({
                   {state.errors?.purchasePrice?.[0] && (
                     <p className="text-sm text-destructive">
                       {state.errors.purchasePrice[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="sellingPrice" className="text-sm font-medium">
+                    Prix de vente affiché (€)
+                  </label>
+                  <Input
+                    id="sellingPrice"
+                    name="sellingPrice"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={sellingPrice}
+                    onChange={(event) => setSellingPrice(event.target.value)}
+                    placeholder="Ex. 42 000"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Prérempli depuis l’annonce · modifiable avant création
+                  </p>
+                  {state.errors?.sellingPrice?.[0] && (
+                    <p className="text-sm text-destructive">
+                      {state.errors.sellingPrice[0]}
                     </p>
                   )}
                 </div>

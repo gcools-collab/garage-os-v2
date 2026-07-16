@@ -71,5 +71,9 @@ export const acquisitionUrlSchema = z.url().refine(
 export const acquisitionDetailsSchema = z.object({
   garageId: z.uuid("Sélectionne un garage valide."),
   purchasePrice: z.coerce.number().min(0, "Le prix d'achat doit être positif."),
+  sellingPrice: z.preprocess(
+    (value) => (value === "" || value === null ? null : value),
+    z.coerce.number().min(0, "Le prix de vente doit être positif.").nullable()
+  ),
   notes: z.string().trim().max(5_000, "Les notes sont trop longues."),
 })

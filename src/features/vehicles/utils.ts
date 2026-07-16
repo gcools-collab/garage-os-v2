@@ -4,14 +4,14 @@ export type VehicleCostAmount = {
 
 export type VehicleProfitabilityInput = {
   purchase_price?: number | string | null
-  market_price?: number | string | null
+  selling_price?: number | string | null
   vehicle_costs?: readonly VehicleCostAmount[] | null
 }
 
 export type VehicleProfitability = {
-  costs: number
-  investment: number
-  margin: number
+  totalCosts: number
+  capitalInvested: number
+  potentialMargin: number | null
 }
 
 export function calculateTotalCosts(
@@ -22,16 +22,19 @@ export function calculateTotalCosts(
   )
 }
 
-export function calculateVehicleMargin(
+export function calculateVehicleProfitability(
   vehicle: VehicleProfitabilityInput
 ): VehicleProfitability {
-  const costs = calculateTotalCosts(vehicle.vehicle_costs)
-  const investment = Number(vehicle.purchase_price ?? 0) + costs
-  const margin = Number(vehicle.market_price ?? 0) - investment
+  const totalCosts = calculateTotalCosts(vehicle.vehicle_costs)
+  const capitalInvested = Number(vehicle.purchase_price ?? 0) + totalCosts
+  const potentialMargin =
+    vehicle.selling_price == null
+      ? null
+      : Number(vehicle.selling_price) - capitalInvested
 
   return {
-    costs,
-    investment,
-    margin,
+    totalCosts,
+    capitalInvested,
+    potentialMargin,
   }
 }
