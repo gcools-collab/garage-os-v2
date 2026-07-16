@@ -1,10 +1,13 @@
 import { Camera, Car, CircleDollarSign, Megaphone, Pencil, ShoppingCart, Wrench } from "lucide-react"
 
-import { getVehicleStatusLabel, type VehicleStatus } from "../status-badge"
+import {
+  getVehicleEventTypeLabel,
+  type VehicleEventType,
+} from "../status/vehicle-status"
 
 export type VehicleTimelineEvent = {
   id: string
-  type: VehicleStatus
+  type: VehicleEventType
   description: string | null
   created_at: string
 }
@@ -42,7 +45,7 @@ export function VehicleTimeline({ events }: { events: VehicleTimelineEvent[] }) 
               <Icon className="size-4" aria-hidden="true" />
             </span>
             <div className="pt-1">
-              <p className="font-medium">{getVehicleStatusLabel(event.type)}</p>
+              <p className="font-medium">{getVehicleEventTypeLabel(event.type)}</p>
               {event.description && <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>}
               <time className="mt-1.5 block text-xs text-muted-foreground">{date.format(new Date(event.created_at))}</time>
             </div>

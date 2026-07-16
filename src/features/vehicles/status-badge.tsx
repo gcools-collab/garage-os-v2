@@ -1,25 +1,14 @@
 import { Badge } from "@/components/ui/badge"
+import {
+  getVehicleStatusLabel,
+  type VehicleStatus,
+} from "./status/vehicle-status"
 
-export type VehicleStatus =
-  | "PURCHASED"
-  | "PREPARATION"
-  | "PUBLISHED"
-  | "PRICE_DROP"
-  | "MODIFIED"
-  | "SOLD"
-
-export const vehicleStatusLabels: Record<VehicleStatus, string> = {
-  PURCHASED: "Acheté",
-  PREPARATION: "En préparation",
-  PUBLISHED: "Publié",
-  PRICE_DROP: "Baisse de prix",
-  MODIFIED: "Modifié",
-  SOLD: "Vendu",
-}
-
-export function getVehicleStatusLabel(status: VehicleStatus) {
-  return vehicleStatusLabels[status]
-}
+export {
+  getVehicleStatusLabel,
+  vehicleStatusLabels,
+  type VehicleStatus,
+} from "./status/vehicle-status"
 
 type StatusBadgeProps = {
   status: VehicleStatus

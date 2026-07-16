@@ -1,8 +1,16 @@
-import { Camera, CircleDollarSign, Pencil, RefreshCw } from "lucide-react"
+import { Camera, CircleDollarSign, Pencil } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { VehicleStatusDialog } from "../status/vehicle-status-dialog"
+import type { VehicleStatus } from "../status/vehicle-status"
 
-export function VehicleActionBar() {
+export function VehicleActionBar({
+  vehicleId,
+  currentStatus,
+}: {
+  vehicleId: string
+  currentStatus: VehicleStatus
+}) {
   return (
     <nav
       aria-label="Actions du véhicule"
@@ -17,9 +25,7 @@ export function VehicleActionBar() {
       <Button asChild variant="ghost" size="sm">
         <a href="#vehicle-photos"><Camera aria-hidden="true" />Ajouter des photos</a>
       </Button>
-      <Button variant="ghost" size="sm" disabled>
-        <RefreshCw aria-hidden="true" />Changer le statut
-      </Button>
+      <VehicleStatusDialog vehicleId={vehicleId} currentStatus={currentStatus} />
     </nav>
   )
 }

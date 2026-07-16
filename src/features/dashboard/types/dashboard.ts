@@ -24,11 +24,19 @@ export type DashboardImports = {
   thisWeek: number
 }
 
+export type DashboardLifecycle = {
+  preparation: number
+  published: number
+  reserved: number
+  soldRecently: number
+}
+
 export type DashboardData = {
   garageName: string
   summary: DashboardSummary
   priorities: DashboardPriority[]
   recentVehicles: DashboardRecentVehicle[]
   imports: DashboardImports
+  lifecycle: DashboardLifecycle
   averageCompleteness: number
 }

@@ -195,6 +195,7 @@ export async function createAcquiredVehicle(
     p_url: vehicle.sourceUrl,
     p_external_id: vehicle.externalId,
     p_published_at: publishedAt,
+    p_favorite_count: vehicle.favoriteCount,
   })
 
   if (error || typeof vehicleId !== "string") {

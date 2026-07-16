@@ -1,6 +1,7 @@
 import type { DashboardData } from "../types/dashboard"
 import { ComingSoon } from "./coming-soon"
 import { ImportStats } from "./import-stats"
+import { LifecycleSummary } from "./lifecycle-summary"
 import { PriorityActions } from "./priority-actions"
 import { RecentVehicles } from "./recent-vehicles"
 import { StockCompleteness } from "./stock-completeness"
@@ -24,6 +25,7 @@ export function DashboardOverview({ data }: { data: DashboardData }) {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
           <ImportStats imports={data.imports} />
           <StockCompleteness percentage={data.averageCompleteness} />
+          <LifecycleSummary lifecycle={data.lifecycle} />
         </div>
       </section>
 

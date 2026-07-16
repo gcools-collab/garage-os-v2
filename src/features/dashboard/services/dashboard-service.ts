@@ -10,6 +10,7 @@ import type {
   DashboardRecentVehicle,
 } from "../types/dashboard"
 import { calculateVehicleProfitability } from "@/features/vehicles/utils"
+import type { VehicleStatus } from "@/features/vehicles/status/vehicle-status"
 
 type DashboardSupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -44,6 +45,9 @@ type DashboardVehicleRow = {
   purchase_price: number | string | null
   selling_price: number | string | null
   created_at: string
+  updated_at: string
+  sale_date: string | null
+  status: VehicleStatus
   vehicle_images: VehicleImageRow[] | null
   vehicle_costs: Array<{ amount: number | string | null }> | null
 }
@@ -163,7 +167,8 @@ export class DashboardService {
             id, brand, model, trim, year, mileage, fuel, gearbox, color,
             power_din, fiscal_power, doors, seats, first_registration_date,
             body_type, upholstery, crit_air, description, notes, vin,
-            registration_number, purchase_price, selling_price, created_at,
+            registration_number, purchase_price, selling_price, status,
+            sale_date, created_at, updated_at,
             vehicle_images (url, is_primary, created_at),
             vehicle_costs (amount)
           `)
@@ -203,6 +208,8 @@ export class DashboardService {
     const imports = (importResult.data ?? []) as Array<{ imported_at: string }>
     const todayStart = new Date(now)
     todayStart.setHours(0, 0, 0, 0)
+    const recentSaleStart = new Date(now)
+    recentSaleStart.setDate(recentSaleStart.getDate() - 30)
 
     const displayedValue = vehicles.reduce(
       (total, vehicle) => total + Number(vehicle.selling_price ?? 0),
@@ -281,6 +288,17 @@ export class DashboardService {
           (item) => new Date(item.imported_at).getTime() >= todayStart.getTime()
         ).length,
         thisWeek: imports.length,
+      },
+      lifecycle: {
+        preparation: vehicles.filter((vehicle) => vehicle.status === "PREPARATION").length,
+        published: vehicles.filter((vehicle) => vehicle.status === "PUBLISHED").length,
+        reserved: vehicles.filter((vehicle) => vehicle.status === "RESERVED").length,
+        soldRecently: vehicles.filter(
+          (vehicle) =>
+            vehicle.status === "SOLD" &&
+            new Date(vehicle.sale_date ?? vehicle.updated_at).getTime() >=
+              recentSaleStart.getTime()
+        ).length,
       },
       averageCompleteness:
         completeness.length > 0

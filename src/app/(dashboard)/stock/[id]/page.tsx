@@ -11,6 +11,10 @@ import { VehicleAnalysisCard } from "@/features/vehicles/components/vehicle-anal
 import { VehicleCostForm } from "@/features/vehicles/components/vehicle-cost-form"
 import { VehicleCostList } from "@/features/vehicles/components/vehicle-cost-list"
 import { VehicleHero } from "@/features/vehicles/components/vehicle-hero"
+import {
+  VehicleMarketplacePresence,
+  type VehicleMarketplaceLink,
+} from "@/features/vehicles/components/vehicle-marketplace-presence"
 import { VehicleProfitabilityCard } from "@/features/vehicles/components/vehicle-profitability"
 import {
   VehicleTimeline,
@@ -71,7 +75,8 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
       *,
       vehicle_events (*),
       vehicle_costs (*),
-      vehicle_images (*)
+      vehicle_images (*),
+      marketplace_links (*)
     `)
     .eq("id", id)
     .single()
@@ -80,6 +85,7 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
   const vehicleCosts = (vehicle.vehicle_costs ?? []) as VehicleCost[]
   const vehicleEvents = (vehicle.vehicle_events ?? []) as VehicleTimelineEvent[]
   const vehicleImages = (vehicle.vehicle_images ?? []) as VehicleImage[]
+  const marketplaceLinks = (vehicle.marketplace_links ?? []) as VehicleMarketplaceLink[]
   const sortedImages = [...vehicleImages].sort((first, second) => {
     if (first.is_primary === second.is_primary) {
       return first.created_at.localeCompare(second.created_at)
@@ -161,7 +167,10 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
         profitability={profitability}
       />
 
-      <VehicleActionBar />
+      <VehicleActionBar
+        vehicleId={vehicle.id}
+        currentStatus={vehicle.status as VehicleStatus}
+      />
 
       <section
         id="vehicle-information"
@@ -190,6 +199,8 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
           hasCosts={vehicleCosts.length > 0}
         />
       </section>
+
+      <VehicleMarketplacePresence links={marketplaceLinks} />
 
       <section id="vehicle-photos" className="scroll-mt-6 rounded-xl border bg-white p-5 shadow-xs sm:p-6">
         <div className="mb-6 flex flex-col gap-5 border-b pb-5 lg:flex-row lg:items-center lg:justify-between">
