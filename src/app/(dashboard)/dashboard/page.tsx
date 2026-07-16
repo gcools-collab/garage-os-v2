@@ -48,6 +48,8 @@ export default async function DashboardPage() {
 
     .single()
 
+  const garage = membership?.garages?.[0]
+
 
 
   return (
@@ -72,7 +74,7 @@ export default async function DashboardPage() {
 
         <h2 className="text-xl font-semibold">
 
-          {membership?.garages?.name}
+          {garage?.name}
 
         </h2>
 

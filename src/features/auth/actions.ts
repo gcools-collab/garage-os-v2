@@ -35,7 +35,6 @@ export async function register(formData: FormData) {
    */
 
   const {
-    data: authData,
     error: authError
 
   } = await supabase.auth.signUp({
