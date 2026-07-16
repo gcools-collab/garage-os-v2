@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 
 import { VehicleImageGallery } from "@/features/vehicles/vehicle-image-gallery"
 import { VehicleImageUpload } from "@/features/vehicles/vehicle-image-upload"
+import { VehicleForm } from "@/features/vehicles/vehicle-form"
 import { calculateVehicleMargin } from "@/features/vehicles/utils"
 import { createClient } from "@/lib/supabase/server"
 
@@ -141,6 +142,17 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
 
       <section className="space-y-5 rounded-xl border bg-white p-6">
         <div>
+          <h2 className="text-xl font-semibold">Modifier le véhicule</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Complète la fiche métier utilisée par les futurs moteurs Garage OS.
+          </p>
+        </div>
+
+        <VehicleForm mode="edit" vehicle={vehicle} />
+      </section>
+
+      <section className="space-y-5 rounded-xl border bg-white p-6">
+        <div>
           <h2 className="text-xl font-semibold">Photos du véhicule</h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
@@ -180,6 +192,11 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
             </div>
 
             <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Finition</dt>
+              <dd className="font-medium">{vehicle.trim ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Année</dt>
               <dd className="font-medium">{vehicle.year ?? "-"}</dd>
             </div>
@@ -192,6 +209,62 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
             </div>
 
             <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Couleur</dt>
+              <dd className="font-medium">{vehicle.color ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Mise en circulation</dt>
+              <dd className="font-medium">
+                {formatDate(vehicle.first_registration_date)}
+              </dd>
+            </div>
+          </dl>
+        </article>
+
+        <article className="rounded-xl border bg-white p-6">
+          <h2 className="mb-5 text-lg font-semibold">Identification</h2>
+
+          <dl className="space-y-4 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">VIN</dt>
+              <dd className="font-mono font-medium">{vehicle.vin ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Immatriculation</dt>
+              <dd className="font-medium">
+                {vehicle.registration_number ?? "-"}
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Propriétaires</dt>
+              <dd className="font-medium">{vehicle.owners_count ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Portes</dt>
+              <dd className="font-medium">{vehicle.doors ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Places</dt>
+              <dd className="font-medium">{vehicle.seats ?? "-"}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article className="rounded-xl border bg-white p-6">
+          <h2 className="mb-5 text-lg font-semibold">Technique</h2>
+
+          <dl className="space-y-4 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Motorisation</dt>
+              <dd className="font-medium">{vehicle.engine ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Carburant</dt>
               <dd className="font-medium">{vehicle.fuel ?? "-"}</dd>
             </div>
@@ -199,6 +272,46 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Boîte</dt>
               <dd className="font-medium">{vehicle.gearbox ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Transmission</dt>
+              <dd className="font-medium">{vehicle.transmission ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Puissance DIN</dt>
+              <dd className="font-medium">
+                {vehicle.power_din == null ? "-" : `${vehicle.power_din} ch`}
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Puissance fiscale</dt>
+              <dd className="font-medium">
+                {vehicle.fiscal_power == null
+                  ? "-"
+                  : `${vehicle.fiscal_power} CV`}
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Émissions CO₂</dt>
+              <dd className="font-medium">
+                {vehicle.co2_emissions == null
+                  ? "-"
+                  : `${vehicle.co2_emissions} g/km`}
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Crit’Air</dt>
+              <dd className="font-medium">{vehicle.crit_air ?? "-"}</dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Norme Euro</dt>
+              <dd className="font-medium">{vehicle.euro_standard ?? "-"}</dd>
             </div>
           </dl>
         </article>
