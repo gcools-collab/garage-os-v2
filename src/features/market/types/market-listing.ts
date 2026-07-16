@@ -1,0 +1,22 @@
+export type MarketSellerType = "PROFESSIONAL" | "PRIVATE" | "UNKNOWN"
+
+export type MarketListing = {
+  providerId: string
+  externalId: string
+  url: string | null
+  title: string
+  brand: string
+  model: string
+  trim: string | null
+  year: number
+  mileage: number
+  fuel: string | null
+  gearbox: string | null
+  powerDin: number | null
+  price: number
+  currency: string
+  location: string | null
+  sellerType: MarketSellerType
+  publishedAt: string | null
+  imageUrls: string[]
+}
