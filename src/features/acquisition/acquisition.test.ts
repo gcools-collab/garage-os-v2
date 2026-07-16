@@ -14,6 +14,11 @@ import {
   type BridgeListing,
 } from "./providers/leboncoin-provider"
 import type { DraftVehicle } from "./types"
+import {
+  buildMarketplaceRefreshPlan,
+  requireAccessibleMarketplaceLink,
+} from "./marketplace-link-refresh"
+import { VehicleAcquisitionService } from "./vehicle-acquisition-service"
 
 function attribute(
   key: string,
@@ -80,6 +85,69 @@ test("maps Jaguar Type E Série 1 from constructor attributes", () => {
   assert.equal(draft.year, 1966)
   assert.equal(draft.characteristics.powerDin, 265)
   assert.equal(draft.characteristics.fiscalPower, 24)
+})
+
+test("preserves marketplace price, favorites and publication date for a new import", () => {
+  const draft = draftFrom(listing("Jaguar Type E série 1 1966", {}))
+  assert.equal(draft.advertisedPrice, 42_000)
+  assert.equal(draft.favoriteCount, 10)
+  assert.equal(draft.publishedAt, "2026-07-01T12:00:00Z")
+})
+
+test("repairs an incomplete legacy marketplace link", () => {
+  const draft = draftFrom(listing("Jaguar Type E série 1 1966", {}))
+  const plan = buildMarketplaceRefreshPlan(
+    { publishedAt: "2026-06-01T10:00:00Z", vehicleStatus: "PURCHASED", vehicleSellingPrice: null },
+    draft,
+    new Date("2026-07-16T12:00:00Z")
+  )
+  assert.equal(plan.link.status, "ACTIVE")
+  assert.equal(plan.link.advertised_price, 42_000)
+  assert.equal(plan.link.favorite_count, 10)
+  assert.equal(plan.vehicleSellingPrice, 42_000)
+  assert.equal(plan.publishVehicle, true)
+})
+
+test("does not overwrite a manually corrected selling price", () => {
+  const draft = draftFrom(listing("Jaguar Type E série 1 1966", {}))
+  const plan = buildMarketplaceRefreshPlan(
+    { publishedAt: null, vehicleStatus: "PUBLISHED", vehicleSellingPrice: 45_000 },
+    draft,
+    new Date("2026-07-16T12:00:00Z")
+  )
+  assert.equal(plan.link.advertised_price, 42_000)
+  assert.equal(plan.vehicleSellingPrice, null)
+  assert.equal(plan.publishVehicle, false)
+})
+
+test("accepts a marketplace response without favorites", () => {
+  const source = listing("Jaguar Type E série 1 1966", {})
+  source.favoriteCount = null
+  const plan = buildMarketplaceRefreshPlan(
+    { publishedAt: null, vehicleStatus: "PURCHASED", vehicleSellingPrice: null },
+    draftFrom(source),
+    new Date("2026-07-16T12:00:00Z")
+  )
+  assert.equal(plan.link.favorite_count, null)
+})
+
+test("reports an inaccessible marketplace listing", async () => {
+  const service = new VehicleAcquisitionService([{
+    id: "leboncoin",
+    supports: () => true,
+    getListing: async () => { throw new Error("Annonce indisponible") },
+  }])
+  await assert.rejects(
+    service.acquire("https://www.leboncoin.fr/ad/voitures/1710970399"),
+    /Annonce indisponible/
+  )
+})
+
+test("rejects a marketplace link hidden by garage RLS", () => {
+  assert.throws(
+    () => requireAccessibleMarketplaceLink(null),
+    /Annonce introuvable ou inaccessible/
+  )
 })
 
 test("maps Peugeot 308 GT Line", () => {

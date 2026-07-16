@@ -104,3 +104,17 @@ def test_listing_rejects_non_leboncoin_url() -> None:
 
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "validation_error"
+
+
+def test_listing_preserves_marketplace_public_fields() -> None:
+    response = make_client().post(
+        "/listing",
+        headers=HEADERS,
+        json={"url": "https://www.leboncoin.fr/ad/voitures/1710970399"},
+    )
+
+    assert response.status_code == 200
+    listing = response.json()
+    assert listing["price"] == 12_500
+    assert listing["favoriteCount"] == 12
+    assert listing["firstPublicationDate"] == "2026-01-01 10:00:00"

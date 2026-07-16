@@ -6,6 +6,7 @@ import {
   marketplaceLinkStatusLabels,
   type MarketplaceLinkStatus,
 } from "../marketplace-status"
+import { MarketplaceLinkRefreshButton } from "./marketplace-link-refresh-button"
 
 export type VehicleMarketplaceLink = {
   id: string
@@ -57,7 +58,10 @@ export function VehicleMarketplacePresence({ links }: { links: VehicleMarketplac
               </dl>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><RefreshCw className="size-3.5" />Dernière observation : {link.last_seen_at ? date.format(new Date(link.last_seen_at)) : "inconnue"}</span>
-                <Button asChild variant="outline" size="sm"><a href={link.url} target="_blank" rel="noreferrer">Voir l’annonce<ExternalLink /></a></Button>
+                <div className="flex flex-wrap items-start gap-2">
+                  <MarketplaceLinkRefreshButton linkId={link.id} />
+                  <Button asChild variant="outline" size="sm"><a href={link.url} target="_blank" rel="noreferrer">Voir l’annonce<ExternalLink /></a></Button>
+                </div>
               </div>
             </article>
           ))}

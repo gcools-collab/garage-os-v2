@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { LeboncoinAcquisitionProvider } from "./providers/leboncoin-provider"
 import {
   acquisitionDetailsSchema,
   acquisitionUrlSchema,
@@ -12,7 +11,7 @@ import {
 } from "./schema"
 import type { AcquisitionActionState } from "./state"
 import type { DraftVehicle } from "./types"
-import { VehicleAcquisitionService } from "./vehicle-acquisition-service"
+import { createVehicleAcquisitionService } from "./service-factory"
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024
 const IMAGE_TYPES = new Map([
@@ -20,19 +19,6 @@ const IMAGE_TYPES = new Map([
   ["image/png", "png"],
   ["image/webp", "webp"],
 ])
-
-function getService() {
-  const bridgeUrl = process.env.LEBONCOIN_BRIDGE_URL
-  const apiKey = process.env.LEBONCOIN_BRIDGE_API_KEY
-
-  if (!bridgeUrl || !apiKey) {
-    throw new Error("Le bridge Leboncoin n'est pas configuré.")
-  }
-
-  return new VehicleAcquisitionService([
-    new LeboncoinAcquisitionProvider(bridgeUrl, apiKey),
-  ])
-}
 
 export async function previewAcquiredVehicle(
   _previousState: AcquisitionActionState,
@@ -48,7 +34,7 @@ export async function previewAcquiredVehicle(
   }
 
   try {
-    const draft = await getService().acquire(parsedUrl.data)
+    const draft = await createVehicleAcquisitionService().acquire(parsedUrl.data)
     const parsedDraft = draftVehicleSchema.safeParse(draft)
     if (!parsedDraft.success) {
       return {
@@ -177,6 +163,7 @@ export async function createAcquiredVehicle(
     p_mileage: vehicle.mileage,
     p_purchase_price: parsedDetails.data.purchasePrice,
     p_selling_price: parsedDetails.data.sellingPrice,
+    p_advertised_price: vehicle.advertisedPrice,
     p_description: vehicle.description,
     p_notes: parsedDetails.data.notes || null,
     p_trim: vehicle.trim,
