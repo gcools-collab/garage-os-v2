@@ -1,10 +1,18 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, type ReactNode } from "react"
 import Link from "next/link"
+import { ChevronDown } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -13,10 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  createAcquiredVehicle,
-  previewAcquiredVehicle,
-} from "./actions"
+import { createAcquiredVehicle, previewAcquiredVehicle } from "./actions"
+import { AcquisitionPhotoGallery } from "./photo-gallery"
+import { AcquisitionProgress } from "./acquisition-progress"
+import { getDisplayedCharacteristics } from "./characteristic-labels"
 import { initialAcquisitionState } from "./state"
 import type { DraftVehicle } from "./types"
 
@@ -25,165 +33,238 @@ type GarageOption = {
   name: string
 }
 
+function getVehicleTitle(draft: DraftVehicle) {
+  const provider = draft.provider.toLocaleLowerCase("fr")
+  const uniqueParts = [draft.brand, draft.model, draft.trim]
+    .map((part) => part?.trim())
+    .filter((part): part is string => Boolean(part))
+    .filter((part) => part.toLocaleLowerCase("fr") !== provider)
+    .filter(
+      (part, index, parts) =>
+        parts.findIndex(
+          (candidate) =>
+            candidate.toLocaleLowerCase("fr") === part.toLocaleLowerCase("fr")
+        ) === index
+    )
+
+  return uniqueParts.join(" ") || "Véhicule importé"
+}
+
+function getProviderName(provider: string) {
+  return provider.toLocaleLowerCase("fr") === "leboncoin"
+    ? "Leboncoin"
+    : "Marketplace"
+}
+
 function DraftPreview({ draft }: { draft: DraftVehicle }) {
-  const entries = Object.entries(draft.characteristics).filter(
-    ([, value]) => value !== null && value !== ""
-  )
+  const title = getVehicleTitle(draft)
+  const characteristics = getDisplayedCharacteristics(draft.characteristics)
+  const descriptionPreview = draft.description?.trim().slice(0, 240)
 
   return (
     <Card>
-      {draft.photos[0] && (
-        <div
-          role="img"
-          aria-label={`${draft.brand} ${draft.model}`}
-          className="aspect-[16/7] rounded-t-xl bg-zinc-100 bg-cover bg-center"
-          style={{ backgroundImage: `url(${JSON.stringify(draft.photos[0])})` }}
-        />
-      )}
-      <CardHeader>
-        <CardTitle>
-          {draft.brand} {draft.model} {draft.trim}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {[draft.year, draft.mileage !== null ? `${draft.mileage} km` : null]
-            .filter(Boolean)
-            .join(" · ")}
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {draft.advertisedPrice !== null && (
-          <p className="text-2xl font-semibold">
-            {draft.advertisedPrice.toLocaleString("fr-FR")} € affichés
-          </p>
-        )}
-        {entries.length > 0 && (
-          <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {entries.map(([name, value]) => (
-              <div key={name} className="rounded-lg border p-3">
-                <dt className="text-xs uppercase text-muted-foreground">{name}</dt>
-                <dd className="mt-1 font-medium">{String(value)}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-        {draft.description && (
+      <AcquisitionPhotoGallery
+        key={draft.externalId}
+        photos={draft.photos}
+        title={title}
+      />
+      <CardHeader className="gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="mb-2 font-semibold">Description</h3>
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-              {draft.description}
+            <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
+            <CardDescription className="mt-1">
+              {[draft.year, draft.mileage !== null ? `${draft.mileage.toLocaleString("fr-FR")} km` : null]
+                .filter(Boolean)
+                .join(" · ")}
+            </CardDescription>
+          </div>
+          <Badge variant="secondary">
+            Importé depuis {getProviderName(draft.provider)}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {draft.advertisedPrice !== null && (
+          <div className="rounded-lg bg-muted/60 p-4">
+            <p className="text-sm text-muted-foreground">Prix de vente actuel</p>
+            <p className="mt-1 text-3xl font-semibold tracking-tight">
+              {draft.advertisedPrice.toLocaleString("fr-FR")} €
             </p>
           </div>
         )}
-        {draft.photos.length > 1 && (
-          <p className="text-sm text-muted-foreground">
-            {draft.photos.length} photos seront importées.
-          </p>
+
+        {characteristics.length > 0 && (
+          <div>
+            <h3 className="mb-3 font-semibold">Caractéristiques du véhicule</h3>
+            <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {characteristics.map(({ key, label, value }) => (
+                <div key={key} className="rounded-lg border p-3">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {label}
+                  </dt>
+                  <dd className="mt-1 font-medium">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+
+        {draft.description && (
+          <details className="group rounded-lg border">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 font-semibold marker:content-none">
+              <span>
+                Description
+                {descriptionPreview && (
+                  <span className="mt-1 block line-clamp-2 text-sm font-normal text-muted-foreground group-open:hidden">
+                    {descriptionPreview}
+                    {draft.description.length > descriptionPreview.length ? "…" : ""}
+                  </span>
+                )}
+              </span>
+              <span className="flex shrink-0 items-center gap-2 text-sm font-medium text-primary">
+                <span className="group-open:hidden">Afficher la description complète</span>
+                <span className="hidden group-open:inline">Réduire</span>
+                <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
+              </span>
+            </summary>
+            <p className="whitespace-pre-wrap border-t px-4 py-5 text-sm leading-6 text-muted-foreground">
+              {draft.description}
+            </p>
+          </details>
         )}
       </CardContent>
     </Card>
   )
 }
 
-function CreateVehicleForm({
+function AcquisitionReview({
   draft,
   garages,
+  importCard,
 }: {
   draft: DraftVehicle
   garages: GarageOption[]
+  importCard: ReactNode
 }) {
   const action = createAcquiredVehicle.bind(null, draft)
-  const [state, formAction, pending] = useActionState(
-    action,
-    initialAcquisitionState
-  )
-
-  if (state.success && state.vehicleId) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-between gap-4 pt-6">
-          <p className="text-sm text-emerald-700">{state.message}</p>
-          <Button asChild>
-            <Link href={`/stock/${state.vehicleId}`}>Voir la fiche</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
+  const [state, formAction, pending] = useActionState(action, initialAcquisitionState)
+  const finalStep = pending || (state.success && Boolean(state.vehicleId))
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Compléments métier</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="space-y-5">
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <label htmlFor="garageId" className="text-sm font-medium">
-                Garage
-              </label>
-              <Select name="garageId" defaultValue={garages[0]?.id} required>
-                <SelectTrigger id="garageId" className="w-full">
-                  <SelectValue placeholder="Sélectionner un garage" />
-                </SelectTrigger>
-                <SelectContent>
-                  {garages.map((garage) => (
-                    <SelectItem key={garage.id} value={garage.id}>
-                      {garage.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {state.errors?.garageId?.[0] && (
-                <p className="text-sm text-destructive">{state.errors.garageId[0]}</p>
-              )}
+    <div className="space-y-6">
+      <AcquisitionProgress currentStep={finalStep ? 3 : 2} />
+      {importCard}
+      <DraftPreview draft={draft} />
+
+      {state.success && state.vehicleId ? (
+        <Card className="border-emerald-200 bg-emerald-50/60">
+          <CardContent className="flex flex-col items-start justify-between gap-4 pt-6 sm:flex-row sm:items-center">
+            <div>
+              <p className="font-semibold text-emerald-900">Véhicule créé dans le stock</p>
+              <p className="mt-1 text-sm text-emerald-700">{state.message}</p>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="purchasePrice" className="text-sm font-medium">
-                Prix d&apos;achat (€)
-              </label>
-              <Input
-                id="purchasePrice"
-                name="purchasePrice"
-                type="number"
-                min={0}
-                step="0.01"
-                defaultValue={draft.advertisedPrice ?? ""}
-                required
-              />
-              {state.errors?.purchasePrice?.[0] && (
-                <p className="text-sm text-destructive">
-                  {state.errors.purchasePrice[0]}
+            <Button asChild>
+              <Link href={`/stock/${state.vehicleId}`}>Voir la fiche véhicule</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="ring-primary/20">
+          <CardHeader>
+            <CardTitle className="text-xl">Compléments métier</CardTitle>
+            <CardDescription>
+              Les données publiques de l’annonce sont déjà préremplies. Ajoute uniquement
+              les informations internes nécessaires à ton stock.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={formAction} className="space-y-6">
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label htmlFor="garageId" className="text-sm font-medium">
+                    Garage de destination
+                  </label>
+                  <Select name="garageId" defaultValue={garages[0]?.id} required>
+                    <SelectTrigger id="garageId" className="w-full">
+                      <SelectValue placeholder="Sélectionner un garage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {garages.map((garage) => (
+                        <SelectItem key={garage.id} value={garage.id}>
+                          {garage.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Information interne · non visible dans l’annonce
+                  </p>
+                  {state.errors?.garageId?.[0] && (
+                    <p className="text-sm text-destructive">{state.errors.garageId[0]}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="purchasePrice" className="text-sm font-medium">
+                    Prix d&apos;achat (€)
+                  </label>
+                  <Input
+                    id="purchasePrice"
+                    name="purchasePrice"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    defaultValue={draft.advertisedPrice ?? ""}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Information interne · modifiable avant création
+                  </p>
+                  {state.errors?.purchasePrice?.[0] && (
+                    <p className="text-sm text-destructive">
+                      {state.errors.purchasePrice[0]}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="notes" className="text-sm font-medium">
+                  Notes internes
+                </label>
+                <textarea
+                  id="notes"
+                  name="notes"
+                  rows={4}
+                  maxLength={5000}
+                  placeholder="État du véhicule, négociation, travaux à prévoir…"
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Ces notes resteront privées et réservées à l’équipe du garage.
+                </p>
+                {state.errors?.notes?.[0] && (
+                  <p className="text-sm text-destructive">{state.errors.notes[0]}</p>
+                )}
+              </div>
+              {state.message && (
+                <p className="text-sm text-destructive" role="status">
+                  {state.message}
                 </p>
               )}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="notes" className="text-sm font-medium">
-              Notes internes
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={4}
-              maxLength={5000}
-              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            />
-            {state.errors?.notes?.[0] && (
-              <p className="text-sm text-destructive">{state.errors.notes[0]}</p>
-            )}
-          </div>
-          {state.message && (
-            <p className="text-sm text-destructive" role="status">
-              {state.message}
-            </p>
-          )}
-          <Button type="submit" disabled={pending || garages.length === 0}>
-            {pending ? "Création..." : "Créer le véhicule"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+              <div className="flex justify-end border-t pt-5">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={pending || garages.length === 0}
+                  className="w-full sm:w-auto"
+                >
+                  {pending ? "Création dans le stock..." : "Créer le véhicule dans le stock"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   )
 }
 
@@ -193,44 +274,58 @@ export function AcquisitionForm({ garages }: { garages: GarageOption[] }) {
     initialAcquisitionState
   )
 
+  const importCard = (
+    <Card>
+      <CardHeader>
+        <CardTitle>Importer une annonce Leboncoin</CardTitle>
+        <CardDescription>
+          Colle le lien de l’annonce pour récupérer automatiquement les informations du
+          véhicule.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex-1">
+            <Input
+              name="url"
+              type="url"
+              placeholder="https://www.leboncoin.fr/ad/voitures/..."
+              required
+              aria-label="URL de l'annonce Leboncoin"
+              aria-invalid={Boolean(state.errors?.url)}
+            />
+            {state.errors?.url?.[0] && (
+              <p className="mt-2 text-sm text-destructive">{state.errors.url[0]}</p>
+            )}
+          </div>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Récupération de l’annonce..." : "Importer l’annonce"}
+          </Button>
+        </form>
+        {!state.success && state.message && (
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            {state.message}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
+
+  if (state.draft) {
+    return (
+      <AcquisitionReview
+        key={state.draft.externalId}
+        draft={state.draft}
+        garages={garages}
+        importCard={importCard}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>URL de l&apos;annonce</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction} className="flex flex-col gap-3 sm:flex-row">
-            <div className="flex-1">
-              <Input
-                name="url"
-                type="url"
-                placeholder="https://www.leboncoin.fr/ad/voitures/..."
-                required
-                aria-invalid={Boolean(state.errors?.url)}
-              />
-              {state.errors?.url?.[0] && (
-                <p className="mt-2 text-sm text-destructive">{state.errors.url[0]}</p>
-              )}
-            </div>
-            <Button type="submit" disabled={pending}>
-              {pending ? "Récupération..." : "Prévisualiser"}
-            </Button>
-          </form>
-          {!state.success && state.message && (
-            <p className="mt-3 text-sm text-destructive" role="alert">
-              {state.message}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {state.draft && (
-        <>
-          <DraftPreview draft={state.draft} />
-          <CreateVehicleForm draft={state.draft} garages={garages} />
-        </>
-      )}
+      <AcquisitionProgress currentStep={1} />
+      {importCard}
     </div>
   )
 }
