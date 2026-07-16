@@ -28,7 +28,7 @@ function getEventIcon(event: VehicleTimelineEvent) {
 
 export function VehicleTimeline({ events }: { events: VehicleTimelineEvent[] }) {
   if (events.length === 0) {
-    return <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">Aucun événement enregistré.</div>
+    return <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">Aucun événement enregistré.</div>
   }
 
   return (

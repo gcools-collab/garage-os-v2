@@ -14,11 +14,11 @@ export function VehicleImageUpload({
   return (
     <form
       action={uploadVehicleImages}
-      className="flex flex-col gap-3 sm:flex-row sm:items-center"
+      className="rounded-lg border bg-muted/30 p-3"
     >
       <input type="hidden" name="vehicleId" value={vehicleId} />
 
-      <div className="flex-1">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           id="vehicle-images"
           name="images"
@@ -35,10 +35,9 @@ export function VehicleImageUpload({
           <Camera aria-hidden="true" />
           Choisir des photos
         </label>
-        <p className="mt-2 text-xs text-muted-foreground">JPG, PNG ou WebP · sélection multiple.</p>
+        <Button type="submit"><Upload aria-hidden="true" />Importer</Button>
       </div>
-
-      <Button type="submit"><Upload aria-hidden="true" />Importer</Button>
+      <p className="mt-2 text-xs text-muted-foreground">JPG, PNG ou WebP · sélection multiple.</p>
     </form>
   )
 }

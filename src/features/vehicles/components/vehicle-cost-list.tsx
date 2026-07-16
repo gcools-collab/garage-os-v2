@@ -39,7 +39,7 @@ export function VehicleCostList({
 }) {
   if (costs.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">
+      <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">
         Aucun coût enregistré.
       </div>
     )
@@ -48,7 +48,7 @@ export function VehicleCostList({
   return (
     <div className="divide-y">
       {costs.map((cost) => (
-        <div key={cost.id} className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
+        <div key={cost.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="font-medium">{cost.label}</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -56,7 +56,7 @@ export function VehicleCostList({
             </p>
             {cost.notes && <p className="mt-1 text-sm text-muted-foreground">{cost.notes}</p>}
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 items-center justify-between gap-1 sm:justify-start">
             <span className="mr-2 font-semibold">{currency.format(Number(cost.amount))}</span>
             <Dialog>
               <DialogTrigger asChild>

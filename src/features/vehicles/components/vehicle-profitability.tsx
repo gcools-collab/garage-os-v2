@@ -23,11 +23,14 @@ export function VehicleProfitabilityCard({
   ] as const
 
   return (
-    <article className="rounded-xl border bg-white p-6 ring-1 ring-primary/5">
-      <h2 className="mb-5 text-lg font-semibold">Rentabilité</h2>
+    <article className="h-full rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+      <div className="mb-5 border-b pb-5">
+        <h2 className="text-xl font-semibold">Rentabilité</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Synthèse des montants engagés et de la marge potentielle.</p>
+      </div>
       <dl className="space-y-4 text-sm">
         {rows.map(([label, value]) => (
-          <div key={label} className="flex items-center justify-between gap-4">
+          <div key={label} className="flex items-center justify-between gap-6 py-0.5">
             <dt className="text-muted-foreground">{label}</dt>
             <dd className="font-medium">{value}</dd>
           </div>

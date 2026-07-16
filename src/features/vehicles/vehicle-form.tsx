@@ -405,13 +405,15 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
-        {pending
-          ? "Enregistrement..."
-          : mode === "edit"
-            ? "Enregistrer les modifications"
-            : "Ajouter le véhicule"}
-      </Button>
+      <div className="flex justify-end border-t pt-5">
+        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+          {pending
+            ? "Enregistrement..."
+            : mode === "edit"
+              ? "Enregistrer les modifications"
+              : "Ajouter le véhicule"}
+        </Button>
+      </div>
     </form>
   )
 }

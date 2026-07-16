@@ -143,7 +143,7 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
   const completeness = getCompletenessPercentage(completenessChecks)
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
+    <div className="mx-auto max-w-7xl space-y-8 pb-4">
       <VehicleHero
         brand={vehicle.brand}
         model={vehicle.model}
@@ -163,17 +163,20 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
 
       <VehicleActionBar />
 
-      <section id="vehicle-information" className="scroll-mt-6 space-y-3">
-        <div>
+      <section
+        id="vehicle-information"
+        className="scroll-mt-6 rounded-xl border bg-white p-5 shadow-xs sm:p-6"
+      >
+        <div className="mb-6 border-b pb-5">
           <h2 className="text-xl font-semibold">Informations véhicule</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Les informations sont directement modifiables. Un seul enregistrement met à jour toute la fiche.
+            Modifiez la fiche métier du véhicule puis enregistrez l’ensemble des informations.
           </p>
         </div>
         <VehicleForm mode="edit" vehicle={vehicle} />
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
+      <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
         <VehicleProfitabilityCard
           purchasePrice={Number(vehicle.purchase_price ?? 0)}
           sellingPrice={sellingPrice}
@@ -188,8 +191,8 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
         />
       </section>
 
-      <section id="vehicle-photos" className="scroll-mt-6 rounded-xl border bg-white p-5">
-        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section id="vehicle-photos" className="scroll-mt-6 rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+        <div className="mb-6 flex flex-col gap-5 border-b pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-semibold">Galerie photos</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -204,9 +207,9 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
         />
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-2">
-        <article id="vehicle-costs" className="scroll-mt-6 rounded-xl border bg-white p-5">
-          <div className="mb-5 flex items-center justify-between gap-4">
+      <section className="grid items-stretch gap-6 xl:grid-cols-2">
+        <article id="vehicle-costs" className="flex min-h-[420px] scroll-mt-6 flex-col rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4 border-b pb-5">
             <div>
               <h2 className="text-xl font-semibold">Historique des coûts</h2>
               <p className="mt-1 text-sm text-muted-foreground">Tous les frais engagés sur ce véhicule.</p>
@@ -222,21 +225,24 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
             </summary>
             <div className="border-t p-4"><VehicleCostForm vehicleId={vehicle.id} /></div>
           </details>
-          <VehicleCostList vehicleId={vehicle.id} costs={vehicleCosts} />
+          <div className="flex-1"><VehicleCostList vehicleId={vehicle.id} costs={vehicleCosts} /></div>
         </article>
 
-        <article className="rounded-xl border bg-white p-5">
-          <div className="mb-5">
+        <article className="flex min-h-[420px] flex-col rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+          <div className="mb-5 border-b pb-5">
             <h2 className="text-xl font-semibold">Timeline</h2>
             <p className="mt-1 text-sm text-muted-foreground">Historique de la vie du véhicule.</p>
           </div>
-          <VehicleTimeline events={sortedEvents} />
+          <div className="flex-1"><VehicleTimeline events={sortedEvents} /></div>
         </article>
       </section>
 
-      <section className="rounded-xl border bg-white p-5">
-        <h2 className="font-semibold">Suivi du véhicule</h2>
-        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+      <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+        <div className="border-b pb-5">
+          <h2 className="text-xl font-semibold">Suivi du véhicule</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Dates clés et dernières informations de suivi.</p>
+        </div>
+        <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <TrackingItem icon={CalendarDays} label="Date d’achat" value={formatDate(vehicle.purchase_date)} />
           <TrackingItem icon={CalendarDays} label="Date de vente" value={formatDate(vehicle.sale_date)} />
           <TrackingItem icon={Clock3} label="Créé le" value={formatDate(vehicle.created_at)} />

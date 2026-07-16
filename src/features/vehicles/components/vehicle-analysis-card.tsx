@@ -40,9 +40,9 @@ export function VehicleAnalysisCard(props: VehicleAnalysisCardProps) {
           : "La fiche contient les informations essentielles."
 
   return (
-    <article className="rounded-xl border bg-white p-5">
-      <div className="mb-4">
-        <h2 className="font-semibold">Analyse Garage OS</h2>
+    <article className="h-full rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+      <div className="mb-5 border-b pb-5">
+        <h2 className="text-xl font-semibold">Analyse Garage OS</h2>
         <p className="mt-1 text-sm text-muted-foreground">Contrôles simples basés sur la fiche actuelle.</p>
       </div>
       <ul className="space-y-3">
