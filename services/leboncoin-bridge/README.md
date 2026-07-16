@@ -65,7 +65,9 @@ curl -X POST http://127.0.0.1:8080/listing \
   -d '{"url":"https://www.leboncoin.fr/ad/voitures/1234567890"}'
 ```
 
-`/search` renvoie une liste et `/listing` une annonce au format camelCase du port TypeScript `LeboncoinListing` : identifiant, titre, description, marque, URL, prix, images, attributs, localisation et date de publication. Le type de vendeur est actuellement `unknown`, car le modèle public de `lbc` ne l'expose pas directement.
+`/search` renvoie une liste et `/listing` une annonce au format camelCase du port TypeScript `LeboncoinListing` : identifiant, titre, description, marque, URL, prix, images, attributs, localisation, date de publication et nombre facultatif de favoris. Le type de vendeur est actuellement `unknown`, car le modèle public de `lbc` ne l'expose pas directement.
+
+Le client `lbc` expose `Ad.favorites`, alimenté depuis `counters.favorites`. Cette valeur est disponible sur les annonces de détail chargées par `get_ad`, donc sur `/listing`, mais la bibliothèque indique qu'elle n'est pas disponible sur les objets issus de la recherche. Le bridge renvoie alors `favoriteCount: null` et ne simule jamais de valeur.
 
 ## Tests
 

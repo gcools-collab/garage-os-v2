@@ -17,6 +17,16 @@ type CharacteristicKey =
   | "color"
   | "doors"
   | "seats"
+  | "fiscalPower"
+  | "firstRegistrationDate"
+  | "bodyType"
+  | "upholstery"
+  | "critAir"
+
+export function formatFrenchDate(value: string | number | boolean) {
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : String(value)
+}
 
 export const displayedCharacteristics: ReadonlyArray<{
   key: CharacteristicKey
@@ -35,6 +45,21 @@ export const displayedCharacteristics: ReadonlyArray<{
   { key: "color", label: "Couleur", icon: Palette },
   { key: "doors", label: "Portes", icon: DoorOpen },
   { key: "seats", label: "Places", icon: Armchair },
+  {
+    key: "fiscalPower",
+    label: "Puissance fiscale",
+    icon: Gauge,
+    format: (value) => `${value} CV`,
+  },
+  {
+    key: "firstRegistrationDate",
+    label: "Première mise en circulation",
+    icon: CarFront,
+    format: formatFrenchDate,
+  },
+  { key: "bodyType", label: "Carrosserie", icon: CarFront },
+  { key: "upholstery", label: "Sellerie", icon: Armchair },
+  { key: "critAir", label: "Crit’Air", icon: CarFront },
 ]
 
 export function getDisplayedCharacteristics(

@@ -61,5 +61,6 @@ export function mapLeboncoinListing(listing: LeboncoinListing): MarketListing {
     sellerType: mapSellerType(listing.ownerType),
     publishedAt: listing.firstPublicationDate,
     imageUrls: [...listing.images],
+    favoriteCount: listing.favoriteCount,
   }
 }

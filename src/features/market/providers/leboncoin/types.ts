@@ -1,5 +1,6 @@
 export type LeboncoinAttribute = {
   key: string
+  keyLabel: string | null
   value: string | null
   valueLabel: string | null
   values: string[]
@@ -28,6 +29,7 @@ export type LeboncoinListing = {
   location: LeboncoinLocation | null
   ownerType: LeboncoinOwnerType
   firstPublicationDate: string | null
+  favoriteCount: number | null
 }
 
 export type LeboncoinSearchRequest = {

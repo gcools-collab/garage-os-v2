@@ -1,14 +1,11 @@
 import { CheckCircle2, CircleAlert } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { hasIdentifiedBrandAndModel } from "./acquisition-presentation"
+import {
+  getCompletenessChecks,
+  getCompletenessPercentage,
+} from "./completeness"
 import type { DraftVehicle } from "./types"
-
-type CompletenessCheck = {
-  label: string
-  complete: boolean
-  completeLabel?: string
-}
 
 export function DataCompleteness({
   draft,
@@ -17,24 +14,8 @@ export function DataCompleteness({
   draft: DraftVehicle
   purchasePriceComplete: boolean
 }) {
-  const checks: CompletenessCheck[] = [
-    { label: "Photos", complete: draft.photos.length > 0, completeLabel: `${draft.photos.length} disponible(s)` },
-    { label: "Description", complete: Boolean(draft.description?.trim()), completeLabel: "Disponible" },
-    { label: "Année", complete: draft.year !== null, completeLabel: "Disponible" },
-    { label: "Kilométrage", complete: draft.mileage !== null, completeLabel: "Disponible" },
-    { label: "Carburant", complete: Boolean(draft.characteristics.fuel), completeLabel: "Identifié" },
-    { label: "Boîte de vitesses", complete: Boolean(draft.characteristics.gearbox), completeLabel: "Identifiée" },
-    {
-      label: "Marque et modèle",
-      complete: hasIdentifiedBrandAndModel(draft),
-      completeLabel: "Identifiés",
-    },
-    { label: "VIN", complete: false },
-    { label: "Immatriculation", complete: false },
-    { label: "Prix d'achat", complete: purchasePriceComplete, completeLabel: "Renseigné" },
-  ]
-  const completed = checks.filter((check) => check.complete).length
-  const percentage = Math.round((completed / checks.length) * 100)
+  const checks = getCompletenessChecks(draft, purchasePriceComplete)
+  const percentage = getCompletenessPercentage(checks)
 
   return (
     <Card>

@@ -8,6 +8,7 @@ import {
   acquisitionDetailsSchema,
   acquisitionUrlSchema,
   draftVehicleSchema,
+  editableDraftVehicleSchema,
 } from "./schema"
 import type { AcquisitionActionState } from "./state"
 import type { DraftVehicle } from "./types"
@@ -128,7 +129,7 @@ export async function createAcquiredVehicle(
   _previousState: AcquisitionActionState,
   formData: FormData
 ): Promise<AcquisitionActionState> {
-  const parsedDraft = draftVehicleSchema.safeParse(draft)
+  const parsedDraft = editableDraftVehicleSchema.safeParse(draft)
   const parsedDetails = acquisitionDetailsSchema.safeParse({
     garageId: formData.get("garageId"),
     purchasePrice: formData.get("purchasePrice"),
@@ -180,9 +181,14 @@ export async function createAcquiredVehicle(
     p_fuel: vehicle.characteristics.fuel,
     p_gearbox: vehicle.characteristics.gearbox,
     p_power_din: vehicle.characteristics.powerDin,
+    p_fiscal_power: vehicle.characteristics.fiscalPower,
     p_color: vehicle.characteristics.color,
     p_doors: vehicle.characteristics.doors,
     p_seats: vehicle.characteristics.seats,
+    p_first_registration_date: vehicle.characteristics.firstRegistrationDate,
+    p_body_type: vehicle.characteristics.bodyType,
+    p_upholstery: vehicle.characteristics.upholstery,
+    p_crit_air: vehicle.characteristics.critAir,
     p_provider: vehicle.provider,
     p_url: vehicle.sourceUrl,
     p_external_id: vehicle.externalId,

@@ -30,6 +30,8 @@ import { AcquisitionPhotoGallery } from "./photo-gallery"
 import { AcquisitionProgress } from "./acquisition-progress"
 import { getDisplayedCharacteristics } from "./characteristic-labels"
 import { DataCompleteness } from "./data-completeness"
+import { DraftVehicleEditor } from "./draft-vehicle-editor"
+import { editableDraftVehicleSchema } from "./schema"
 import { initialAcquisitionState } from "./state"
 import type { DraftVehicle } from "./types"
 
@@ -79,6 +81,13 @@ function DraftPreview({ draft }: { draft: DraftVehicle }) {
               {draft.advertisedPrice.toLocaleString("fr-FR")} €
             </p>
           </div>
+        )}
+
+        {draft.favoriteCount !== null && (
+          <p className="text-sm text-muted-foreground">
+            {draft.favoriteCount.toLocaleString("fr-FR")} favori
+            {draft.favoriteCount > 1 ? "s" : ""} sur l’annonce
+          </p>
         )}
 
         {characteristics.length > 0 && (
@@ -132,18 +141,20 @@ function AcquisitionReview({
   garages: GarageOption[]
   importCard: ReactNode
 }) {
-  const action = createAcquiredVehicle.bind(null, draft)
+  const [editableDraft, setEditableDraft] = useState(draft)
+  const action = createAcquiredVehicle.bind(null, editableDraft)
   const [state, formAction, pending] = useActionState(action, initialAcquisitionState)
   const [purchasePrice, setPurchasePrice] = useState("")
   const finalStep = pending || (state.success && Boolean(state.vehicleId))
+  const draftIsValid = editableDraftVehicleSchema.safeParse(editableDraft).success
 
   return (
     <div className="space-y-6">
       <AcquisitionProgress currentStep={finalStep ? 3 : 2} />
       {importCard}
-      <DraftPreview draft={draft} />
+      <DraftPreview draft={editableDraft} />
       <DataCompleteness
-        draft={draft}
+        draft={editableDraft}
         purchasePriceComplete={
           purchasePrice.trim() !== "" && Number(purchasePrice) >= 0
         }
@@ -169,12 +180,15 @@ function AcquisitionReview({
               Les données publiques de l’annonce sont déjà préremplies. Ajoute uniquement
               les informations internes nécessaires à ton stock.
             </CardDescription>
-            <p className="mt-2 font-medium text-foreground">
-              Le véhicule est prêt à rejoindre votre stock.
-            </p>
+            {draftIsValid && (
+              <p className="mt-2 font-medium text-foreground">
+                Le véhicule est prêt à rejoindre votre stock.
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <form action={formAction} className="space-y-6">
+              <DraftVehicleEditor draft={editableDraft} onChange={setEditableDraft} />
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="garageId" className="text-sm font-medium">
@@ -252,7 +266,7 @@ function AcquisitionReview({
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={pending || garages.length === 0}
+                  disabled={pending || garages.length === 0 || !draftIsValid}
                   className="w-full sm:w-auto"
                 >
                   {pending ? "Création dans le stock..." : "Créer le véhicule dans le stock"}

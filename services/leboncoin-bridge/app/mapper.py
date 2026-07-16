@@ -11,6 +11,7 @@ Scalar = str | int | float | bool | None
 
 class AttributeLike(Protocol):
     key: str
+    key_label: str | None
     value: Scalar
     value_label: str | None
     values: Sequence[str] | None
@@ -36,12 +37,14 @@ class AdLike(Protocol):
     attributes: Mapping[str, AttributeLike]
     location: LocationLike | None
     first_publication_date: str | None
+    favorites: int | None
 
 
 def map_listing(ad: AdLike) -> LeboncoinListing:
     attributes = {
         name: LeboncoinAttribute(
             key=attribute.key,
+            key_label=attribute.key_label,
             value=attribute.value,
             value_label=attribute.value_label,
             values=list(attribute.values or []),
@@ -71,4 +74,5 @@ def map_listing(ad: AdLike) -> LeboncoinListing:
         location=location,
         owner_type="unknown",
         first_publication_date=ad.first_publication_date,
+        favorite_count=ad.favorites,
     )

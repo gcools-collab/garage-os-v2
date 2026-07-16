@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Python bridge artifacts:
+    "services/leboncoin-bridge/.venv/**",
+    "services/leboncoin-bridge/.pytest_cache/**",
+    "services/leboncoin-bridge/**/pycache/**",
+    "services/leboncoin-bridge/**/__pycache__/**",
   ]),
 ]);
 

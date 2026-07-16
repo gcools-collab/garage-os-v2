@@ -21,6 +21,7 @@ const MOCK_LISTINGS: MarketListing[] = [
     sellerType: "PROFESSIONAL",
     publishedAt: "2026-07-12T09:00:00.000Z",
     imageUrls: [],
+    favoriteCount: null,
   },
   {
     providerId: "mock",
@@ -41,6 +42,7 @@ const MOCK_LISTINGS: MarketListing[] = [
     sellerType: "PROFESSIONAL",
     publishedAt: "2026-07-14T14:30:00.000Z",
     imageUrls: [],
+    favoriteCount: null,
   },
   {
     providerId: "mock",
@@ -61,6 +63,7 @@ const MOCK_LISTINGS: MarketListing[] = [
     sellerType: "PRIVATE",
     publishedAt: "2026-07-10T17:15:00.000Z",
     imageUrls: [],
+    favoriteCount: null,
   },
 ]
 

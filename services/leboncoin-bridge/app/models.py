@@ -54,6 +54,7 @@ class LeboncoinAttribute(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     key: str
+    key_label: str | None = Field(default=None, alias="keyLabel")
     value: str | int | float | bool | None = None
     value_label: str | None = Field(default=None, alias="valueLabel")
     values: list[str] = Field(default_factory=list)
@@ -86,6 +87,7 @@ class LeboncoinListing(BaseModel):
         default="unknown", alias="ownerType"
     )
     first_publication_date: str | None = Field(default=None, alias="firstPublicationDate")
+    favorite_count: int | None = Field(default=None, ge=0, alias="favoriteCount")
 
 
 class HealthResponse(BaseModel):

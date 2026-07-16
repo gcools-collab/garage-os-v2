@@ -4,9 +4,14 @@ export type DraftVehicleCharacteristics = {
   fuel: string | null
   gearbox: string | null
   powerDin: number | null
+  fiscalPower: number | null
   color: string | null
   doors: number | null
   seats: number | null
+  firstRegistrationDate: string | null
+  bodyType: string | null
+  upholstery: string | null
+  critAir: number | null
   [key: string]: string | number | boolean | null
 }
 
@@ -15,6 +20,7 @@ export type DraftVehicle = {
   sourceUrl: string
   externalId: string
   publishedAt: string | null
+  originalTitle: string
   brand: string
   model: string
   trim: string | null
@@ -23,6 +29,8 @@ export type DraftVehicle = {
   advertisedPrice: number | null
   description: string | null
   photos: string[]
+  location: string | null
+  favoriteCount: number | null
   characteristics: DraftVehicleCharacteristics
 }
 

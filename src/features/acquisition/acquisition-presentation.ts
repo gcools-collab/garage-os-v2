@@ -44,36 +44,63 @@ function uniqueParts(parts: string[]) {
   )
 }
 
+function normalizedToken(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr")
+}
+
+export function deduplicateModelFromTrim(model: string, trim: string) {
+  const split = (value: string) =>
+    value
+      .trim()
+      .split(/[\s\-_/|·.]+/)
+      .filter(Boolean)
+  const modelTokens = split(model)
+  const trimTokens = split(trim)
+
+  if (modelTokens.length === 0) return trimTokens.join(" ")
+
+  while (
+    trimTokens.length >= modelTokens.length &&
+    modelTokens.every(
+      (token, index) =>
+        normalizedToken(token) === normalizedToken(trimTokens[index])
+    )
+  ) {
+    trimTokens.splice(0, modelTokens.length)
+  }
+
+  return trimTokens.join(" ")
+}
+
 function isLikelyVariantOnly(value: string) {
   return /^(?:v\d{1,2}|gt(?:\s+line)?|rs|bluehdi(?:\s+\d+)?|hdi(?:\s+\d+)?|puretech(?:\s+\d+)?|dci(?:\s+\d+)?|tdi(?:\s+\d+)?|tsi(?:\s+\d+)?|phev|hybrid)$/i.test(
     value
   )
 }
 
-function extractDescriptionTitle(draft: DraftVehicle) {
-  const firstLine = normalized(draft.description?.split(/\r?\n/).find(normalized))
-  const words = firstLine.split(" ")
-  if (!firstLine || firstLine.length > 100 || words.length < 2 || words.length > 10) {
-    return null
-  }
+function cleanOriginalTitle(draft: DraftVehicle) {
+  const originalTitle = normalized(draft.originalTitle)
+    .replace(/\b(?:19|20)\d{2}\b/g, "")
+    .replace(/[|•·_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  if (!originalTitle || originalTitle.length > 120) return null
 
-  const lowerLine = firstLine.toLocaleLowerCase("fr")
-  const identifiedBrand = knownBrands.find((brand) =>
-    lowerLine.includes(brand.toLocaleLowerCase("fr"))
+  const lowerTitle = originalTitle.toLocaleLowerCase("fr")
+  const hasBrand = knownBrands.some((brand) =>
+    lowerTitle.includes(brand.toLocaleLowerCase("fr"))
   )
-  if (!identifiedBrand || /[.!?]$/.test(firstLine)) return null
-
-  const model = normalized(draft.model)
-  if (model && !lowerLine.includes(model.toLocaleLowerCase("fr"))) return null
-
-  return firstLine
+  return hasBrand ? originalTitle : null
 }
 
 export function getVehicleDisplayTitle(draft: DraftVehicle) {
   const provider = draft.provider.toLocaleLowerCase("fr")
   const brand = normalized(draft.brand)
   const model = normalized(draft.model)
-  const trim = normalized(draft.trim)
+  const trim = deduplicateModelFromTrim(model, normalized(draft.trim))
 
   if (
     brand &&
@@ -82,10 +109,15 @@ export function getVehicleDisplayTitle(draft: DraftVehicle) {
     brand.toLocaleLowerCase("fr") !== provider &&
     model.toLocaleLowerCase("fr") !== provider
   ) {
-    return uniqueParts([brand, model, trim].filter(Boolean)).join(" ")
+    const displayBrand =
+      knownBrands.find(
+        (candidate) =>
+          candidate.toLocaleLowerCase("fr") === brand.toLocaleLowerCase("fr")
+      ) ?? brand
+    return uniqueParts([displayBrand, model, trim].filter(Boolean)).join(" ")
   }
 
-  return extractDescriptionTitle(draft) ?? "Véhicule à identifier"
+  return cleanOriginalTitle(draft) ?? "Véhicule à identifier"
 }
 
 export function hasIdentifiedBrandAndModel(draft: DraftVehicle) {
@@ -118,6 +150,7 @@ export function getVehicleSummary(draft: DraftVehicle) {
     draft.characteristics.color
       ? `couleur ${draft.characteristics.color.toLocaleLowerCase("fr")}`
       : null,
+    draft.location ? `à ${draft.location}` : null,
   ].filter((detail): detail is string => Boolean(detail))
 
   if (details.length === 0) {

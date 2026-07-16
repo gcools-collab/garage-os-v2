@@ -19,4 +19,5 @@ export type MarketListing = {
   sellerType: MarketSellerType
   publishedAt: string | null
   imageUrls: string[]
+  favoriteCount: number | null
 }

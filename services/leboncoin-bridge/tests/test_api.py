@@ -34,6 +34,7 @@ class FakeAd:
     attributes: dict = field(default_factory=dict)
     location: FakeLocation | None = field(default_factory=FakeLocation)
     first_publication_date: str | None = "2026-01-01 10:00:00"
+    favorites: int | None = 12
 
 
 class FakeGateway:
@@ -91,6 +92,7 @@ def test_search_returns_typescript_compatible_shape() -> None:
     assert response.status_code == 200
     assert response.json()[0]["ownerType"] == "unknown"
     assert response.json()[0]["firstPublicationDate"] == "2026-01-01 10:00:00"
+    assert response.json()[0]["favoriteCount"] == 12
 
 
 def test_listing_rejects_non_leboncoin_url() -> None:
