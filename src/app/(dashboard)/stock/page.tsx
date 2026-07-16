@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { VehicleForm } from "@/features/vehicles/vehicle-form"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 
 export default async function StockPage(){
@@ -81,6 +82,10 @@ Gestion de votre parc automobile
 </p>
 
 </div>
+
+<Button asChild>
+<Link href="/stock/import">Importer une annonce</Link>
+</Button>
 
 </div>
 
