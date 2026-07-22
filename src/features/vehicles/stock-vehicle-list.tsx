@@ -1,28 +1,12 @@
 import Link from "next/link"
-import { Car, Eye, Pencil } from "lucide-react"
+import { Car, Eye, Globe2, Pencil } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { StatusBadge, type VehicleStatus } from "./status-badge"
+import { StatusBadge } from "./status-badge"
 import { VehicleDeleteButton } from "./vehicle-delete-button"
 import { calculateVehicleProfitability } from "./utils"
-
-export type StockVehicle = {
-  id: string
-  brand: string
-  model: string
-  trim: string | null
-  year: number | null
-  mileage: number | null
-  status: VehicleStatus
-  purchase_price: number | string | null
-  selling_price: number | string | null
-  vehicle_costs: Array<{ amount: number | string | null }> | null
-  vehicle_images: Array<{
-    url: string | null
-    is_primary: boolean
-    created_at: string
-  }> | null
-}
+import type { StockVehicle } from "./stock/stock-types"
+import { marketplaceLinkStatusLabels } from "./marketplace-status"
 
 const currency = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -42,6 +26,26 @@ function primaryImage(vehicle: StockVehicle) {
   )
 }
 
+function onlineSummary(vehicle: StockVehicle) {
+  const links = vehicle.marketplace_links ?? []
+  const activeLink =
+    links.find((link) => link.status === "ACTIVE") ?? links[0]
+  if (!activeLink) return null
+  const provider =
+    activeLink.provider.toLocaleLowerCase("fr-FR") === "leboncoin"
+      ? "Leboncoin"
+      : activeLink.provider
+  const status = marketplaceLinkStatusLabels[activeLink.status]
+  if (!activeLink.published_at) return `${provider} · ${status}`
+  const days = Math.max(
+    0,
+    Math.floor(
+      (Date.now() - new Date(activeLink.published_at).getTime()) / 86_400_000
+    )
+  )
+  return `${provider} · ${status} · ${days} jour${days > 1 ? "s" : ""}`
+}
+
 export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
   return (
     <div className="space-y-3">
@@ -51,6 +55,7 @@ export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
           .filter(Boolean)
           .join(" ")
         const profitability = calculateVehicleProfitability(vehicle)
+        const marketplace = onlineSummary(vehicle)
 
         return (
           <article
@@ -81,11 +86,29 @@ export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
                 <StatusBadge status={vehicle.status} />
               </div>
 
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                {marketplace && (
+                  <span className="flex items-center gap-1.5">
+                    <Globe2 className="size-3.5" aria-hidden="true" />
+                    {marketplace}
+                  </span>
+                )}
+                <span className="flex items-center gap-2">
+                  Complétude
+                  <span className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                    <span className="block h-full rounded-full bg-primary" style={{ width: `${vehicle.completeness}%` }} />
+                  </span>
+                  <strong className="font-medium text-foreground">{vehicle.completeness} %</strong>
+                </span>
+              </div>
+
               <dl className="grid grid-cols-2 gap-4 text-sm lg:grid-cols-4">
                 <div>
                   <dt className="text-xs text-muted-foreground">Prix d&apos;achat</dt>
                   <dd className="mt-1 font-medium">
-                    {currency.format(Number(vehicle.purchase_price ?? 0))}
+                    {vehicle.purchase_price == null || Number(vehicle.purchase_price) <= 0
+                      ? "Non renseigné"
+                      : currency.format(Number(vehicle.purchase_price))}
                   </dd>
                 </div>
                 <div>

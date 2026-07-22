@@ -230,26 +230,26 @@ export class DashboardService {
         count: vehicles.filter((vehicle) => Number(vehicle.purchase_price ?? 0) <= 0)
           .length,
         label: "sans prix d'achat",
-        href: "/stock",
+        href: "/stock?missingPurchasePrice=true",
       },
       {
         id: "vin",
         count: vehicles.filter((vehicle) => !vehicle.vin?.trim()).length,
         label: "sans VIN",
-        href: "/stock",
+        href: "/stock?missingVin=true",
       },
       {
         id: "registration",
         count: vehicles.filter((vehicle) => !vehicle.registration_number?.trim()).length,
         label: "sans immatriculation",
-        href: "/stock",
+        href: "/stock?missingRegistration=true",
       },
       {
         id: "photo",
         count: vehicles.filter((vehicle) => (vehicle.vehicle_images?.length ?? 0) === 0)
           .length,
         label: "sans photo",
-        href: "/stock",
+        href: "/stock?missingPhoto=true",
       },
       {
         id: "notes",

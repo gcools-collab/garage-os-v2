@@ -3,117 +3,67 @@ import { Plus, Upload } from "lucide-react"
 import { redirect } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
+import { StockVehicleList } from "@/features/vehicles/stock-vehicle-list"
+import { StockActiveFilters } from "@/features/vehicles/stock/stock-active-filters"
+import { StockEmptyState } from "@/features/vehicles/stock/stock-empty-state"
+import { StockFilterBar } from "@/features/vehicles/stock/stock-filter-bar"
+import { StockPagination } from "@/features/vehicles/stock/stock-pagination"
 import {
-  StockVehicleList,
-  type StockVehicle,
-} from "@/features/vehicles/stock-vehicle-list"
+  parseStockQuery,
+  type RawStockSearchParams,
+} from "@/features/vehicles/stock/stock-query-schema"
+import { StockService } from "@/features/vehicles/stock/stock-service"
+import { StockSummaryTabs } from "@/features/vehicles/stock/stock-summary-tabs"
 import { createClient } from "@/lib/supabase/server"
 
-export default async function StockPage() {
+type StockPageProps = {
+  searchParams: Promise<RawStockSearchParams>
+}
+
+export default async function StockPage({ searchParams }: StockPageProps) {
+  const query = parseStockQuery(await searchParams)
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect("/register")
-
-  const { data: memberships, error: membershipError } = await supabase
-    .from("garage_members")
-    .select("garage_id")
-    .eq("user_id", user.id)
-
-  if (membershipError) {
-    console.error("Unable to read current user garage memberships", {
-      code: membershipError.code,
-      message: membershipError.message,
-    })
-    throw new Error("Impossible de déterminer les garages accessibles.")
-  }
-
-  const garageIds = [
-    ...new Set(
-      (memberships ?? []).flatMap((membership) =>
-        membership.garage_id ? [membership.garage_id] : []
-      )
-    ),
-  ]
-  if (garageIds.length === 0) {
-    throw new Error("Aucun garage n'est associé à cet utilisateur.")
-  }
-
-  const { data: vehicleData, error: vehicleError } = await supabase
-    .from("vehicles")
-    .select(`
-      id, brand, model, trim, year, mileage, status,
-      purchase_price, selling_price,
-      vehicle_costs (amount),
-      vehicle_images (url, is_primary, created_at)
-    `)
-    .in("garage_id", garageIds)
-    .order("created_at", { ascending: false })
-
-  if (vehicleError) {
-    console.error("Unable to read vehicles for accessible garages", {
-      garageIds,
-      code: vehicleError.code,
-      message: vehicleError.message,
-    })
-    throw new Error("Impossible de charger le stock véhicules.")
-  }
-
-  const vehicles = (vehicleData ?? []) as StockVehicle[]
+  const data = await new StockService(supabase).getStock(query)
+  if (!data) redirect("/register")
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-7">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Stock véhicules</h1>
           <p className="mt-2 text-muted-foreground">
-            Consultez et gérez les véhicules de votre garage.
+            Retrouvez, filtrez et pilotez les véhicules de vos garages.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button asChild>
-            <Link href="/stock/import">
-              <Upload className="size-4" aria-hidden="true" />
-              Importer une annonce
-            </Link>
+            <Link href="/stock/import"><Upload aria-hidden="true" />Importer une annonce</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/stock/new">
-              <Plus className="size-4" aria-hidden="true" />
-              Ajouter manuellement
-            </Link>
+            <Link href="/stock/new"><Plus aria-hidden="true" />Ajouter manuellement</Link>
           </Button>
         </div>
       </header>
 
-      <section>
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold">
-            Véhicules en stock
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              {vehicles.length}
-            </span>
-          </h2>
+      <StockSummaryTabs query={query} counts={data.counts} />
+      <StockFilterBar query={query} />
+      <StockActiveFilters query={query} />
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold">Véhicules</h2>
+          <span className="text-sm text-muted-foreground">
+            {data.totalFiltered} résultat{data.totalFiltered !== 1 ? "s" : ""}
+          </span>
         </div>
 
-        {vehicles.length > 0 ? (
-          <StockVehicleList vehicles={vehicles} />
+        {data.vehicles.length > 0 ? (
+          <>
+            <StockVehicleList vehicles={data.vehicles} />
+            <StockPagination query={query} page={data.page} pageCount={data.pageCount} />
+          </>
         ) : (
-          <div className="rounded-xl border border-dashed bg-white px-6 py-16 text-center">
-            <h2 className="text-xl font-semibold">Aucun véhicule dans le stock</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Importez une annonce ou ajoutez votre premier véhicule manuellement.
-            </p>
-            <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
-              <Button asChild>
-                <Link href="/stock/import">Importer une annonce</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/stock/new">Ajouter manuellement</Link>
-              </Button>
-            </div>
-          </div>
+          <StockEmptyState query={query} hasAnyVehicle={data.counts.all > 0} />
         )}
       </section>
     </div>
