@@ -1,16 +1,30 @@
 from __future__ import annotations
 
 import re
+import logging
 from typing import Protocol, cast
 
 import lbc
+from curl_cffi.requests.exceptions import RequestException
+from lbc.exceptions import InvalidValue, RequestError
 
 from app.mapper import AdLike
 from app.models import SearchCriteria
+from app.search_filters import build_enum_filters
+
+logger = logging.getLogger("leboncoin_bridge.gateway")
 
 
 class UpstreamError(RuntimeError):
     """The upstream client failed or returned an unusable response."""
+
+
+class ProviderCriteriaError(RuntimeError):
+    """The provider library rejected locally built search criteria."""
+
+
+class ProviderInternalError(RuntimeError):
+    """The provider failed outside a network or criteria error."""
 
 
 class LeboncoinGateway(Protocol):
@@ -34,11 +48,7 @@ class LbcGateway:
             ]
         if criteria.min_year is not None or criteria.max_year is not None:
             filters["regdate"] = [criteria.min_year or 1886, criteria.max_year or 9999]
-        if criteria.fuel:
-            filters["fuel"] = criteria.fuel
-        if criteria.gearbox:
-            filters["gearbox"] = criteria.gearbox
-
+        filters.update(build_enum_filters(criteria.fuel, criteria.gearbox))
         try:
             result = self._client.search(
                 text=f"{criteria.brand} {criteria.model}",
@@ -49,8 +59,27 @@ class LbcGateway:
                 category=lbc.Category.VEHICULES_VOITURES,
                 **filters,
             )
-        except Exception as error:
+        except InvalidValue as error:
+            logger.error(
+                "provider=lbc operation=search error_type=%s category=invalid_criteria",
+                type(error).__name__,
+            )
+            raise ProviderCriteriaError("Leboncoin search criteria were rejected") from error
+        except (RequestError, RequestException) as error:
+            status_code = getattr(getattr(error, "response", None), "status_code", None)
+            logger.error(
+                "provider=lbc operation=search error_type=%s upstream_status=%s",
+                type(error).__name__,
+                status_code,
+            )
             raise UpstreamError("Leboncoin search failed") from error
+        except Exception as error:
+            logger.error(
+                "provider=lbc operation=search error_type=%s category=internal",
+                type(error).__name__,
+            )
+            raise ProviderInternalError("Leboncoin provider failed internally") from error
+        logger.info("provider=lbc operation=search result_count=%d", len(result.ads))
         return cast(list[AdLike], result.ads)
 
     def get_listing(self, url: str) -> AdLike:

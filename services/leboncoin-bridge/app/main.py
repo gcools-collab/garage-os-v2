@@ -11,7 +11,13 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from app.config import Settings
-from app.gateway import LbcGateway, LeboncoinGateway, UpstreamError
+from app.gateway import (
+    LbcGateway,
+    LeboncoinGateway,
+    ProviderCriteriaError,
+    ProviderInternalError,
+    UpstreamError,
+)
 from app.mapper import map_listing
 from app.models import (
     ErrorResponse,
@@ -69,10 +75,30 @@ def create_app(
 
     @app.exception_handler(UpstreamError)
     async def handle_upstream_error(request: Request, error: UpstreamError) -> JSONResponse:
-        logger.warning("Upstream failure on %s: %s", request.url.path, error)
+        logger.error("provider=lbc operation=%s category=upstream", request.url.path)
         return JSONResponse(
             status_code=status.HTTP_502_BAD_GATEWAY,
             content={"error": {"code": "upstream_error", "message": str(error)}},
+        )
+
+    @app.exception_handler(ProviderCriteriaError)
+    async def handle_provider_criteria_error(
+        request: Request, error: ProviderCriteriaError
+    ) -> JSONResponse:
+        logger.error("provider=lbc operation=%s category=invalid_criteria", request.url.path)
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            content={"error": {"code": "provider_criteria_error", "message": str(error)}},
+        )
+
+    @app.exception_handler(ProviderInternalError)
+    async def handle_provider_internal_error(
+        request: Request, error: ProviderInternalError
+    ) -> JSONResponse:
+        logger.error("provider=lbc operation=%s category=internal", request.url.path)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": {"code": "provider_internal_error", "message": str(error)}},
         )
 
     @app.get("/health", response_model=HealthResponse, dependencies=[auth])

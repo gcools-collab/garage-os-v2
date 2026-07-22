@@ -7,7 +7,14 @@ function getAttribute(
   listing: LeboncoinListing,
   ...keys: string[]
 ): LeboncoinAttribute | undefined {
-  return keys.map((key) => listing.attributes[key]).find(Boolean)
+  const normalizedKeys = new Set(keys.map(normalizeKey))
+  return Object.values(listing.attributes).find((attribute) =>
+    [attribute.key, attribute.keyLabel].some((value) => value && normalizedKeys.has(normalizeKey(value)))
+  )
+}
+
+function normalizeKey(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "")
 }
 
 function getAttributeText(listing: LeboncoinListing, ...keys: string[]) {
@@ -24,6 +31,16 @@ function getAttributeNumber(listing: LeboncoinListing, ...keys: string[]) {
   return Number.isFinite(value) ? value : null
 }
 
+const INVALID_IDENTITIES = new Set(["", "leboncoin", "lbc", "unknown", "inconnu"])
+
+function credibleIdentity(...values: Array<string | null | undefined>) {
+  return values.find((value) => {
+    if (!value) return false
+    const normalized = value.trim().toLowerCase()
+    return !INVALID_IDENTITIES.has(normalized) && /[a-zÀ-ÿ0-9]/i.test(normalized)
+  })?.trim() ?? ""
+}
+
 function mapSellerType(ownerType: LeboncoinListing["ownerType"]): MarketSellerType {
   if (ownerType === "professional") return "PROFESSIONAL"
   if (ownerType === "private") return "PRIVATE"
@@ -36,15 +53,21 @@ export function mapLeboncoinListing(listing: LeboncoinListing): MarketListing {
     externalId: listing.id,
     url: listing.url,
     title: listing.subject,
-    brand: listing.brand ?? getAttributeText(listing, "brand") ?? "",
-    model: getAttributeText(listing, "model") ?? "",
-    trim: getAttributeText(listing, "vehicle_version", "version", "trim"),
+    brand: credibleIdentity(
+      getAttributeText(listing, "u_car_brand", "brand", "marque"),
+      listing.brand
+    ),
+    model: credibleIdentity(
+      getAttributeText(listing, "u_car_model", "model", "modele"),
+      listing.model
+    ),
+    trim: getAttributeText(listing, "vehicle_version", "version", "trim", "finition constructeur", "version constructeur"),
     year:
-      getAttributeNumber(listing, "regdate", "registration_year", "year") ??
-      0,
-    mileage: getAttributeNumber(listing, "mileage") ?? 0,
-    fuel: getAttributeText(listing, "fuel"),
-    gearbox: getAttributeText(listing, "gearbox"),
+      getAttributeNumber(listing, "regdate", "registration_year", "year", "annee modele") ??
+      null,
+    mileage: getAttributeNumber(listing, "mileage", "kilometrage"),
+    fuel: getAttributeText(listing, "fuel", "energie", "carburant"),
+    gearbox: getAttributeText(listing, "gearbox", "boite de vitesses"),
     powerDin: getAttributeNumber(
       listing,
       "horse_power_din",

@@ -83,21 +83,21 @@ export class MockMarketProvider implements MarketProvider {
       if (criteria.trim && !includesNormalized(listing.trim, criteria.trim)) {
         return false
       }
-      if (criteria.yearFrom !== undefined && listing.year < criteria.yearFrom) {
+      if (criteria.yearFrom !== undefined && listing.year !== null && listing.year < criteria.yearFrom) {
         return false
       }
-      if (criteria.yearTo !== undefined && listing.year > criteria.yearTo) {
+      if (criteria.yearTo !== undefined && listing.year !== null && listing.year > criteria.yearTo) {
         return false
       }
       if (
         criteria.mileageFrom !== undefined &&
-        listing.mileage < criteria.mileageFrom
+        listing.mileage !== null && listing.mileage < criteria.mileageFrom
       ) {
         return false
       }
       if (
         criteria.mileageTo !== undefined &&
-        listing.mileage > criteria.mileageTo
+        listing.mileage !== null && listing.mileage > criteria.mileageTo
       ) {
         return false
       }

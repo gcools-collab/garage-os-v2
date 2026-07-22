@@ -78,6 +78,7 @@ class LeboncoinListing(BaseModel):
     subject: str
     body: str | None = None
     brand: str | None = None
+    model: str | None = None
     url: str
     price: float | None = Field(default=None, ge=0)
     images: list[str] = Field(default_factory=list)

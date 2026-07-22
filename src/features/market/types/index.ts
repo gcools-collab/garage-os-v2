@@ -6,6 +6,9 @@ export type { MarketSearchCriteria } from "./market-search-criteria"
 export type {
   MarketAnalysis,
   MarketPriceStatistics,
+  MarketStatistics,
+  MarketPricePosition,
+  MarketPositioning,
 } from "./market-analysis"
 export type {
   PriceRecommendation,

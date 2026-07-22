@@ -22,6 +22,7 @@ export type LeboncoinListing = {
   subject: string
   body: string | null
   brand: string | null
+  model: string | null
   url: string
   price: number | null
   images: string[]
@@ -33,6 +34,8 @@ export type LeboncoinListing = {
 }
 
 export type LeboncoinSearchRequest = {
+  brand: string
+  model: string
   text: string
   category: "VEHICULES_VOITURES"
   limit?: number

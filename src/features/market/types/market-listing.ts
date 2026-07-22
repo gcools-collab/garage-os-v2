@@ -8,8 +8,8 @@ export type MarketListing = {
   brand: string
   model: string
   trim: string | null
-  year: number
-  mileage: number
+  year: number | null
+  mileage: number | null
   fuel: string | null
   gearbox: string | null
   powerDin: number | null

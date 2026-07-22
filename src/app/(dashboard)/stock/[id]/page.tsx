@@ -1,6 +1,10 @@
 import { CalendarDays, ChevronDown, Clock3, Plus } from "lucide-react"
 import { notFound } from "next/navigation"
 
+import { VehicleMarketAnalysisCard } from "@/features/market/components/vehicle-market-analysis-card"
+import { getMissingMarketCriteriaFields } from "@/features/market/services"
+import type { VehicleMarketAnalysisSnapshot } from "@/features/market/state"
+
 import {
   getCompletenessChecks,
   getCompletenessPercentage,
@@ -52,6 +56,25 @@ type VehicleImage = {
   created_at: string
 }
 
+type MarketAnalysisRow = {
+  id: string
+  comparable_count: number
+  minimum_price: number | string | null
+  maximum_price: number | string | null
+  average_price: number | string | null
+  median_price: number | string | null
+  average_mileage: number | string | null
+  average_listing_age_days: number | string | null
+  current_vehicle_price: number | string | null
+  price_difference: number | string | null
+  price_difference_percent: number | string | null
+  positioning: VehicleMarketAnalysisSnapshot["positioning"]
+  analyzed_at: string
+  raw_summary: { professionalCount?: number; privateCount?: number } | null
+}
+
+const nullableNumber = (value: number | string | null) => value == null ? null : Number(value)
+
 function formatDate(value: string | null | undefined) {
   if (!value) return "Non renseignée"
   return new Intl.DateTimeFormat("fr-FR", {
@@ -76,7 +99,8 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
       vehicle_events (*),
       vehicle_costs (*),
       vehicle_images (*),
-      marketplace_links (*)
+      marketplace_links (*),
+      vehicle_market_analyses (*)
     `)
     .eq("id", id)
     .single()
@@ -86,6 +110,18 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
   const vehicleEvents = (vehicle.vehicle_events ?? []) as VehicleTimelineEvent[]
   const vehicleImages = (vehicle.vehicle_images ?? []) as VehicleImage[]
   const marketplaceLinks = (vehicle.marketplace_links ?? []) as VehicleMarketplaceLink[]
+  const marketHistory = ((vehicle.vehicle_market_analyses ?? []) as MarketAnalysisRow[])
+    .sort((a, b) => b.analyzed_at.localeCompare(a.analyzed_at))
+    .slice(0, 5)
+    .map((row): VehicleMarketAnalysisSnapshot => ({
+      id: row.id, analyzedAt: row.analyzed_at, comparableCount: row.comparable_count,
+      minimumPrice: nullableNumber(row.minimum_price), maximumPrice: nullableNumber(row.maximum_price),
+      averagePrice: nullableNumber(row.average_price), medianPrice: nullableNumber(row.median_price),
+      averageMileage: nullableNumber(row.average_mileage), averageListingAgeDays: nullableNumber(row.average_listing_age_days),
+      professionalCount: row.raw_summary?.professionalCount ?? 0, privateCount: row.raw_summary?.privateCount ?? 0,
+      currentVehiclePrice: nullableNumber(row.current_vehicle_price), priceDifference: nullableNumber(row.price_difference),
+      priceDifferencePercent: nullableNumber(row.price_difference_percent), positioning: row.positioning,
+    }))
   const sortedImages = [...vehicleImages].sort((first, second) => {
     if (first.is_primary === second.is_primary) {
       return first.created_at.localeCompare(second.created_at)
@@ -199,6 +235,15 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
           hasCosts={vehicleCosts.length > 0}
         />
       </section>
+
+      <VehicleMarketAnalysisCard
+        vehicleId={vehicle.id}
+        missingFields={getMissingMarketCriteriaFields({
+          brand: vehicle.brand, model: vehicle.model, trim: vehicle.trim, year: vehicle.year,
+          mileage: vehicle.mileage, fuel: vehicle.fuel, gearbox: vehicle.gearbox, powerDin: vehicle.power_din,
+        })}
+        history={marketHistory}
+      />
 
       <VehicleMarketplacePresence links={marketplaceLinks} />
 

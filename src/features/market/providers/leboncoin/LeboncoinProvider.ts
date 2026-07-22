@@ -18,6 +18,8 @@ function toLeboncoinSearchRequest(
   criteria: MarketSearchCriteria
 ): LeboncoinSearchRequest {
   return {
+    brand: criteria.brand,
+    model: criteria.model,
     text: [criteria.brand, criteria.model, criteria.trim]
       .filter((value): value is string => Boolean(value))
       .join(" "),

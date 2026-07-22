@@ -1,1 +1,5 @@
 export type { MatchingEngine } from "./matching-engine"
+export { DeterministicMatchingEngine } from "./deterministic-matching-engine"
+export { prepareComparableListings } from "./comparable-listings"
+export type { MarketplaceSourceIdentity } from "./comparable-listings"
+export { getModelFamily, modelsAreComparable } from "./model-family"

@@ -23,6 +23,16 @@ class FakeLocation:
 
 
 @dataclass
+class FakeAttribute:
+    key: str
+    key_label: str | None
+    value: str | None
+    value_label: str | None
+    values: list[str] = field(default_factory=list)
+    values_label: list[str] = field(default_factory=list)
+
+
+@dataclass
 class FakeAd:
     id: int | str = 1234567890
     subject: str = "Peugeot 308"
@@ -43,6 +53,11 @@ class FakeGateway:
 
     def get_listing(self, url: str) -> AdLike:
         return FakeAd(url=url)
+
+
+class EmptyGateway(FakeGateway):
+    def search(self, criteria: SearchCriteria) -> list[AdLike]:
+        return []
 
 
 def make_client() -> TestClient:
@@ -93,6 +108,59 @@ def test_search_returns_typescript_compatible_shape() -> None:
     assert response.json()[0]["ownerType"] == "unknown"
     assert response.json()[0]["firstPublicationDate"] == "2026-01-01 10:00:00"
     assert response.json()[0]["favoriteCount"] == 12
+
+
+def test_search_prefers_vehicle_brand_and_model_attributes() -> None:
+    class VehicleGateway(FakeGateway):
+        def search(self, criteria: SearchCriteria) -> list[AdLike]:
+            return [FakeAd(brand="leboncoin", attributes={
+                "u_car_brand": FakeAttribute("u_car_brand", "Marque", "BMW", "Bmw"),
+                "u_car_model": FakeAttribute("u_car_model", "Modèle", "BMW_M3", "M3"),
+            })]
+
+    app = create_app(
+        settings=Settings(internal_api_key=API_KEY, request_timeout_seconds=2),
+        gateway=VehicleGateway(),
+    )
+    response = TestClient(app).post(
+        "/search", headers=HEADERS, json={"brand": "BMW", "model": "M3"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()[0]["brand"] == "Bmw"
+    assert response.json()[0]["model"] == "M3"
+
+
+def test_search_never_exposes_provider_name_as_vehicle_brand() -> None:
+    class InvalidBrandGateway(FakeGateway):
+        def search(self, criteria: SearchCriteria) -> list[AdLike]:
+            return [FakeAd(brand="leboncoin")]
+
+    app = create_app(
+        settings=Settings(internal_api_key=API_KEY, request_timeout_seconds=2),
+        gateway=InvalidBrandGateway(),
+    )
+    response = TestClient(app).post(
+        "/search", headers=HEADERS, json={"brand": "BMW", "model": "M3"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()[0]["brand"] is None
+
+
+def test_search_with_no_result_is_a_successful_empty_list() -> None:
+    app = create_app(
+        settings=Settings(internal_api_key=API_KEY, request_timeout_seconds=2),
+        gateway=EmptyGateway(),
+    )
+    response = TestClient(app).post(
+        "/search",
+        headers=HEADERS,
+        json={"brand": "Peugeot", "model": "308"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_listing_rejects_non_leboncoin_url() -> None:
