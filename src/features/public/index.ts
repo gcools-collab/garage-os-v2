@@ -1,10 +1,16 @@
 export { Hero } from "./components/hero"
 export {
+  CollectionCard,
+  CollectionsSection,
+  formatVehicleCount,
+} from "./components/collections"
+export {
   formatPrice,
   getVehicleMetaItems,
   LiveBadge,
   LiveButton,
   PriceDisplay,
+  SectionHeader,
   TrustItem,
   VehicleMeta,
 } from "./components/ui"

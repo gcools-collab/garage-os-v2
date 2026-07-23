@@ -1,4 +1,5 @@
 import {
+  CollectionsSection,
   getLiveHomepage,
   Hero,
   PublicLayout,
@@ -14,6 +15,7 @@ export default function LiveLandingPage() {
       theme={homepage.theme}
     >
       <Hero hero={homepage.hero} />
+      <CollectionsSection collections={homepage.collections} />
     </PublicLayout>
   )
 }

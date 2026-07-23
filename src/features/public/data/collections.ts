@@ -16,7 +16,7 @@ export const collections: Collection[] = [
     name: "Sport & Prestige",
     description: "Des modèles de caractère choisis pour les passionnés.",
     vehicleIds: ["bmw-m3-2015"],
-    coverImageUrl: "/live/collections/sport-prestige.jpg",
+    coverImageUrl: "/live/vehicles/sports-sedan-hero.png",
     active: true,
     order: 2,
   },

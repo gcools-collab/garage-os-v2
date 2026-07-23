@@ -18,7 +18,7 @@ export const garage: GarageConfig = {
       email: "contact@example.com",
     },
     socialLinks: [],
-    collectionFallbackImageUrl: "/live/collections/default.jpg",
+    collectionFallbackImageUrl: "/live/vehicles/sports-sedan-hero.png",
     modules: [
       {
         id: "catalog",
