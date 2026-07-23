@@ -31,6 +31,10 @@ import { calculateVehicleProfitability } from "@/features/vehicles/utils"
 import { VehicleForm } from "@/features/vehicles/vehicle-form"
 import { VehicleImageGallery } from "@/features/vehicles/vehicle-image-gallery"
 import { VehicleImageUpload } from "@/features/vehicles/vehicle-image-upload"
+import {
+  VehicleDocumentsSection,
+  type VehicleDocument,
+} from "@/features/vehicles/documents"
 import { createClient } from "@/lib/supabase/server"
 
 type VehiclePageProps = {
@@ -99,6 +103,7 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
       vehicle_events (*),
       vehicle_costs (*),
       vehicle_images (*),
+      vehicle_documents (*),
       marketplace_links (*),
       vehicle_market_analyses (*)
     `)
@@ -109,6 +114,7 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
   const vehicleCosts = (vehicle.vehicle_costs ?? []) as VehicleCost[]
   const vehicleEvents = (vehicle.vehicle_events ?? []) as VehicleTimelineEvent[]
   const vehicleImages = (vehicle.vehicle_images ?? []) as VehicleImage[]
+  const vehicleDocuments = (vehicle.vehicle_documents ?? []) as VehicleDocument[]
   const marketplaceLinks = (vehicle.marketplace_links ?? []) as VehicleMarketplaceLink[]
   const marketHistory = ((vehicle.vehicle_market_analyses ?? []) as MarketAnalysisRow[])
     .sort((a, b) => b.analyzed_at.localeCompare(a.analyzed_at))
@@ -246,6 +252,8 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
       />
 
       <VehicleMarketplacePresence links={marketplaceLinks} />
+
+      <VehicleDocumentsSection vehicleId={vehicle.id} documents={vehicleDocuments} />
 
       <section id="vehicle-photos" className="scroll-mt-6 rounded-xl border bg-white p-5 shadow-xs sm:p-6">
         <div className="mb-6 flex flex-col gap-5 border-b pb-5 lg:flex-row lg:items-center lg:justify-between">

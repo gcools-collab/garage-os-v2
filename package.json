@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts",
-    "test:market": "tsx --test src/features/market/market-analysis.test.ts"
+    "test:market": "tsx --test src/features/market/market-analysis.test.ts",
+    "test:documents": "tsx --test src/features/vehicles/documents/vehicle-documents.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
