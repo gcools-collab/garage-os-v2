@@ -1,6 +1,6 @@
 import {
   getLiveHomepage,
-  HeroPlaceholder,
+  Hero,
   PublicLayout,
 } from "@/features/public"
 
@@ -13,7 +13,7 @@ export default function LiveLandingPage() {
       navigation={homepage.navigation}
       theme={homepage.theme}
     >
-      <HeroPlaceholder hero={homepage.hero} />
+      <Hero hero={homepage.hero} />
     </PublicLayout>
   )
 }

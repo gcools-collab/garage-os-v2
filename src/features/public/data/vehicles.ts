@@ -14,7 +14,7 @@ export const vehicles: Vehicle[] = [
     sellingPrice: 42990,
     description: "Berline sportive sélectionnée et préparée par le garage.",
     images: [
-      { id: "bmw-m3-primary", url: "/live/vehicles/bmw-m3.jpg", alt: "BMW M3 F80", isPrimary: true },
+      { id: "bmw-m3-primary", url: "/live/vehicles/sports-sedan-hero.png", alt: "BMW M3 F80 en studio", isPrimary: true },
     ],
     public: true,
     available: true,

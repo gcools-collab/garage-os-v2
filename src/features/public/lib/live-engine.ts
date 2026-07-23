@@ -80,21 +80,19 @@ export function createLiveEngine(source: LiveEngineData) {
       source.garage.live.enabled && config.mode !== "editorial"
         ? getHeroVehicle()
         : null
-    return {
-      mode:
-        config.mode === "editorial"
-          ? "editorial"
-          : vehicle
-            ? "vehicle"
-            : "fallback",
+    const content = {
       eyebrow: config.eyebrow,
       title: config.title,
       description: config.description,
       primaryAction: clone(config.primaryAction),
       secondaryAction: clone(config.secondaryAction),
-      vehicle,
       trustItems: clone(config.trustItems),
     }
+    if (config.mode === "editorial") {
+      return { ...content, mode: "editorial", vehicle: null }
+    }
+    if (vehicle) return { ...content, mode: "vehicle", vehicle }
+    return { ...content, mode: "fallback", vehicle: null }
   }
 
   function getFeaturedVehicles(options: FeaturedVehicleOptions = {}): Vehicle[] {

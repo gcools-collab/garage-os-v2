@@ -1,4 +1,13 @@
-export { HeroPlaceholder } from "./components/hero"
+export { Hero } from "./components/hero"
+export {
+  formatPrice,
+  getVehicleMetaItems,
+  LiveBadge,
+  LiveButton,
+  PriceDisplay,
+  TrustItem,
+  VehicleMeta,
+} from "./components/ui"
 export { Footer, Header, PublicLayout } from "./components/layout"
 export {
   createLiveEngine,

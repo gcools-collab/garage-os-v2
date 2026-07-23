@@ -61,7 +61,7 @@ test("résout la couverture depuis le premier véhicule éligible", () => {
     order: 1,
   }]
   const [collection] = createLiveEngine(data).getVisibleCollections()
-  assert.equal(collection.resolvedCoverImageUrl, "/live/vehicles/bmw-m3.jpg")
+  assert.equal(collection.resolvedCoverImageUrl, "/live/vehicles/sports-sedan-hero.png")
   assert.equal(collection.availableVehicleCount, 1)
 })
 

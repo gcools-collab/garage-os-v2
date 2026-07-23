@@ -121,10 +121,10 @@ export type Vehicle = {
   brand: string
   model: string
   trim?: string
-  year: number
-  mileage: number
-  fuel: string
-  gearbox: string
+  year?: number
+  mileage?: number
+  fuel?: string
+  gearbox?: string
   sellingPrice?: number
   description?: string
   images: VehicleImage[]
@@ -159,16 +159,19 @@ export type Service = {
   order: number
 }
 
-export type HeroContent = {
-  mode: HeroMode
+type HeroContentBase = {
   eyebrow?: string
   title: string
   description?: string
   primaryAction?: NavigationItem
   secondaryAction?: NavigationItem
-  vehicle: Vehicle | null
   trustItems: TrustItem[]
 }
+
+export type HeroContent =
+  | (HeroContentBase & { mode: "vehicle"; vehicle: Vehicle })
+  | (HeroContentBase & { mode: "editorial"; vehicle: null })
+  | (HeroContentBase & { mode: "fallback"; vehicle: null })
 
 export type FeaturedVehicleOptions = {
   limit?: number
