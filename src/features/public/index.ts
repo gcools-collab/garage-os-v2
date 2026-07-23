@@ -1,5 +1,15 @@
 export { Hero } from "./components/hero"
 export {
+  VehicleCatalogActiveFilters,
+  VehicleCatalogEmptyState,
+  VehicleCatalogFilters,
+  VehicleCatalogGrid,
+  VehicleCatalogHero,
+  VehicleCatalogPage,
+  VehicleCatalogPagination,
+  VehicleCatalogToolbar,
+} from "./components/catalog"
+export {
   CollectionCard,
   CollectionsSection,
   formatVehicleCount,
@@ -36,6 +46,7 @@ export { Footer, Header, PublicLayout } from "./components/layout"
 export {
   createLiveEngine,
   getFeaturedVehicles,
+  getVehicleCatalog,
   getGarageConfig,
   getHeroContent,
   getHeroVehicle,
@@ -46,6 +57,11 @@ export {
   getVisibleCollections,
   getVisibleServices,
 } from "./lib/live-engine"
+export {
+  buildCatalogHref,
+  normalizeCatalogSearchParams,
+} from "./lib/catalog-query"
+export type { RawCatalogSearchParams } from "./lib/catalog-query"
 export { defaultTheme } from "./theme"
 export type {
   Collection,
@@ -58,6 +74,11 @@ export type {
   LiveModuleId,
   LiveVehicleDetail,
   LiveVehicleCard,
+  LiveCatalogActiveFilter,
+  LiveCatalogFilterOption,
+  LiveCatalogSort,
+  LiveVehicleCatalog,
+  LiveVehicleCatalogQuery,
   LiveVehicleDescription,
   LiveVehicleEquipmentGroup,
   LiveVehicleMetadataItem,

@@ -11,7 +11,7 @@
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts",
     "test:market": "tsx --test src/features/market/market-analysis.test.ts",
     "test:documents": "tsx --test src/features/vehicles/documents/vehicle-documents.test.ts",
-    "test:live": "tsx --test src/features/public/lib/live-engine.test.ts src/features/public/components/hero/hero.test.tsx src/features/public/components/collections/collections.test.tsx src/features/public/components/featured/featured.test.tsx src/features/public/components/vehicle-detail/vehicle-detail.test.tsx"
+    "test:live": "tsx --test src/features/public/lib/live-engine.test.ts src/features/public/lib/catalog-query.test.ts src/features/public/components/hero/hero.test.tsx src/features/public/components/collections/collections.test.tsx src/features/public/components/featured/featured.test.tsx src/features/public/components/vehicle-detail/vehicle-detail.test.tsx src/features/public/components/catalog/catalog.test.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

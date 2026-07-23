@@ -1,4 +1,5 @@
 import { collections, garage, services, vehicles } from "../data"
+import { buildCatalogHref } from "./catalog-query"
 import type {
   FeaturedVehicleOptions,
   GarageConfig,
@@ -8,6 +9,10 @@ import type {
   LiveModuleConfig,
   LiveContactAction,
   LiveVehicleCard,
+  LiveCatalogFilterOption,
+  LiveCatalogSort,
+  LiveVehicleCatalog,
+  LiveVehicleCatalogQuery,
   LiveVehicleDescription,
   LiveVehicleDetail,
   LiveVehicleEquipmentGroup,
@@ -22,6 +27,7 @@ import type {
 
 const DEFAULT_FEATURED_LIMIT = 6
 const SIMILAR_VEHICLE_LIMIT = 3
+const CATALOG_PAGE_SIZE = 12
 
 function clone<T>(value: T): T {
   return structuredClone(value)
@@ -329,6 +335,166 @@ export function createLiveEngine(source: LiveEngineData) {
       .map(({ vehicle }) => prepareVehicleCard(vehicle))
   }
 
+  function getVehicleCatalog(
+    requestedQuery: LiveVehicleCatalogQuery = {}
+  ): LiveVehicleCatalog {
+    const availableVehicles = source.vehicles.filter(isPubliclyAvailable)
+    const optionList = (select: (vehicle: Vehicle) => string | undefined) => {
+      const counts = new Map<string, { label: string; count: number }>()
+      for (const vehicle of availableVehicles) {
+        const label = cleanText(select(vehicle))
+        if (!label) continue
+        const key = label.toLocaleLowerCase("fr-FR")
+        const current = counts.get(key)
+        counts.set(key, { label: current?.label ?? label, count: (current?.count ?? 0) + 1 })
+      }
+      return [...counts.values()]
+        .sort((first, second) => first.label.localeCompare(second.label, "fr-FR"))
+        .map(({ label, count }): LiveCatalogFilterOption => ({ value: label, label, count }))
+    }
+    const brands = optionList((vehicle) => vehicle.brand)
+    const fuels = optionList((vehicle) => vehicle.fuel)
+    const gearboxes = optionList((vehicle) => vehicle.gearbox)
+    const validCollection = source.collections.find(
+      (collection) => collection.active && collection.slug === cleanText(requestedQuery.collection)
+    )
+    const findOption = (options: LiveCatalogFilterOption[], value?: string) =>
+      options.find((option) => option.value.toLocaleLowerCase("fr-FR") === cleanText(value)?.toLocaleLowerCase("fr-FR"))
+    const brand = findOption(brands, requestedQuery.brand)?.value
+    const fuel = findOption(fuels, requestedQuery.fuel)?.value
+    const gearbox = findOption(gearboxes, requestedQuery.gearbox)?.value
+    const minPrice = requestedQuery.minPrice !== undefined && requestedQuery.minPrice >= 0
+      ? requestedQuery.minPrice
+      : undefined
+    const maxPrice = requestedQuery.maxPrice !== undefined && requestedQuery.maxPrice >= 0
+      ? requestedQuery.maxPrice
+      : undefined
+    const normalizedMinPrice =
+      minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice
+        ? undefined
+        : minPrice
+    const sorts: LiveCatalogSort[] = ["recommended", "price-asc", "price-desc", "newest", "mileage-asc"]
+    const sort = sorts.includes(requestedQuery.sort ?? "recommended")
+      ? requestedQuery.sort ?? "recommended"
+      : "recommended"
+    const query: LiveVehicleCatalogQuery = {
+      collection: validCollection?.slug,
+      brand,
+      fuel,
+      gearbox,
+      minPrice: normalizedMinPrice,
+      maxPrice,
+      sort,
+    }
+    let matching = availableVehicles.filter((vehicle) => {
+      if (validCollection && !vehicle.collectionIds.includes(validCollection.id)) return false
+      if (brand && vehicle.brand.toLocaleLowerCase("fr-FR") !== brand.toLocaleLowerCase("fr-FR")) return false
+      if (fuel && vehicle.fuel?.toLocaleLowerCase("fr-FR") !== fuel.toLocaleLowerCase("fr-FR")) return false
+      if (gearbox && vehicle.gearbox?.toLocaleLowerCase("fr-FR") !== gearbox.toLocaleLowerCase("fr-FR")) return false
+      if (normalizedMinPrice !== undefined && (vehicle.sellingPrice === undefined || vehicle.sellingPrice < normalizedMinPrice)) return false
+      if (maxPrice !== undefined && (vehicle.sellingPrice === undefined || vehicle.sellingPrice > maxPrice)) return false
+      return true
+    })
+    const nullableNumber = (
+      first: number | undefined,
+      second: number | undefined,
+      direction = 1
+    ) => first === undefined
+      ? second === undefined ? 0 : 1
+      : second === undefined ? -1 : (first - second) * direction
+    matching = [...matching].sort((first, second) => {
+      if (sort === "price-asc") return nullableNumber(first.sellingPrice, second.sellingPrice) || first.id.localeCompare(second.id)
+      if (sort === "price-desc") return nullableNumber(first.sellingPrice, second.sellingPrice, -1) || first.id.localeCompare(second.id)
+      if (sort === "newest") return Date.parse(second.addedAt) - Date.parse(first.addedAt) || first.id.localeCompare(second.id)
+      if (sort === "mileage-asc") return nullableNumber(first.mileage, second.mileage) || first.id.localeCompare(second.id)
+      return byVehiclePriority(first, second)
+    })
+    const totalItems = matching.length
+    const totalPages = Math.max(1, Math.ceil(totalItems / CATALOG_PAGE_SIZE))
+    const requestedPage = requestedQuery.page && requestedQuery.page >= 1
+      ? Math.floor(requestedQuery.page)
+      : 1
+    const page = Math.min(requestedPage, totalPages)
+    query.page = page > 1 ? page : undefined
+    const vehicles = matching
+      .slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE)
+      .map(prepareVehicleCard)
+    const activeFilters = [
+      validCollection
+        ? { id: "collection", label: "Collection", value: validCollection.name, removeHref: buildCatalogHref(query, { collection: undefined, page: undefined }) }
+        : null,
+      brand ? { id: "brand", label: "Marque", value: brand, removeHref: buildCatalogHref(query, { brand: undefined, page: undefined }) } : null,
+      fuel ? { id: "fuel", label: "Carburant", value: fuel, removeHref: buildCatalogHref(query, { fuel: undefined, page: undefined }) } : null,
+      gearbox ? { id: "gearbox", label: "Boîte", value: gearbox, removeHref: buildCatalogHref(query, { gearbox: undefined, page: undefined }) } : null,
+      normalizedMinPrice !== undefined ? { id: "minPrice", label: "Prix minimum", value: `${new Intl.NumberFormat("fr-FR").format(normalizedMinPrice)} €`, removeHref: buildCatalogHref(query, { minPrice: undefined, page: undefined }) } : null,
+      maxPrice !== undefined ? { id: "maxPrice", label: "Prix maximum", value: `${new Intl.NumberFormat("fr-FR").format(maxPrice)} €`, removeHref: buildCatalogHref(query, { maxPrice: undefined, page: undefined }) } : null,
+    ].filter((item): item is NonNullable<typeof item> => item !== null)
+    const technicalFilter = Boolean(brand || fuel || gearbox || normalizedMinPrice !== undefined || maxPrice !== undefined || sort !== "recommended" || page > 1)
+    const collectionTitle = validCollection ? `Collection ${validCollection.name}` : "Tous nos véhicules"
+    const collectionDescription = cleanText(validCollection?.description) ?? "Découvrez les véhicules actuellement disponibles."
+    const canonicalPath = validCollection
+      ? buildCatalogHref({ collection: validCollection.slug }, {})
+      : "/vehicles"
+    const sortLabels: Record<LiveCatalogSort, string> = {
+      recommended: "Recommandés",
+      "price-asc": "Prix croissant",
+      "price-desc": "Prix décroissant",
+      newest: "Plus récents",
+      "mileage-asc": "Kilométrage croissant",
+    }
+    const prices = availableVehicles.flatMap((vehicle) => vehicle.sellingPrice === undefined ? [] : [vehicle.sellingPrice])
+    return {
+      heading: {
+        eyebrow: validCollection ? "Collection" : "Catalogue",
+        title: collectionTitle,
+        description: collectionDescription,
+        breadcrumbs: [
+          { id: "home", label: "Accueil", href: "/" },
+          { id: "vehicles", label: "Véhicules", href: "/vehicles" },
+          ...(validCollection ? [{ id: "collection", label: validCollection.name, href: canonicalPath }] : []),
+        ],
+      },
+      vehicles,
+      filters: {
+        brands,
+        fuels,
+        gearboxes,
+        priceRange: {
+          min: prices.length ? Math.min(...prices) : null,
+          max: prices.length ? Math.max(...prices) : null,
+        },
+        sortOptions: sorts.map((value) => ({
+          value,
+          label: sortLabels[value],
+          href: buildCatalogHref(query, { sort: value, page: undefined }),
+        })),
+        formValues: { collection: validCollection?.slug, brand, fuel, gearbox, minPrice: normalizedMinPrice, maxPrice, sort },
+        resetHref: "/vehicles",
+      },
+      activeFilters,
+      resultCount: totalItems,
+      emptyState: totalItems === 0 ? {
+        title: "Aucun véhicule ne correspond à vos critères",
+        description: "Essayez de modifier ou de supprimer certains filtres.",
+        resetHref: activeFilters.length ? "/vehicles" : undefined,
+      } : null,
+      pagination: {
+        page,
+        pageSize: CATALOG_PAGE_SIZE,
+        totalItems,
+        totalPages,
+        previousHref: page > 1 ? buildCatalogHref(query, { page: page - 1 }) : null,
+        nextHref: page < totalPages ? buildCatalogHref(query, { page: page + 1 }) : null,
+      },
+      seo: {
+        title: `${collectionTitle} | ${source.garage.live.siteName}`,
+        description: collectionDescription,
+        canonicalPath,
+        noIndex: technicalFilter,
+      },
+    }
+  }
+
   function getGarageConfig(): GarageConfig {
     return clone(source.garage)
   }
@@ -421,6 +587,7 @@ export function createLiveEngine(source: LiveEngineData) {
             collection.coverImageUrl ??
             primaryImage?.url ??
             source.garage.live.collectionFallbackImageUrl,
+          catalogHref: buildCatalogHref({ collection: collection.slug }, {}),
         }
       })
       .filter((collection): collection is VisibleCollection => collection !== null)
@@ -511,6 +678,7 @@ export function createLiveEngine(source: LiveEngineData) {
     getPublicVehicleSlugs,
     getVehicleDetailBySlug,
     getSimilarVehicles,
+    getVehicleCatalog,
     getNavigation,
     getLiveHomepage,
   }
@@ -527,4 +695,5 @@ export const getVisibleServices = defaultEngine.getVisibleServices
 export const getPublicVehicleSlugs = defaultEngine.getPublicVehicleSlugs
 export const getVehicleDetailBySlug = defaultEngine.getVehicleDetailBySlug
 export const getSimilarVehicles = defaultEngine.getSimilarVehicles
+export const getVehicleCatalog = defaultEngine.getVehicleCatalog
 export const getLiveHomepage = defaultEngine.getLiveHomepage

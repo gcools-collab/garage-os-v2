@@ -36,7 +36,7 @@ export function CollectionCard({
           </p>
         )}
         <Link
-          href={`/vehicles?collection=${encodeURIComponent(collection.slug)}`}
+          href={collection.catalogHref}
           className="mt-6 inline-flex w-fit items-center gap-2 rounded-[var(--live-control-radius)] text-sm font-semibold text-[var(--live-foreground)] underline-offset-4 transition duration-200 lg:hover:gap-3 lg:hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)] motion-reduce:transition-none"
           aria-label={`Découvrir la collection ${collection.name}`}
         >

@@ -201,6 +201,7 @@ export type FeaturedVehicleOptions = {
 export type VisibleCollection = Collection & {
   availableVehicleCount: number
   resolvedCoverImageUrl: string
+  catalogHref: string
 }
 
 export type LiveGarageViewModel = {
@@ -308,6 +309,81 @@ export type LiveVehicleCard = {
   metadata: LiveVehicleMetadataItem[]
   badge?: LiveVehicleBadge
   href: string
+}
+
+export type LiveCatalogSort =
+  | "recommended"
+  | "price-asc"
+  | "price-desc"
+  | "newest"
+  | "mileage-asc"
+
+export type LiveVehicleCatalogQuery = {
+  collection?: string
+  brand?: string
+  fuel?: string
+  gearbox?: string
+  minPrice?: number
+  maxPrice?: number
+  sort?: LiveCatalogSort
+  page?: number
+}
+
+export type LiveCatalogFilterOption = {
+  value: string
+  label: string
+  count: number
+}
+
+export type LiveCatalogActiveFilter = {
+  id: string
+  label: string
+  value: string
+  removeHref: string
+}
+
+export type LiveVehicleCatalog = {
+  heading: {
+    eyebrow: string
+    title: string
+    description: string
+    breadcrumbs: NavigationItem[]
+  }
+  vehicles: LiveVehicleCard[]
+  filters: {
+    brands: LiveCatalogFilterOption[]
+    fuels: LiveCatalogFilterOption[]
+    gearboxes: LiveCatalogFilterOption[]
+    priceRange: { min: number | null; max: number | null }
+    sortOptions: Array<{ value: LiveCatalogSort; label: string; href: string }>
+    formValues: {
+      collection?: string
+      brand?: string
+      fuel?: string
+      gearbox?: string
+      minPrice?: number
+      maxPrice?: number
+      sort: LiveCatalogSort
+    }
+    resetHref: string
+  }
+  activeFilters: LiveCatalogActiveFilter[]
+  resultCount: number
+  emptyState: { title: string; description: string; resetHref?: string } | null
+  pagination: {
+    page: number
+    pageSize: number
+    totalItems: number
+    totalPages: number
+    previousHref: string | null
+    nextHref: string | null
+  }
+  seo: {
+    title: string
+    description: string
+    canonicalPath: string
+    noIndex: boolean
+  }
 }
 
 export type LiveVehicleDetail = {

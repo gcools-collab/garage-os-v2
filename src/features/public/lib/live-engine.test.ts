@@ -275,3 +275,101 @@ test("ne mute pas les sources pendant la préparation des similaires", () => {
   createLiveEngine(data).getSimilarVehicles(data.vehicles[0].id)
   assert.deepEqual(data, before)
 })
+
+test("catalogue exclut les véhicules privés et indisponibles et retourne des cartes", () => {
+  const data = createFixture()
+  data.vehicles = [
+    ...data.vehicles,
+    { ...structuredClone(data.vehicles[0]), id: "private", slug: "private", public: false },
+    { ...structuredClone(data.vehicles[0]), id: "unavailable", slug: "unavailable", available: false },
+  ]
+  const catalog = createLiveEngine(data).getVehicleCatalog()
+  assert.equal(catalog.resultCount, 3)
+  assert.equal(catalog.vehicles.every((vehicle) => "displayName" in vehicle && !("brand" in vehicle)), true)
+})
+
+test("catalogue filtre une collection valide et ignore une collection inconnue", () => {
+  const engine = createLiveEngine(createFixture())
+  const collection = engine.getVehicleCatalog({ collection: "sport-prestige" })
+  assert.deepEqual(collection.vehicles.map((vehicle) => vehicle.id), ["bmw-m3-2015"])
+  assert.match(collection.heading.title, /Sport/)
+  assert.equal(collection.seo.noIndex, false)
+  assert.equal(engine.getVehicleCatalog({ collection: "inconnue" }).resultCount, 3)
+})
+
+test("catalogue cumule marque, carburant et boîte", () => {
+  const catalog = createLiveEngine(createFixture()).getVehicleCatalog({
+    brand: "BMW",
+    fuel: "Essence",
+    gearbox: "Automatique",
+  })
+  assert.deepEqual(catalog.vehicles.map((vehicle) => vehicle.id), ["bmw-m3-2015"])
+  assert.equal(catalog.activeFilters.length, 3)
+  assert.equal(catalog.seo.noIndex, true)
+})
+
+test("catalogue applique les bornes de prix et ignore une borne incohérente", () => {
+  const engine = createLiveEngine(createFixture())
+  assert.deepEqual(
+    engine.getVehicleCatalog({ minPrice: 20000, maxPrice: 30000 }).vehicles.map((vehicle) => vehicle.id),
+    ["peugeot-308-gt-line"]
+  )
+  assert.equal(engine.getVehicleCatalog({ minPrice: 50000, maxPrice: 20000 }).resultCount, 1)
+})
+
+test("catalogue prépare tous les tris déterministes", () => {
+  const engine = createLiveEngine(createFixture())
+  assert.equal(engine.getVehicleCatalog().vehicles[0].id, "bmw-m3-2015")
+  assert.equal(engine.getVehicleCatalog({ sort: "price-asc" }).vehicles[0].id, "renault-clio-rs-line")
+  assert.equal(engine.getVehicleCatalog({ sort: "price-desc" }).vehicles[0].id, "bmw-m3-2015")
+  assert.equal(engine.getVehicleCatalog({ sort: "newest" }).vehicles[0].id, "peugeot-308-gt-line")
+  assert.equal(engine.getVehicleCatalog({ sort: "mileage-asc" }).vehicles[0].id, "renault-clio-rs-line")
+})
+
+test("catalogue prépare les options dédupliquées et leurs compteurs globaux", () => {
+  const data = createFixture()
+  data.vehicles = [...data.vehicles, { ...structuredClone(data.vehicles[0]), id: "bmw-2", slug: "bmw-2" }]
+  const filters = createLiveEngine(data).getVehicleCatalog({ fuel: "Diesel" }).filters
+  assert.deepEqual(filters.brands.find((option) => option.value === "BMW"), {
+    value: "BMW",
+    label: "BMW",
+    count: 2,
+  })
+  assert.equal(filters.fuels.filter((option) => option.value === "Essence").length, 1)
+})
+
+test("catalogue prépare les URLs de retrait et la remise à zéro", () => {
+  const catalog = createLiveEngine(createFixture()).getVehicleCatalog({ brand: "BMW", fuel: "Essence" })
+  assert.equal(catalog.activeFilters.find((filter) => filter.id === "brand")?.removeHref, "/vehicles?fuel=Essence")
+  assert.equal(catalog.filters.resetHref, "/vehicles")
+})
+
+test("catalogue pagine et rabat une page trop élevée sur la dernière", () => {
+  const data = createFixture()
+  const base = data.vehicles[0]
+  data.vehicles = Array.from({ length: 13 }, (_, index) => ({
+    ...structuredClone(base),
+    id: `vehicle-${index}`,
+    slug: `vehicle-${index}`,
+  }))
+  const catalog = createLiveEngine(data).getVehicleCatalog({ page: 99 })
+  assert.equal(catalog.pagination.page, 2)
+  assert.equal(catalog.pagination.totalPages, 2)
+  assert.equal(catalog.vehicles.length, 1)
+  assert.ok(catalog.pagination.previousHref)
+})
+
+test("catalogue prépare un état vide et le SEO de base", () => {
+  const engine = createLiveEngine(createFixture())
+  assert.equal(engine.getVehicleCatalog().seo.noIndex, false)
+  const empty = engine.getVehicleCatalog({ minPrice: 100000 })
+  assert.equal(empty.resultCount, 0)
+  assert.match(empty.emptyState?.title ?? "", /Aucun véhicule/)
+})
+
+test("catalogue ne mute aucune donnée source", () => {
+  const data = createFixture()
+  const before = structuredClone(data)
+  createLiveEngine(data).getVehicleCatalog({ brand: "BMW", sort: "price-desc" })
+  assert.deepEqual(data, before)
+})

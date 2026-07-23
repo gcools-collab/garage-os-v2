@@ -16,6 +16,7 @@ const collections: VisibleCollection[] = [
     order: 1,
     availableVehicleCount: 1,
     resolvedCoverImageUrl: "/live/vehicles/sports-sedan-hero.png",
+    catalogHref: "/vehicles?collection=sport-prestige",
   },
   {
     id: "selection",
@@ -26,6 +27,7 @@ const collections: VisibleCollection[] = [
     order: 2,
     availableVehicleCount: 2,
     resolvedCoverImageUrl: "/live/collections/fallback.jpg",
+    catalogHref: "/vehicles?collection=selection",
   },
 ]
 
