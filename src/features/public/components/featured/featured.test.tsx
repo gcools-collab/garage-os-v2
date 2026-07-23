@@ -1,34 +1,27 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
-import type { Vehicle } from "../../types"
-import { formatPrice, getVehicleMetaItems } from "../ui"
+import type { LiveVehicleCard } from "../../types"
+import { formatPrice } from "../ui"
 import { FeaturedVehiclesSection } from "./FeaturedVehiclesSection"
 
-const vehicle: Vehicle = {
+const vehicle: LiveVehicleCard = {
   id: "bmw-m3",
   slug: "bmw-m3-f80",
-  brand: "BMW",
-  model: "M3",
-  trim: "F80",
-  year: 2019,
-  mileage: 72000,
-  fuel: "Essence",
-  gearbox: "Automatique",
-  sellingPrice: 39990,
-  images: [],
-  displayImage: {
+  displayName: "BMW M3 F80",
+  price: 39990,
+  metadata: [
+    { id: "year", label: "Année", value: "2019" },
+    { id: "mileage", label: "Kilométrage", value: "72 000 km" },
+  ],
+  image: {
     id: "display",
     url: "/live/vehicles/sports-sedan-hero.png",
     alt: "BMW M3 F80",
     isPrimary: true,
   },
-  public: true,
-  available: true,
-  featured: true,
-  featuredPriority: 100,
-  addedAt: "2026-07-23T00:00:00.000Z",
-  collectionIds: [],
+  badge: { label: "Coup de cœur", icon: "heart" },
+  href: "/vehicles/bmw-m3-f80",
 }
 
 test("ne rend aucune section lorsque la liste est vide", () => {
@@ -48,7 +41,7 @@ test("affiche le badge uniquement pour un véhicule featured", () => {
     <FeaturedVehiclesSection vehicles={[vehicle]} />
   )
   const regularMarkup = renderToStaticMarkup(
-    <FeaturedVehiclesSection vehicles={[{ ...vehicle, featured: false }]} />
+    <FeaturedVehiclesSection vehicles={[{ ...vehicle, badge: undefined }]} />
   )
   assert.match(featuredMarkup, /Coup de cœur/)
   assert.doesNotMatch(regularMarkup, /Coup de cœur/)
@@ -66,9 +59,9 @@ test("réutilise la présentation du prix et des métadonnées", () => {
   const markup = renderToStaticMarkup(
     <FeaturedVehiclesSection vehicles={[vehicle]} />
   )
-  assert.ok(markup.includes(formatPrice(vehicle.sellingPrice)))
-  for (const item of getVehicleMetaItems(vehicle)) {
-    assert.ok(markup.includes(item.label))
+  assert.ok(markup.includes(formatPrice(vehicle.price ?? undefined)))
+  for (const item of vehicle.metadata) {
+    assert.ok(markup.includes(item.value))
   }
 })
 
@@ -80,9 +73,9 @@ test("affiche directement l’image préparée par le moteur", () => {
 })
 
 test("utilise l’image fallback déjà résolue sans la recalculer", () => {
-  const fallbackVehicle: Vehicle = {
+  const fallbackVehicle: LiveVehicleCard = {
     ...vehicle,
-    displayImage: {
+    image: {
       id: "fallback",
       url: "/live/vehicles/fallback.png",
       alt: "Visuel véhicule",

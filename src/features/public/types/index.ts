@@ -102,6 +102,7 @@ export type LiveSiteConfig = {
   socialLinks: NavigationItem[]
   collectionFallbackImageUrl: string
   vehicleFallbackImageUrl: string
+  vehicleTrustItems: VehicleTrustItemConfig[]
 }
 
 export type GarageConfig = {
@@ -129,6 +130,21 @@ export type Vehicle = {
   gearbox?: string
   sellingPrice?: number
   description?: string
+  highlights?: string[]
+  fiscalPower?: number
+  dinPower?: number
+  displacement?: number
+  co2Emissions?: number
+  doors?: number
+  seats?: number
+  exteriorColor?: string
+  interiorColor?: string
+  firstRegistrationDate?: string
+  ownersCount?: number
+  euroStandard?: string
+  critAir?: string
+  reference?: string
+  equipmentGroups?: VehicleEquipmentGroup[]
   images: VehicleImage[]
   displayImage?: VehicleImage | null
   public: boolean
@@ -203,7 +219,7 @@ export type LiveHomepage = {
   navigation: NavigationItem[]
   hero: HeroContent
   collections: VisibleCollection[]
-  featuredVehicles: Vehicle[]
+  featuredVehicles: LiveVehicleCard[]
   services: Service[]
   enabledModules: LiveModuleId[]
 }
@@ -223,6 +239,77 @@ export type LiveVehicleMetadataItem = {
   value: string
 }
 
+export type VehicleEquipmentGroup = {
+  id: string
+  label: string
+  items: string[]
+}
+
+export type LiveTrustIcon =
+  | "shield"
+  | "inspection"
+  | "trade-in"
+  | "delivery"
+  | "history"
+  | "support"
+
+export type VehicleTrustItemConfig = {
+  id: string
+  enabled: boolean
+  icon: LiveTrustIcon
+  title: string
+  description: string
+}
+
+export type LiveContactAction = NavigationItem & {
+  variant: "primary" | "secondary"
+}
+
+export type LiveVehicleDescription = {
+  introduction?: string
+  highlights: string[]
+}
+
+export type LiveVehicleSpecificationItem = {
+  label: string
+  value: string
+}
+
+export type LiveVehicleSpecificationGroup = {
+  id: string
+  title: string
+  items: LiveVehicleSpecificationItem[]
+}
+
+export type LiveVehicleEquipmentGroup = {
+  id: string
+  title: string
+  items: string[]
+}
+
+export type LiveVehicleTrustItem = {
+  id: string
+  title: string
+  description: string
+  icon: LiveTrustIcon
+}
+
+export type LiveVehicleBadge = {
+  label: string
+  icon: "heart"
+}
+
+export type LiveVehicleCard = {
+  id: string
+  slug: string
+  displayName: string
+  image: VehicleImage | null
+  price: number | null
+  metadata: LiveVehicleMetadataItem[]
+  badge?: LiveVehicleBadge
+  href: string
+}
+
 export type LiveVehicleDetail = {
   vehicle: Vehicle
   displayName: string
@@ -232,7 +319,12 @@ export type LiveVehicleDetail = {
   primaryImage: VehicleImage | null
   metadata: LiveVehicleMetadataItem[]
   status: LiveVehicleStatus
-  contactActions: NavigationItem[]
+  contactActions: LiveContactAction[]
+  description: LiveVehicleDescription
+  specifications: LiveVehicleSpecificationGroup[]
+  equipmentGroups: LiveVehicleEquipmentGroup[]
+  trustItems: LiveVehicleTrustItem[]
+  similarVehicles: LiveVehicleCard[]
   seo: {
     title: string
     description: string

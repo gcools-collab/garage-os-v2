@@ -6,8 +6,14 @@ import type {
   LiveEngineData,
   LiveHomepage,
   LiveModuleConfig,
+  LiveContactAction,
+  LiveVehicleCard,
+  LiveVehicleDescription,
   LiveVehicleDetail,
+  LiveVehicleEquipmentGroup,
   LiveVehicleMetadataItem,
+  LiveVehicleSpecificationGroup,
+  LiveVehicleTrustItem,
   NavigationItem,
   Service,
   Vehicle,
@@ -15,6 +21,7 @@ import type {
 } from "../types"
 
 const DEFAULT_FEATURED_LIMIT = 6
+const SIMILAR_VEHICLE_LIMIT = 3
 
 function clone<T>(value: T): T {
   return structuredClone(value)
@@ -35,6 +42,25 @@ function byOrder<T extends { order: number; id: string }>(first: T, second: T) {
 
 function isPubliclyAvailable(vehicle: Vehicle) {
   return vehicle.public && vehicle.available
+}
+
+function cleanText(value?: string) {
+  const cleaned = value?.replace(/\s+/g, " ").trim()
+  return cleaned || undefined
+}
+
+function uniqueCleanItems(items: readonly string[], limit?: number) {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const item of items) {
+    const cleaned = cleanText(item)
+    const key = cleaned?.toLocaleLowerCase("fr-FR")
+    if (!cleaned || !key || seen.has(key)) continue
+    seen.add(key)
+    result.push(cleaned)
+    if (limit !== undefined && result.length >= limit) break
+  }
+  return result
 }
 
 export function createLiveEngine(source: LiveEngineData) {
@@ -92,12 +118,12 @@ export function createLiveEngine(source: LiveEngineData) {
     ].filter((item): item is LiveVehicleMetadataItem => item !== null)
   }
 
-  function prepareContactActions(): NavigationItem[] {
+  function prepareContactActions(): LiveContactAction[] {
     const contact = source.garage.live.contact
     const phone = contact.phone?.replace(/[^\d+]/g, "")
     const email = contact.email?.trim()
     const whatsapp = contact.whatsapp?.replace(/\D/g, "")
-    return [
+    const actions = [
       phone
         ? { id: "phone", label: "Appeler le garage", href: `tel:${phone}` }
         : null,
@@ -112,7 +138,11 @@ export function createLiveEngine(source: LiveEngineData) {
             external: true,
           }
         : null,
-    ].filter((action): action is NavigationItem => action !== null)
+    ].filter((action): action is NonNullable<typeof action> => action !== null)
+    return actions.map((action, index) => ({
+      ...action,
+      variant: index === 0 ? "primary" : "secondary",
+    }))
   }
 
   function prepareVehicle(vehicle: Vehicle): Vehicle {
@@ -127,6 +157,176 @@ export function createLiveEngine(source: LiveEngineData) {
         isPrimary: false,
       }
     return { ...clone(vehicle), displayImage: clone(resolvedImage) }
+  }
+
+  function prepareVehicleCard(vehicle: Vehicle): LiveVehicleCard {
+    const prepared = prepareVehicle(vehicle)
+    return {
+      id: prepared.id,
+      slug: prepared.slug,
+      displayName: [prepared.brand, prepared.model, prepared.trim]
+        .map(cleanText)
+        .filter(Boolean)
+        .join(" "),
+      image: prepared.displayImage ? clone(prepared.displayImage) : null,
+      price: prepared.sellingPrice ?? null,
+      metadata: prepareDetailMetadata(prepared).filter((item) => item.id !== "trim"),
+      badge: prepared.featured
+        ? { label: "Coup de cœur", icon: "heart" }
+        : undefined,
+      href: `/vehicles/${encodeURIComponent(prepared.slug)}`,
+    }
+  }
+
+  function prepareDescription(vehicle: Vehicle): LiveVehicleDescription {
+    return {
+      introduction: cleanText(vehicle.description),
+      highlights: uniqueCleanItems(vehicle.highlights ?? [], 6),
+    }
+  }
+
+  function prepareSpecifications(vehicle: Vehicle): LiveVehicleSpecificationGroup[] {
+    const formatNumber = (value: number) => new Intl.NumberFormat("fr-FR").format(value)
+    const formatDate = (value?: string) => {
+      const cleaned = cleanText(value)
+      if (!cleaned) return undefined
+      const date = new Date(`${cleaned}T00:00:00`)
+      return Number.isNaN(date.getTime())
+        ? undefined
+        : new Intl.DateTimeFormat("fr-FR").format(date)
+    }
+    const firstRegistrationDate = formatDate(vehicle.firstRegistrationDate)
+    const groups: LiveVehicleSpecificationGroup[] = [
+      {
+        id: "general",
+        title: "Informations générales",
+        items: [
+          vehicle.year ? { label: "Année", value: String(vehicle.year) } : null,
+          vehicle.mileage !== undefined
+            ? { label: "Kilométrage", value: `${formatNumber(vehicle.mileage)} km` }
+            : null,
+          cleanText(vehicle.exteriorColor)
+            ? { label: "Couleur extérieure", value: cleanText(vehicle.exteriorColor)! }
+            : null,
+          cleanText(vehicle.interiorColor)
+            ? { label: "Couleur intérieure", value: cleanText(vehicle.interiorColor)! }
+            : null,
+        ].filter((item): item is { label: string; value: string } => item !== null),
+      },
+      {
+        id: "engine",
+        title: "Motorisation",
+        items: [
+          cleanText(vehicle.fuel)
+            ? { label: "Carburant", value: cleanText(vehicle.fuel)! }
+            : null,
+          cleanText(vehicle.gearbox)
+            ? { label: "Boîte de vitesses", value: cleanText(vehicle.gearbox)! }
+            : null,
+          vehicle.dinPower !== undefined
+            ? { label: "Puissance DIN", value: `${formatNumber(vehicle.dinPower)} ch` }
+            : null,
+          vehicle.fiscalPower !== undefined
+            ? { label: "Puissance fiscale", value: `${formatNumber(vehicle.fiscalPower)} CV` }
+            : null,
+          vehicle.displacement !== undefined
+            ? { label: "Cylindrée", value: `${formatNumber(vehicle.displacement)} cm³` }
+            : null,
+          vehicle.co2Emissions !== undefined
+            ? { label: "Émissions CO₂", value: `${formatNumber(vehicle.co2Emissions)} g/km` }
+            : null,
+        ].filter((item): item is { label: string; value: string } => item !== null),
+      },
+      {
+        id: "capacity",
+        title: "Dimensions et capacité",
+        items: [
+          vehicle.doors !== undefined
+            ? { label: "Portes", value: String(vehicle.doors) }
+            : null,
+          vehicle.seats !== undefined
+            ? { label: "Places", value: String(vehicle.seats) }
+            : null,
+        ].filter((item): item is { label: string; value: string } => item !== null),
+      },
+      {
+        id: "administrative",
+        title: "Historique administratif",
+        items: [
+          firstRegistrationDate
+            ? {
+                label: "Première mise en circulation",
+                value: firstRegistrationDate,
+              }
+            : null,
+          vehicle.ownersCount !== undefined
+            ? { label: "Nombre de propriétaires", value: String(vehicle.ownersCount) }
+            : null,
+          cleanText(vehicle.euroStandard)
+            ? { label: "Norme Euro", value: cleanText(vehicle.euroStandard)! }
+            : null,
+          cleanText(vehicle.critAir)
+            ? { label: "Crit’Air", value: cleanText(vehicle.critAir)! }
+            : null,
+          cleanText(vehicle.reference)
+            ? { label: "Référence", value: cleanText(vehicle.reference)! }
+            : null,
+        ].filter((item): item is { label: string; value: string } => item !== null),
+      },
+    ]
+    return groups.filter((group) => group.items.length > 0)
+  }
+
+  function prepareEquipment(vehicle: Vehicle): LiveVehicleEquipmentGroup[] {
+    return (vehicle.equipmentGroups ?? [])
+      .map((group) => ({
+        id: group.id,
+        title: cleanText(group.label) ?? "",
+        items: uniqueCleanItems(group.items),
+      }))
+      .filter((group) => group.title && group.items.length > 0)
+  }
+
+  function prepareTrustItems(): LiveVehicleTrustItem[] {
+    return source.garage.live.vehicleTrustItems
+      .filter((item) => item.enabled)
+      .flatMap((item) => {
+        const title = cleanText(item.title)
+        const description = cleanText(item.description)
+        return title && description
+          ? [{ id: item.id, icon: item.icon, title, description }]
+          : []
+      })
+      .map(clone)
+  }
+
+  function getSimilarVehicles(vehicleId: string): LiveVehicleCard[] {
+    const current = source.vehicles.find((vehicle) => vehicle.id === vehicleId)
+    if (!current) return []
+    const currentCollections = new Set(current.collectionIds)
+    const currentPrice = current.sellingPrice
+    return source.vehicles
+      .filter((vehicle) => vehicle.id !== current.id && isPubliclyAvailable(vehicle))
+      .map((vehicle) => {
+        let score = 0
+        if (vehicle.collectionIds.some((id) => currentCollections.has(id))) score += 100
+        if (vehicle.brand === current.brand) score += 40
+        if (
+          currentPrice !== undefined &&
+          vehicle.sellingPrice !== undefined &&
+          Math.abs(vehicle.sellingPrice - currentPrice) / currentPrice <= 0.25
+        ) score += 20
+        if (vehicle.featured) score += 10
+        return { vehicle, score }
+      })
+      .sort(
+        (first, second) =>
+          second.score - first.score ||
+          Date.parse(second.vehicle.addedAt) - Date.parse(first.vehicle.addedAt) ||
+          first.vehicle.id.localeCompare(second.vehicle.id)
+      )
+      .slice(0, SIMILAR_VEHICLE_LIMIT)
+      .map(({ vehicle }) => prepareVehicleCard(vehicle))
   }
 
   function getGarageConfig(): GarageConfig {
@@ -188,7 +388,7 @@ export function createLiveEngine(source: LiveEngineData) {
     return { ...content, mode: "fallback", vehicle: null }
   }
 
-  function getFeaturedVehicles(options: FeaturedVehicleOptions = {}): Vehicle[] {
+  function getFeaturedVehicles(options: FeaturedVehicleOptions = {}): LiveVehicleCard[] {
     const limit = Math.max(0, options.limit ?? DEFAULT_FEATURED_LIMIT)
     return source.vehicles
         .filter((vehicle) => vehicle.public)
@@ -199,7 +399,7 @@ export function createLiveEngine(source: LiveEngineData) {
         )
         .sort(byVehiclePriority)
         .slice(0, limit)
-        .map(prepareVehicle)
+        .map(prepareVehicleCard)
   }
 
   function getVisibleCollections(): VisibleCollection[] {
@@ -257,13 +457,18 @@ export function createLiveEngine(source: LiveEngineData) {
     return {
       vehicle: clone(vehicle),
       displayName,
-      subtitle: vehicle.description?.trim() || undefined,
+      subtitle: cleanText(vehicle.trim),
       price: vehicle.sellingPrice ?? null,
       images,
       primaryImage: images[0] ?? null,
       metadata: prepareDetailMetadata(vehicle),
       status: vehicle.available ? "available" : "unavailable",
       contactActions: prepareContactActions(),
+      description: prepareDescription(vehicle),
+      specifications: prepareSpecifications(vehicle),
+      equipmentGroups: prepareEquipment(vehicle),
+      trustItems: prepareTrustItems(),
+      similarVehicles: getSimilarVehicles(vehicle.id),
       seo: {
         title: `${displayName} | ${source.garage.live.siteName}`,
         description: `Découvrez ${seoParts.join(", ")} chez ${source.garage.live.siteName}.`,
@@ -305,6 +510,7 @@ export function createLiveEngine(source: LiveEngineData) {
     getVisibleServices,
     getPublicVehicleSlugs,
     getVehicleDetailBySlug,
+    getSimilarVehicles,
     getNavigation,
     getLiveHomepage,
   }
@@ -320,4 +526,5 @@ export const getVisibleCollections = defaultEngine.getVisibleCollections
 export const getVisibleServices = defaultEngine.getVisibleServices
 export const getPublicVehicleSlugs = defaultEngine.getPublicVehicleSlugs
 export const getVehicleDetailBySlug = defaultEngine.getVehicleDetailBySlug
+export const getSimilarVehicles = defaultEngine.getSimilarVehicles
 export const getLiveHomepage = defaultEngine.getLiveHomepage

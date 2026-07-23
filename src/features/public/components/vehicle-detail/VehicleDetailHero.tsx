@@ -14,13 +14,8 @@ export function VehicleDetailHero({
         <h1 className="mt-5 text-4xl font-[var(--live-heading-weight)] tracking-[-0.04em] text-balance sm:text-5xl lg:text-6xl">
           {detail.displayName}
         </h1>
-        {detail.vehicle.year && (
-          <p className="mt-3 text-lg text-[var(--live-muted-foreground)]">
-            Millésime {detail.vehicle.year}
-          </p>
-        )}
         {detail.subtitle && (
-          <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--live-muted-foreground)]">
+          <p className="mt-3 text-lg text-[var(--live-muted-foreground)]">
             {detail.subtitle}
           </p>
         )}

@@ -1,9 +1,14 @@
 import Link from "next/link"
 import type { LiveVehicleDetail } from "../../types"
 import { VehicleContactActions } from "./VehicleContactActions"
+import { VehicleDescriptionSection } from "./VehicleDescriptionSection"
 import { VehicleDetailHero } from "./VehicleDetailHero"
+import { VehicleEquipment } from "./VehicleEquipment"
 import { VehicleGallery } from "./VehicleGallery"
+import { SimilarVehiclesSection } from "./SimilarVehiclesSection"
+import { VehicleSpecifications } from "./VehicleSpecifications"
 import { VehicleSummary } from "./VehicleSummary"
+import { VehicleTrustSection } from "./VehicleTrustSection"
 
 export function VehicleDetailPage({
   detail,
@@ -28,11 +33,19 @@ export function VehicleDetailPage({
         </div>
 
         <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(18rem,0.45fr)] lg:gap-8">
-          <VehicleGallery detail={detail} />
-          <aside className="space-y-5">
+          <VehicleGallery images={detail.images} displayName={detail.displayName} />
+          <aside className="space-y-5 lg:sticky lg:top-24">
             <VehicleSummary detail={detail} />
             <VehicleContactActions actions={detail.contactActions} />
           </aside>
+        </div>
+
+        <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-20">
+          <VehicleDescriptionSection description={detail.description} />
+          <VehicleSpecifications groups={detail.specifications} />
+          <VehicleEquipment groups={detail.equipmentGroups} />
+          <VehicleTrustSection items={detail.trustItems} />
+          <SimilarVehiclesSection vehicles={detail.similarVehicles} />
         </div>
       </div>
     </article>

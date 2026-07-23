@@ -11,10 +11,16 @@ export {
 } from "./components/featured"
 export {
   VehicleContactActions,
+  VehicleDescriptionSection,
   VehicleDetailHero,
   VehicleDetailPage,
+  VehicleEquipment,
   VehicleGallery,
+  SimilarVehiclesSection,
+  VehicleSpecifications,
   VehicleSummary,
+  VehicleTrustCard,
+  VehicleTrustSection,
 } from "./components/vehicle-detail"
 export {
   formatPrice,
@@ -34,6 +40,7 @@ export {
   getHeroContent,
   getHeroVehicle,
   getLiveHomepage,
+  getSimilarVehicles,
   getPublicVehicleSlugs,
   getVehicleDetailBySlug,
   getVisibleCollections,
@@ -50,8 +57,13 @@ export type {
   LiveModuleConfig,
   LiveModuleId,
   LiveVehicleDetail,
+  LiveVehicleCard,
+  LiveVehicleDescription,
+  LiveVehicleEquipmentGroup,
   LiveVehicleMetadataItem,
+  LiveVehicleSpecificationGroup,
   LiveVehicleStatus,
+  LiveVehicleTrustItem,
   NavigationItem,
   Service,
   Theme,

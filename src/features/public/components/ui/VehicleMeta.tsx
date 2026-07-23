@@ -1,4 +1,4 @@
-import type { Vehicle } from "../../types"
+import type { LiveVehicleMetadataItem, Vehicle } from "../../types"
 
 export type VehicleMetaItem = {
   id: "year" | "mileage" | "fuel" | "gearbox"
@@ -23,8 +23,15 @@ export function getVehicleMetaItems(vehicle: Vehicle): VehicleMetaItem[] {
   ].filter((item): item is VehicleMetaItem => item !== null)
 }
 
-export function VehicleMeta({ vehicle }: { vehicle: Vehicle }) {
-  const items = getVehicleMetaItems(vehicle)
+export function VehicleMeta({
+  vehicle,
+  items: preparedItems,
+}: {
+  vehicle?: Vehicle
+  items?: LiveVehicleMetadataItem[]
+}) {
+  const items = preparedItems?.map((item) => ({ id: item.id, label: item.value }))
+    ?? (vehicle ? getVehicleMetaItems(vehicle) : [])
   if (items.length === 0) return null
   return (
     <dl className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[var(--live-muted-foreground)]">

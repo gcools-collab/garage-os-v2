@@ -20,6 +20,29 @@ export const garage: GarageConfig = {
     socialLinks: [],
     collectionFallbackImageUrl: "/live/vehicles/sports-sedan-hero.png",
     vehicleFallbackImageUrl: "/live/vehicles/sports-sedan-hero.png",
+    vehicleTrustItems: [
+      {
+        id: "warranty",
+        enabled: true,
+        icon: "shield",
+        title: "Garantie incluse",
+        description: "Garantie mécanique de 12 mois.",
+      },
+      {
+        id: "inspection",
+        enabled: true,
+        icon: "inspection",
+        title: "Véhicule contrôlé",
+        description: "Chaque véhicule est vérifié avant sa mise en vente.",
+      },
+      {
+        id: "support",
+        enabled: true,
+        icon: "support",
+        title: "Conseil personnalisé",
+        description: "Notre équipe vous accompagne dans votre projet.",
+      },
+    ],
     modules: [
       {
         id: "catalog",

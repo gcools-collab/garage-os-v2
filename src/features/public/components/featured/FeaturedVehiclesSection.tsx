@@ -1,11 +1,11 @@
-import type { Vehicle } from "../../types"
+import type { LiveVehicleCard } from "../../types"
 import { SectionHeader } from "../ui"
 import { FeaturedVehicleCard } from "./FeaturedVehicleCard"
 
 export function FeaturedVehiclesSection({
   vehicles,
 }: {
-  vehicles: Vehicle[]
+  vehicles: LiveVehicleCard[]
 }) {
   if (vehicles.length === 0) return null
 

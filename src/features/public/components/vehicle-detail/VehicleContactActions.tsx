@@ -20,11 +20,11 @@ export function VehicleContactActions({
         Notre équipe est disponible pour répondre à vos questions.
       </p>
       <div className="mt-5 flex flex-col gap-3">
-        {actions.map((action, index) => (
+        {actions.map((action) => (
           <LiveButton
             key={action.id}
             action={action}
-            variant={index === 0 ? "primary" : "secondary"}
+            variant={action.variant}
           />
         ))}
       </div>

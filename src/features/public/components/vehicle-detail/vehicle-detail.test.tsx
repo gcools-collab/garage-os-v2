@@ -1,9 +1,19 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
-import type { LiveVehicleDetail, Vehicle } from "../../types"
+import type {
+  LiveTrustIcon,
+  LiveVehicleCard,
+  LiveVehicleDetail,
+  Vehicle,
+} from "../../types"
 import { formatPrice } from "../ui"
+import { getNextImageIndex, getPreviousImageIndex } from "./gallery-navigation"
+import { SimilarVehiclesSection } from "./SimilarVehiclesSection"
+import { VehicleDescriptionSection } from "./VehicleDescriptionSection"
 import { VehicleDetailPage } from "./VehicleDetailPage"
+import { VehicleGallery } from "./VehicleGallery"
+import { VehicleTrustCard } from "./VehicleTrustCard"
 
 const vehicle: Vehicle = {
   id: "bmw-m3",
@@ -59,9 +69,30 @@ const detail: LiveVehicleDetail = {
   ],
   status: "available",
   contactActions: [
-    { id: "phone", label: "Appeler le garage", href: "tel:+33300000000" },
-    { id: "email", label: "Envoyer un e-mail", href: "mailto:contact@example.com" },
+    { id: "phone", label: "Appeler le garage", href: "tel:+33300000000", variant: "primary" },
+    { id: "email", label: "Envoyer un e-mail", href: "mailto:contact@example.com", variant: "secondary" },
   ],
+  description: {
+    introduction: "Une sportive préparée avec exigence.",
+    highlights: ["Historique disponible"],
+  },
+  specifications: [{
+    id: "engine",
+    title: "Motorisation",
+    items: [{ label: "Puissance DIN", value: "431 ch" }],
+  }],
+  equipmentGroups: [{
+    id: "comfort",
+    title: "Confort",
+    items: ["Sièges chauffants"],
+  }],
+  trustItems: [{
+    id: "warranty",
+    icon: "shield",
+    title: "Garantie incluse",
+    description: "Garantie mécanique.",
+  }],
+  similarVehicles: [],
   seo: {
     title: "BMW M3 F80 | Garage OS",
     description: "BMW M3 F80 chez Garage OS.",
@@ -116,4 +147,94 @@ test("affiche uniquement les actions de contact fournies", () => {
   assert.match(markup, /Envoyer un e-mail/)
   assert.match(markup, /tel:\+33300000000/)
   assert.match(markup, /mailto:contact@example\.com/)
+})
+
+test("masque la description vide et rend les points forts disponibles", () => {
+  assert.equal(
+    renderToStaticMarkup(
+      <VehicleDescriptionSection description={{ highlights: [] }} />
+    ),
+    ""
+  )
+  const markup = renderToStaticMarkup(
+    <VehicleDescriptionSection
+      description={{ highlights: ["Historique disponible"] }}
+    />
+  )
+  assert.match(markup, /Historique disponible/)
+})
+
+test("rend les caractéristiques, équipements et réassurances préparés", () => {
+  const markup = renderToStaticMarkup(<VehicleDetailPage detail={detail} />)
+  assert.match(markup, /Motorisation/)
+  assert.match(markup, /431 ch/)
+  assert.match(markup, /Sièges chauffants/)
+  assert.match(markup, /Garantie incluse/)
+  assert.doesNotMatch(markup, />undefined</)
+})
+
+test("hiérarchise les CTA uniquement depuis leur variante préparée", () => {
+  const markup = renderToStaticMarkup(<VehicleDetailPage detail={detail} />)
+  assert.match(markup, /bg-\[var\(--live-primary\)\]/)
+  assert.match(markup, /bg-transparent/)
+})
+
+test("masque les véhicules similaires vides et rend leurs liens", () => {
+  assert.equal(
+    renderToStaticMarkup(<SimilarVehiclesSection vehicles={[]} />),
+    ""
+  )
+  const card: LiveVehicleCard = {
+    id: "similar",
+    slug: "similar",
+    displayName: "Peugeot 308 GT Line",
+    image: null,
+    price: 21990,
+    metadata: [],
+    href: "/vehicles/peugeot-308-gt-line",
+  }
+  const markup = renderToStaticMarkup(
+    <SimilarVehiclesSection vehicles={[card]} />
+  )
+  assert.equal((markup.match(/<article/g) ?? []).length, 1)
+  assert.match(markup, /\/vehicles\/peugeot-308-gt-line/)
+})
+
+test("prépare les contrôles et le compteur de la galerie", () => {
+  const markup = renderToStaticMarkup(
+    <VehicleGallery images={detail.images} displayName={detail.displayName} />
+  )
+  assert.match(markup, /1 \/ 2/)
+  assert.match(markup, /Afficher l’image précédente/)
+  assert.match(markup, /Afficher l’image suivante/)
+  assert.match(markup, /aria-current="true"/)
+})
+
+test("masque les contrôles lorsque la galerie ne contient qu’une image", () => {
+  const markup = renderToStaticMarkup(
+    <VehicleGallery images={[detail.images[0]]} displayName={detail.displayName} />
+  )
+  assert.doesNotMatch(markup, /Afficher l’image précédente/)
+  assert.doesNotMatch(markup, /Afficher l’image suivante/)
+})
+
+test("boucle proprement les helpers de navigation de galerie", () => {
+  assert.equal(getPreviousImageIndex(0, 3), 2)
+  assert.equal(getNextImageIndex(2, 3), 0)
+  assert.equal(getNextImageIndex(0, 1), 0)
+})
+
+test("conserve un fallback visuel pour un identifiant d’icône inconnu", () => {
+  const markup = renderToStaticMarkup(
+    <VehicleTrustCard
+      item={{
+        id: "future",
+        icon: "future-icon" as LiveTrustIcon,
+        title: "Service",
+        description: "Accompagnement.",
+      }}
+    />
+  )
+  assert.match(markup, /Service/)
+  assert.match(markup, /<svg/)
 })

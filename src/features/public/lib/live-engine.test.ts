@@ -50,7 +50,7 @@ test("prépare une image fallback pour un véhicule sans photo", () => {
     .getFeaturedVehicles()
     .find((candidate) => candidate.id === "peugeot-308-gt-line")
   assert.equal(
-    vehicle?.displayImage?.url,
+    vehicle?.image?.url,
     data.garage.live.vehicleFallbackImageUrl
   )
 })
@@ -177,4 +177,101 @@ test("génère uniquement les slugs des véhicules publics", () => {
     createLiveEngine(data).getPublicVehicleSlugs(),
     data.vehicles.slice(1).map((vehicle) => vehicle.slug)
   )
+})
+
+test("nettoie la description et déduplique les points forts", () => {
+  const data = createFixture()
+  data.vehicles[0].description = "  Une   sportive exigeante.  "
+  data.vehicles[0].highlights = ["  Suivi complet ", "", "suivi complet", "Garantie"]
+  const description = createLiveEngine(data)
+    .getVehicleDetailBySlug(data.vehicles[0].slug)?.description
+  assert.deepEqual(description, {
+    introduction: "Une sportive exigeante.",
+    highlights: ["Suivi complet", "Garantie"],
+  })
+})
+
+test("masque les groupes de caractéristiques sans valeur", () => {
+  const data = createFixture()
+  data.vehicles = data.vehicles.map((vehicle, index) => index === 2 ? {
+    ...vehicle,
+    year: undefined,
+    mileage: undefined,
+    fuel: undefined,
+    gearbox: undefined,
+  } : vehicle)
+  const groups = createLiveEngine(data)
+    .getVehicleDetailBySlug(data.vehicles[2].slug)?.specifications
+  assert.deepEqual(groups, [])
+})
+
+test("nettoie les équipements et masque les groupes incomplets", () => {
+  const data = createFixture()
+  data.vehicles[0].equipmentGroups = [
+    { id: "comfort", label: " Confort ", items: [" GPS ", "gps", ""] },
+    { id: "empty", label: "", items: ["Équipement"] },
+    { id: "no-items", label: "Vide", items: [" "] },
+  ]
+  const groups = createLiveEngine(data)
+    .getVehicleDetailBySlug(data.vehicles[0].slug)?.equipmentGroups
+  assert.deepEqual(groups, [{ id: "comfort", title: "Confort", items: ["GPS"] }])
+})
+
+test("prépare uniquement les réassurances activées et complètes", () => {
+  const data = createFixture()
+  data.garage.live.vehicleTrustItems = [
+    { id: "valid", enabled: true, icon: "shield", title: " Garantie ", description: " 12 mois " },
+    { id: "disabled", enabled: false, icon: "history", title: "Historique", description: "Disponible" },
+    { id: "incomplete", enabled: true, icon: "support", title: "", description: "Contact" },
+  ]
+  const items = createLiveEngine(data)
+    .getVehicleDetailBySlug(data.vehicles[0].slug)?.trustItems
+  assert.deepEqual(items, [{
+    id: "valid",
+    icon: "shield",
+    title: "Garantie",
+    description: "12 mois",
+  }])
+})
+
+test("sélectionne au maximum trois similaires publics et disponibles", () => {
+  const data = createFixture()
+  const base = data.vehicles[1]
+  data.vehicles = [
+    ...data.vehicles,
+    { ...structuredClone(base), id: "similar-4", slug: "similar-4" },
+    { ...structuredClone(base), id: "private", slug: "private", public: false },
+    { ...structuredClone(base), id: "unavailable", slug: "unavailable", available: false },
+  ]
+  const similar = createLiveEngine(data).getSimilarVehicles(data.vehicles[0].id)
+  assert.equal(similar.length, 3)
+  assert.equal(similar.some((vehicle) => vehicle.id === data.vehicles[0].id), false)
+  assert.equal(similar.some((vehicle) => vehicle.id === "private"), false)
+  assert.equal(similar.some((vehicle) => vehicle.id === "unavailable"), false)
+})
+
+test("priorise un véhicule de la même collection de façon déterministe", () => {
+  const data = createFixture()
+  data.vehicles[1].collectionIds = [data.vehicles[0].collectionIds[0]]
+  const engine = createLiveEngine(data)
+  const first = engine.getSimilarVehicles(data.vehicles[0].id)
+  const second = engine.getSimilarVehicles(data.vehicles[0].id)
+  assert.equal(first[0].id, data.vehicles[1].id)
+  assert.deepEqual(second, first)
+})
+
+test("prépare une LiveVehicleCard sans exposer le véhicule brut", () => {
+  const [card] = createLiveEngine(createFixture()).getFeaturedVehicles({ limit: 1 })
+  assert.equal(card.displayName, "BMW M3 F80")
+  assert.equal(card.href, "/vehicles/bmw-m3-2015")
+  assert.equal(card.price, 42990)
+  assert.equal(card.badge?.label, "Coup de cœur")
+  assert.equal("brand" in card, false)
+})
+
+test("ne mute pas les sources pendant la préparation des similaires", () => {
+  const data = createFixture()
+  const before = structuredClone(data)
+  createLiveEngine(data).getSimilarVehicles(data.vehicles[0].id)
+  assert.deepEqual(data, before)
 })
