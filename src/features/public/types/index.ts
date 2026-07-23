@@ -100,6 +100,7 @@ export type LiveSiteConfig = {
   contact: GarageContact
   socialLinks: NavigationItem[]
   collectionFallbackImageUrl: string
+  vehicleFallbackImageUrl: string
 }
 
 export type GarageConfig = {
@@ -128,6 +129,7 @@ export type Vehicle = {
   sellingPrice?: number
   description?: string
   images: VehicleImage[]
+  displayImage?: VehicleImage | null
   public: boolean
   available: boolean
   featured: boolean

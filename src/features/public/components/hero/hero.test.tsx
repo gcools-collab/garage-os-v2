@@ -25,6 +25,12 @@ const vehicle: Vehicle = {
       isPrimary: true,
     },
   ],
+  displayImage: {
+    id: "image",
+    url: "/live/vehicles/sports-sedan-hero.png",
+    alt: "BMW M3 en studio",
+    isPrimary: true,
+  },
   public: false,
   available: false,
   featured: false,
@@ -97,7 +103,7 @@ test("gère un véhicule sans image sans erreur", () => {
   const hero: HeroContent = {
     ...shared,
     mode: "vehicle",
-    vehicle: { ...vehicle, images: [] },
+    vehicle: { ...vehicle, images: [], displayImage: null },
   }
   assert.equal(resolveHeroImage(hero.vehicle), null)
   assert.match(renderToStaticMarkup(<Hero hero={hero} />), /Visuel bientôt disponible/)

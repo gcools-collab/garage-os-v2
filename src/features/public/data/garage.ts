@@ -19,6 +19,7 @@ export const garage: GarageConfig = {
     },
     socialLinks: [],
     collectionFallbackImageUrl: "/live/vehicles/sports-sedan-hero.png",
+    vehicleFallbackImageUrl: "/live/vehicles/sports-sedan-hero.png",
     modules: [
       {
         id: "catalog",

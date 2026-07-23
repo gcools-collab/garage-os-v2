@@ -44,6 +44,17 @@ test("peut inclure les véhicules indisponibles explicitement", () => {
   assert.equal(result.some((vehicle) => vehicle.id === data.vehicles[0].id), true)
 })
 
+test("prépare une image fallback pour un véhicule sans photo", () => {
+  const data = createFixture()
+  const vehicle = createLiveEngine(data)
+    .getFeaturedVehicles()
+    .find((candidate) => candidate.id === "peugeot-308-gt-line")
+  assert.equal(
+    vehicle?.displayImage?.url,
+    data.garage.live.vehicleFallbackImageUrl
+  )
+})
+
 test("masque les collections sans véhicule public disponible", () => {
   const data = createFixture()
   data.vehicles = data.vehicles.map((vehicle) => ({ ...vehicle, available: false }))

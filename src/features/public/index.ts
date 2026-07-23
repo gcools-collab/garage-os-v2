@@ -5,6 +5,11 @@ export {
   formatVehicleCount,
 } from "./components/collections"
 export {
+  FeaturedVehicleCard,
+  FeaturedVehiclesSection,
+  VehicleBadge,
+} from "./components/featured"
+export {
   formatPrice,
   getVehicleMetaItems,
   LiveBadge,

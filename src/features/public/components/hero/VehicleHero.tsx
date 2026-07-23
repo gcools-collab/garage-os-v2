@@ -7,11 +7,7 @@ import { HeroCopyBlock } from "./hero-parts"
 type VehicleHeroContent = Extract<HeroContent, { mode: "vehicle" }>
 
 export function resolveHeroImage(vehicle: Vehicle): VehicleImage | null {
-  return (
-    vehicle.images.find((image) => image.isPrimary && image.url.trim()) ??
-    vehicle.images.find((image) => image.url.trim()) ??
-    null
-  )
+  return vehicle.displayImage ?? null
 }
 
 export function VehicleHero({ hero }: { hero: VehicleHeroContent }) {

@@ -1,5 +1,6 @@
 import {
   CollectionsSection,
+  FeaturedVehiclesSection,
   getLiveHomepage,
   Hero,
   PublicLayout,
@@ -16,6 +17,7 @@ export default function LiveLandingPage() {
     >
       <Hero hero={homepage.hero} />
       <CollectionsSection collections={homepage.collections} />
+      <FeaturedVehiclesSection vehicles={homepage.featuredVehicles} />
     </PublicLayout>
   )
 }

@@ -36,6 +36,20 @@ function isPubliclyAvailable(vehicle: Vehicle) {
 }
 
 export function createLiveEngine(source: LiveEngineData) {
+  function prepareVehicle(vehicle: Vehicle): Vehicle {
+    const resolvedImage =
+      vehicle.displayImage ??
+      vehicle.images.find((image) => image.isPrimary) ??
+      vehicle.images[0] ??
+      {
+        id: `${vehicle.id}-fallback`,
+        url: source.garage.live.vehicleFallbackImageUrl,
+        alt: `${vehicle.brand} ${vehicle.model}`,
+        isPrimary: false,
+      }
+    return { ...clone(vehicle), displayImage: clone(resolvedImage) }
+  }
+
   function getGarageConfig(): GarageConfig {
     return clone(source.garage)
   }
@@ -59,19 +73,19 @@ export function createLiveEngine(source: LiveEngineData) {
     const explicitVehicle = configuredId
       ? eligibleVehicles.find((vehicle) => vehicle.id === configuredId)
       : undefined
-    if (explicitVehicle) return clone(explicitVehicle)
+    if (explicitVehicle) return prepareVehicle(explicitVehicle)
 
     const featuredVehicle = eligibleVehicles
       .filter((vehicle) => vehicle.featured)
       .sort(byVehiclePriority)[0]
-    if (featuredVehicle) return clone(featuredVehicle)
+    if (featuredVehicle) return prepareVehicle(featuredVehicle)
 
     const latestVehicle = eligibleVehicles.sort(
       (first, second) =>
         Date.parse(second.addedAt) - Date.parse(first.addedAt) ||
         first.id.localeCompare(second.id)
     )[0]
-    return latestVehicle ? clone(latestVehicle) : null
+    return latestVehicle ? prepareVehicle(latestVehicle) : null
   }
 
   function getHeroContent(): HeroContent {
@@ -97,8 +111,7 @@ export function createLiveEngine(source: LiveEngineData) {
 
   function getFeaturedVehicles(options: FeaturedVehicleOptions = {}): Vehicle[] {
     const limit = Math.max(0, options.limit ?? DEFAULT_FEATURED_LIMIT)
-    return clone(
-      source.vehicles
+    return source.vehicles
         .filter((vehicle) => vehicle.public)
         .filter((vehicle) => options.includeUnavailable || vehicle.available)
         .filter(
@@ -107,7 +120,7 @@ export function createLiveEngine(source: LiveEngineData) {
         )
         .sort(byVehiclePriority)
         .slice(0, limit)
-    )
+        .map(prepareVehicle)
   }
 
   function getVisibleCollections(): VisibleCollection[] {
