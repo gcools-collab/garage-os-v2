@@ -1,6 +1,6 @@
 import type { LiveVehicleCard } from "../../types"
 import { SectionHeader } from "../ui"
-import { FeaturedVehicleCard } from "./FeaturedVehicleCard"
+import { PublicVehicleCard } from "./PublicVehicleCard"
 
 export function FeaturedVehiclesSection({
   vehicles,
@@ -22,7 +22,7 @@ export function FeaturedVehiclesSection({
         />
         <div className="mt-10 grid items-stretch gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
           {vehicles.map((vehicle) => (
-            <FeaturedVehicleCard key={vehicle.id} vehicle={vehicle} />
+            <PublicVehicleCard key={vehicle.id} vehicle={vehicle} />
           ))}
         </div>
       </div>

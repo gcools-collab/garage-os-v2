@@ -333,9 +333,28 @@ test("catalogue prépare les options dédupliquées et leurs compteurs globaux",
   assert.deepEqual(filters.brands.find((option) => option.value === "BMW"), {
     value: "BMW",
     label: "BMW",
-    count: 2,
+    count: 0,
+    selected: false,
+    disabled: true,
   })
   assert.equal(filters.fuels.filter((option) => option.value === "Essence").length, 1)
+})
+
+test("catalogue recherche sur plusieurs champs avec des tokens AND", () => {
+  const engine = createLiveEngine(createFixture())
+  assert.deepEqual(engine.getVehicleCatalog({ q: "BMW automatique essence" }).vehicles.map((vehicle) => vehicle.id), ["bmw-m3-2015"])
+  assert.deepEqual(engine.getVehicleCatalog({ q: "sièges chauffants" }).vehicles.map((vehicle) => vehicle.id), ["bmw-m3-2015"])
+  assert.equal(engine.getVehicleCatalog({ q: "BMW diesel" }).resultCount, 0)
+})
+
+test("catalogue prépare recherche active, état vide, suggestions et SEO", () => {
+  const catalog = createLiveEngine(createFixture()).getVehicleCatalog({ q: "BMW diesel" })
+  assert.equal(catalog.search.value, "bmw diesel")
+  assert.equal(catalog.activeFilters[0].id, "q")
+  assert.match(catalog.emptyState?.title ?? "", /bmw diesel/)
+  assert.ok(catalog.suggestions.length > 0)
+  assert.equal(catalog.seo.noIndex, true)
+  assert.equal(catalog.seo.canonicalPath, "/vehicles")
 })
 
 test("catalogue prépare les URLs de retrait et la remise à zéro", () => {

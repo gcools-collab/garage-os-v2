@@ -5,7 +5,7 @@ import type { LiveVehicleCard } from "../../types"
 import { PriceDisplay, VehicleMeta } from "../ui"
 import { VehicleBadge } from "./VehicleBadge"
 
-export function FeaturedVehicleCard({ vehicle }: { vehicle: LiveVehicleCard }) {
+export function PublicVehicleCard({ vehicle }: { vehicle: LiveVehicleCard }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[var(--live-card-radius)] border border-[var(--live-border)] bg-[var(--live-surface)] transition duration-300 lg:hover:-translate-y-1 lg:hover:border-[var(--live-primary)] lg:hover:shadow-xl lg:hover:shadow-[var(--live-background)] motion-reduce:transform-none motion-reduce:transition-none">
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--live-muted)]">

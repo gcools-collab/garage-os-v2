@@ -24,21 +24,17 @@ export function getVehicleMetaItems(vehicle: Vehicle): VehicleMetaItem[] {
 }
 
 export function VehicleMeta({
-  vehicle,
-  items: preparedItems,
+  items,
 }: {
-  vehicle?: Vehicle
-  items?: LiveVehicleMetadataItem[]
+  items: Array<Pick<LiveVehicleMetadataItem, "id" | "value">>
 }) {
-  const items = preparedItems?.map((item) => ({ id: item.id, label: item.value }))
-    ?? (vehicle ? getVehicleMetaItems(vehicle) : [])
   if (items.length === 0) return null
   return (
     <dl className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[var(--live-muted-foreground)]">
       {items.map((item) => (
         <div key={item.id}>
           <dt className="sr-only">{item.id}</dt>
-          <dd>{item.label}</dd>
+          <dd>{item.value}</dd>
         </div>
       ))}
     </dl>

@@ -1,5 +1,6 @@
 import { collections, garage, services, vehicles } from "../data"
 import { buildCatalogHref } from "./catalog-query"
+import { buildVehicleSearchDocument, normalizeCatalogText, tokenizeCatalogQuery } from "./catalog-search"
 import type {
   FeaturedVehicleOptions,
   GarageConfig,
@@ -350,11 +351,11 @@ export function createLiveEngine(source: LiveEngineData) {
       }
       return [...counts.values()]
         .sort((first, second) => first.label.localeCompare(second.label, "fr-FR"))
-        .map(({ label, count }): LiveCatalogFilterOption => ({ value: label, label, count }))
+        .map(({ label, count }): LiveCatalogFilterOption => ({ value: label, label, count, selected: false, disabled: false }))
     }
-    const brands = optionList((vehicle) => vehicle.brand)
-    const fuels = optionList((vehicle) => vehicle.fuel)
-    const gearboxes = optionList((vehicle) => vehicle.gearbox)
+    let brands = optionList((vehicle) => vehicle.brand)
+    let fuels = optionList((vehicle) => vehicle.fuel)
+    let gearboxes = optionList((vehicle) => vehicle.gearbox)
     const validCollection = source.collections.find(
       (collection) => collection.active && collection.slug === cleanText(requestedQuery.collection)
     )
@@ -363,6 +364,8 @@ export function createLiveEngine(source: LiveEngineData) {
     const brand = findOption(brands, requestedQuery.brand)?.value
     const fuel = findOption(fuels, requestedQuery.fuel)?.value
     const gearbox = findOption(gearboxes, requestedQuery.gearbox)?.value
+    const q = normalizeCatalogText(requestedQuery.q ?? "")
+    const tokens = tokenizeCatalogQuery(q)
     const minPrice = requestedQuery.minPrice !== undefined && requestedQuery.minPrice >= 0
       ? requestedQuery.minPrice
       : undefined
@@ -378,6 +381,7 @@ export function createLiveEngine(source: LiveEngineData) {
       ? requestedQuery.sort ?? "recommended"
       : "recommended"
     const query: LiveVehicleCatalogQuery = {
+      q: q || undefined,
       collection: validCollection?.slug,
       brand,
       fuel,
@@ -387,6 +391,8 @@ export function createLiveEngine(source: LiveEngineData) {
       sort,
     }
     let matching = availableVehicles.filter((vehicle) => {
+      const document = buildVehicleSearchDocument(vehicle, source.collections)
+      if (tokens.some((token) => !document.includes(token))) return false
       if (validCollection && !vehicle.collectionIds.includes(validCollection.id)) return false
       if (brand && vehicle.brand.toLocaleLowerCase("fr-FR") !== brand.toLocaleLowerCase("fr-FR")) return false
       if (fuel && vehicle.fuel?.toLocaleLowerCase("fr-FR") !== fuel.toLocaleLowerCase("fr-FR")) return false
@@ -394,6 +400,30 @@ export function createLiveEngine(source: LiveEngineData) {
       if (normalizedMinPrice !== undefined && (vehicle.sellingPrice === undefined || vehicle.sellingPrice < normalizedMinPrice)) return false
       if (maxPrice !== undefined && (vehicle.sellingPrice === undefined || vehicle.sellingPrice > maxPrice)) return false
       return true
+    })
+    const facetPool = (excluded: "brand" | "fuel" | "gearbox") =>
+      availableVehicles.filter((vehicle) => {
+        const document = buildVehicleSearchDocument(vehicle, source.collections)
+        if (tokens.some((token) => !document.includes(token))) return false
+        if (validCollection && !vehicle.collectionIds.includes(validCollection.id)) return false
+        if (excluded !== "brand" && brand && vehicle.brand.toLocaleLowerCase("fr-FR") !== brand.toLocaleLowerCase("fr-FR")) return false
+        if (excluded !== "fuel" && fuel && vehicle.fuel?.toLocaleLowerCase("fr-FR") !== fuel.toLocaleLowerCase("fr-FR")) return false
+        if (excluded !== "gearbox" && gearbox && vehicle.gearbox?.toLocaleLowerCase("fr-FR") !== gearbox.toLocaleLowerCase("fr-FR")) return false
+        if (normalizedMinPrice !== undefined && (vehicle.sellingPrice === undefined || vehicle.sellingPrice < normalizedMinPrice)) return false
+        if (maxPrice !== undefined && (vehicle.sellingPrice === undefined || vehicle.sellingPrice > maxPrice)) return false
+        return true
+      })
+    brands = optionList((vehicle) => vehicle.brand).map((option) => {
+      const count = facetPool("brand").filter((vehicle) => vehicle.brand === option.value).length
+      return { ...option, count, selected: option.value === brand, disabled: count === 0 && option.value !== brand }
+    })
+    fuels = optionList((vehicle) => vehicle.fuel).map((option) => {
+      const count = facetPool("fuel").filter((vehicle) => vehicle.fuel === option.value).length
+      return { ...option, count, selected: option.value === fuel, disabled: count === 0 && option.value !== fuel }
+    })
+    gearboxes = optionList((vehicle) => vehicle.gearbox).map((option) => {
+      const count = facetPool("gearbox").filter((vehicle) => vehicle.gearbox === option.value).length
+      return { ...option, count, selected: option.value === gearbox, disabled: count === 0 && option.value !== gearbox }
     })
     const nullableNumber = (
       first: number | undefined,
@@ -420,6 +450,7 @@ export function createLiveEngine(source: LiveEngineData) {
       .slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE)
       .map(prepareVehicleCard)
     const activeFilters = [
+      q ? { id: "q", label: "Recherche", value: q, removeHref: buildCatalogHref(query, { q: undefined, page: undefined }) } : null,
       validCollection
         ? { id: "collection", label: "Collection", value: validCollection.name, removeHref: buildCatalogHref(query, { collection: undefined, page: undefined }) }
         : null,
@@ -429,7 +460,7 @@ export function createLiveEngine(source: LiveEngineData) {
       normalizedMinPrice !== undefined ? { id: "minPrice", label: "Prix minimum", value: `${new Intl.NumberFormat("fr-FR").format(normalizedMinPrice)} €`, removeHref: buildCatalogHref(query, { minPrice: undefined, page: undefined }) } : null,
       maxPrice !== undefined ? { id: "maxPrice", label: "Prix maximum", value: `${new Intl.NumberFormat("fr-FR").format(maxPrice)} €`, removeHref: buildCatalogHref(query, { maxPrice: undefined, page: undefined }) } : null,
     ].filter((item): item is NonNullable<typeof item> => item !== null)
-    const technicalFilter = Boolean(brand || fuel || gearbox || normalizedMinPrice !== undefined || maxPrice !== undefined || sort !== "recommended" || page > 1)
+    const technicalFilter = Boolean(q || brand || fuel || gearbox || normalizedMinPrice !== undefined || maxPrice !== undefined || sort !== "recommended" || page > 1)
     const collectionTitle = validCollection ? `Collection ${validCollection.name}` : "Tous nos véhicules"
     const collectionDescription = cleanText(validCollection?.description) ?? "Découvrez les véhicules actuellement disponibles."
     const canonicalPath = validCollection
@@ -456,12 +487,21 @@ export function createLiveEngine(source: LiveEngineData) {
       },
       vehicles,
       filters: {
+        collections: source.collections.filter((collection) => collection.active).map((collection) => ({
+          value: collection.slug,
+          label: collection.name,
+          count: availableVehicles.filter((vehicle) => vehicle.collectionIds.includes(collection.id)).length,
+          selected: collection.slug === validCollection?.slug,
+          disabled: false,
+        })),
         brands,
         fuels,
         gearboxes,
         priceRange: {
-          min: prices.length ? Math.min(...prices) : null,
-          max: prices.length ? Math.max(...prices) : null,
+          availableMin: prices.length ? Math.min(...prices) : null,
+          availableMax: prices.length ? Math.max(...prices) : null,
+          selectedMin: normalizedMinPrice,
+          selectedMax: maxPrice,
         },
         sortOptions: sorts.map((value) => ({
           value,
@@ -472,9 +512,25 @@ export function createLiveEngine(source: LiveEngineData) {
         resetHref: "/vehicles",
       },
       activeFilters,
+      activeFilterCount: activeFilters.length,
+      search: {
+        value: q,
+        placeholder: "Marque, modèle, finition…",
+        submitLabel: "Rechercher",
+        clearHref: q ? buildCatalogHref(query, { q: undefined, page: undefined }) : null,
+        preservedParams: Object.entries(query)
+          .filter(([key, value]) => key !== "q" && key !== "page" && value !== undefined)
+          .map(([name, value]) => ({ name, value: String(value) })),
+      },
+      resultSummary: q
+        ? `${totalItems} véhicule${totalItems > 1 ? "s" : ""} pour “${q}”`
+        : `${totalItems} véhicule${totalItems > 1 ? "s" : ""} disponible${totalItems > 1 ? "s" : ""}`,
+      suggestions: totalItems === 0 && tokens.length > 1
+        ? tokens.filter((token) => availableVehicles.some((vehicle) => buildVehicleSearchDocument(vehicle, source.collections).includes(token))).slice(0, 3).map((token) => ({ label: `Rechercher ${token}`, href: buildCatalogHref({}, { q: token }) }))
+        : [],
       resultCount: totalItems,
       emptyState: totalItems === 0 ? {
-        title: "Aucun véhicule ne correspond à vos critères",
+        title: q ? `Aucun véhicule trouvé pour “${q}”` : "Aucun véhicule ne correspond à vos critères",
         description: "Essayez de modifier ou de supprimer certains filtres.",
         resetHref: activeFilters.length ? "/vehicles" : undefined,
       } : null,
@@ -489,7 +545,7 @@ export function createLiveEngine(source: LiveEngineData) {
       seo: {
         title: `${collectionTitle} | ${source.garage.live.siteName}`,
         description: collectionDescription,
-        canonicalPath,
+        canonicalPath: technicalFilter ? "/vehicles" : canonicalPath,
         noIndex: technicalFilter,
       },
     }

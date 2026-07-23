@@ -7,6 +7,8 @@ export {
   VehicleCatalogHero,
   VehicleCatalogPage,
   VehicleCatalogPagination,
+  VehicleCatalogSearch,
+  VehicleCatalogSuggestions,
   VehicleCatalogToolbar,
 } from "./components/catalog"
 export {
@@ -15,7 +17,7 @@ export {
   formatVehicleCount,
 } from "./components/collections"
 export {
-  FeaturedVehicleCard,
+  PublicVehicleCard,
   FeaturedVehiclesSection,
   VehicleBadge,
 } from "./components/featured"
@@ -61,6 +63,11 @@ export {
   buildCatalogHref,
   normalizeCatalogSearchParams,
 } from "./lib/catalog-query"
+export {
+  buildVehicleSearchDocument,
+  normalizeCatalogText,
+  tokenizeCatalogQuery,
+} from "./lib/catalog-search"
 export type { RawCatalogSearchParams } from "./lib/catalog-query"
 export { defaultTheme } from "./theme"
 export type {

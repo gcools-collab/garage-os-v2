@@ -1,5 +1,5 @@
 import type { LiveVehicleCard } from "../../types"
-import { FeaturedVehicleCard } from "../featured"
+import { PublicVehicleCard } from "../featured"
 import { SectionHeader } from "../ui"
 
 export function SimilarVehiclesSection({ vehicles }: { vehicles: LiveVehicleCard[] }) {
@@ -12,7 +12,7 @@ export function SimilarVehiclesSection({ vehicles }: { vehicles: LiveVehicleCard
         description="D’autres véhicules disponibles sélectionnés par notre équipe."
       />
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {vehicles.map((vehicle) => <FeaturedVehicleCard key={vehicle.id} vehicle={vehicle} />)}
+        {vehicles.map((vehicle) => <PublicVehicleCard key={vehicle.id} vehicle={vehicle} />)}
       </div>
     </section>
   )

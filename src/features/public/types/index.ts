@@ -319,6 +319,7 @@ export type LiveCatalogSort =
   | "mileage-asc"
 
 export type LiveVehicleCatalogQuery = {
+  q?: string
   collection?: string
   brand?: string
   fuel?: string
@@ -333,6 +334,8 @@ export type LiveCatalogFilterOption = {
   value: string
   label: string
   count: number
+  selected: boolean
+  disabled: boolean
 }
 
 export type LiveCatalogActiveFilter = {
@@ -351,10 +354,16 @@ export type LiveVehicleCatalog = {
   }
   vehicles: LiveVehicleCard[]
   filters: {
+    collections: LiveCatalogFilterOption[]
     brands: LiveCatalogFilterOption[]
     fuels: LiveCatalogFilterOption[]
     gearboxes: LiveCatalogFilterOption[]
-    priceRange: { min: number | null; max: number | null }
+    priceRange: {
+      availableMin: number | null
+      availableMax: number | null
+      selectedMin?: number
+      selectedMax?: number
+    }
     sortOptions: Array<{ value: LiveCatalogSort; label: string; href: string }>
     formValues: {
       collection?: string
@@ -368,6 +377,16 @@ export type LiveVehicleCatalog = {
     resetHref: string
   }
   activeFilters: LiveCatalogActiveFilter[]
+  activeFilterCount: number
+  search: {
+    value: string
+    placeholder: string
+    submitLabel: string
+    clearHref: string | null
+    preservedParams: Array<{ name: string; value: string }>
+  }
+  resultSummary: string
+  suggestions: Array<{ label: string; href: string }>
   resultCount: number
   emptyState: { title: string; description: string; resetHref?: string } | null
   pagination: {

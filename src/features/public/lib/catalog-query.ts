@@ -34,6 +34,7 @@ export function normalizeCatalogSearchParams(
   const sort = textValue(params.sort)
   const query: LiveVehicleCatalogQuery = {}
   const textEntries = [
+    ["q", textValue(params.q)],
     ["collection", textValue(params.collection)],
     ["brand", textValue(params.brand)],
     ["fuel", textValue(params.fuel)],
@@ -59,6 +60,7 @@ export function buildCatalogHref(
   const next = { ...query, ...changes }
   const params = new URLSearchParams()
   for (const key of [
+    "q",
     "collection",
     "brand",
     "fuel",
@@ -69,7 +71,7 @@ export function buildCatalogHref(
     "page",
   ] as const) {
     const value = next[key]
-    if (value !== undefined && value !== "" && !(key === "sort" && value === "recommended")) {
+    if (value !== undefined && value !== "" && !(key === "sort" && value === "recommended") && !(key === "page" && value === 1)) {
       params.set(key, String(value))
     }
   }

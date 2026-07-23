@@ -1,7 +1,7 @@
 import { CarFront } from "lucide-react"
 import Image from "next/image"
 import type { HeroContent, Vehicle, VehicleImage } from "../../types"
-import { LiveBadge, PriceDisplay, VehicleMeta } from "../ui"
+import { getVehicleMetaItems, LiveBadge, PriceDisplay, VehicleMeta } from "../ui"
 import { HeroCopyBlock } from "./hero-parts"
 
 type VehicleHeroContent = Extract<HeroContent, { mode: "vehicle" }>
@@ -55,7 +55,7 @@ export function VehicleHero({ hero }: { hero: VehicleHeroContent }) {
                   {vehicleName}
                 </h2>
                 <div className="mt-3">
-                  <VehicleMeta vehicle={vehicle} />
+                  <VehicleMeta items={getVehicleMetaItems(vehicle).map((item) => ({ id: item.id, value: item.label }))} />
                 </div>
               </div>
               <PriceDisplay price={vehicle.sellingPrice} />

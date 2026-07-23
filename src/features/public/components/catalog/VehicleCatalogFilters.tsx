@@ -1,13 +1,13 @@
 import Link from "next/link"
 import type { LiveVehicleCatalog } from "../../types"
 
-export function VehicleCatalogFilters({ filters }: { filters: LiveVehicleCatalog["filters"] }) {
+export function VehicleCatalogFilters({ filters, activeFilterCount }: { filters: LiveVehicleCatalog["filters"]; activeFilterCount: number }) {
   const values = filters.formValues
   return (
     <details open className="rounded-[var(--live-card-radius)] border border-[var(--live-border)] bg-[var(--live-surface)] p-5">
-      <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)]">Filtres</summary>
+      <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)]">Filtres{activeFilterCount ? ` (${activeFilterCount})` : ""}</summary>
       <form action="/vehicles" method="get" className="mt-6 space-y-5">
-        {values.collection && <input type="hidden" name="collection" value={values.collection} />}
+        <FilterSelect name="collection" label="Collection" value={values.collection} options={filters.collections} />
         <FilterSelect name="brand" label="Marque" value={values.brand} options={filters.brands} />
         <FilterSelect name="fuel" label="Carburant" value={values.fuel} options={filters.fuels} />
         <FilterSelect name="gearbox" label="Boîte de vitesses" value={values.gearbox} options={filters.gearboxes} />
@@ -32,7 +32,7 @@ function FilterSelect({ name, label, value, options }: { name: string; label: st
       {label}
       <select name={name} defaultValue={value ?? ""} className="mt-2 min-h-11 w-full rounded-[var(--live-control-radius)] border border-[var(--live-border)] bg-[var(--live-background)] px-3">
         <option value="">Toutes</option>
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label} ({option.count})</option>)}
+        {options.map((option) => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label} ({option.count})</option>)}
       </select>
     </label>
   )
