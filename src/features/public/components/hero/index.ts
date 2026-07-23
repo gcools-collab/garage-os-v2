@@ -1,0 +1,1 @@
+export { HeroPlaceholder } from "./HeroPlaceholder"
