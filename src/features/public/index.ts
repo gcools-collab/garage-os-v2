@@ -10,6 +10,13 @@ export {
   VehicleBadge,
 } from "./components/featured"
 export {
+  VehicleContactActions,
+  VehicleDetailHero,
+  VehicleDetailPage,
+  VehicleGallery,
+  VehicleSummary,
+} from "./components/vehicle-detail"
+export {
   formatPrice,
   getVehicleMetaItems,
   LiveBadge,
@@ -27,6 +34,8 @@ export {
   getHeroContent,
   getHeroVehicle,
   getLiveHomepage,
+  getPublicVehicleSlugs,
+  getVehicleDetailBySlug,
   getVisibleCollections,
   getVisibleServices,
 } from "./lib/live-engine"
@@ -40,6 +49,9 @@ export type {
   LiveHomepage,
   LiveModuleConfig,
   LiveModuleId,
+  LiveVehicleDetail,
+  LiveVehicleMetadataItem,
+  LiveVehicleStatus,
   NavigationItem,
   Service,
   Theme,

@@ -6,6 +6,8 @@ import type {
   LiveEngineData,
   LiveHomepage,
   LiveModuleConfig,
+  LiveVehicleDetail,
+  LiveVehicleMetadataItem,
   NavigationItem,
   Service,
   Vehicle,
@@ -36,6 +38,83 @@ function isPubliclyAvailable(vehicle: Vehicle) {
 }
 
 export function createLiveEngine(source: LiveEngineData) {
+  function prepareDetailImages(vehicle: Vehicle) {
+    const imagesByUrl = new Map<string, Vehicle["images"][number]>()
+    for (const image of vehicle.images) {
+      const url = image.url.trim()
+      if (!url) continue
+      const existing = imagesByUrl.get(url)
+      if (!existing || (image.isPrimary && !existing.isPrimary)) {
+        imagesByUrl.set(url, image)
+      }
+    }
+    const validImages = [...imagesByUrl.values()]
+    const primary = validImages.find((image) => image.isPrimary)
+    const orderedImages = primary
+      ? [primary, ...validImages.filter((image) => image.id !== primary.id)]
+      : validImages
+    if (orderedImages.length > 0) return clone(orderedImages)
+    const fallbackUrl = source.garage.live.vehicleFallbackImageUrl.trim()
+    if (!fallbackUrl) return []
+    return [{
+      id: `${vehicle.id}-detail-fallback`,
+      url: fallbackUrl,
+      alt: `${vehicle.brand} ${vehicle.model}`,
+      isPrimary: true,
+    }]
+  }
+
+  function prepareDetailMetadata(vehicle: Vehicle): LiveVehicleMetadataItem[] {
+    return [
+      vehicle.year
+        ? { id: "year" as const, label: "Année", value: String(vehicle.year) }
+        : null,
+      vehicle.mileage !== undefined
+        ? {
+            id: "mileage" as const,
+            label: "Kilométrage",
+            value: `${new Intl.NumberFormat("fr-FR").format(vehicle.mileage)} km`,
+          }
+        : null,
+      vehicle.fuel?.trim()
+        ? { id: "fuel" as const, label: "Carburant", value: vehicle.fuel.trim() }
+        : null,
+      vehicle.gearbox?.trim()
+        ? {
+            id: "gearbox" as const,
+            label: "Boîte de vitesses",
+            value: vehicle.gearbox.trim(),
+          }
+        : null,
+      vehicle.trim?.trim()
+        ? { id: "trim" as const, label: "Finition", value: vehicle.trim.trim() }
+        : null,
+    ].filter((item): item is LiveVehicleMetadataItem => item !== null)
+  }
+
+  function prepareContactActions(): NavigationItem[] {
+    const contact = source.garage.live.contact
+    const phone = contact.phone?.replace(/[^\d+]/g, "")
+    const email = contact.email?.trim()
+    const whatsapp = contact.whatsapp?.replace(/\D/g, "")
+    return [
+      phone
+        ? { id: "phone", label: "Appeler le garage", href: `tel:${phone}` }
+        : null,
+      email
+        ? { id: "email", label: "Envoyer un e-mail", href: `mailto:${encodeURI(email)}` }
+        : null,
+      whatsapp
+        ? {
+            id: "whatsapp",
+            label: "Contacter sur WhatsApp",
+            href: `https://wa.me/${whatsapp}`,
+            external: true,
+          }
+        : null,
+    ].filter((action): action is NavigationItem => action !== null)
+  }
+
   function prepareVehicle(vehicle: Vehicle): Vehicle {
     const resolvedImage =
       vehicle.displayImage ??
@@ -156,6 +235,42 @@ export function createLiveEngine(source: LiveEngineData) {
     )
   }
 
+  function getPublicVehicleSlugs(): string[] {
+    return source.vehicles
+      .filter((vehicle) => vehicle.public)
+      .map((vehicle) => vehicle.slug)
+  }
+
+  function getVehicleDetailBySlug(slug: string): LiveVehicleDetail | null {
+    const vehicle = source.vehicles.find(
+      (candidate) => candidate.slug === slug && candidate.public
+    )
+    if (!vehicle) return null
+    const images = prepareDetailImages(vehicle)
+    const displayName = [vehicle.brand, vehicle.model, vehicle.trim]
+      .filter(Boolean)
+      .join(" ")
+    const mileage = vehicle.mileage === undefined
+      ? null
+      : `${new Intl.NumberFormat("fr-FR").format(vehicle.mileage)} km`
+    const seoParts = [displayName, vehicle.year, mileage].filter(Boolean)
+    return {
+      vehicle: clone(vehicle),
+      displayName,
+      subtitle: vehicle.description?.trim() || undefined,
+      price: vehicle.sellingPrice ?? null,
+      images,
+      primaryImage: images[0] ?? null,
+      metadata: prepareDetailMetadata(vehicle),
+      status: vehicle.available ? "available" : "unavailable",
+      contactActions: prepareContactActions(),
+      seo: {
+        title: `${displayName} | ${source.garage.live.siteName}`,
+        description: `Découvrez ${seoParts.join(", ")} chez ${source.garage.live.siteName}.`,
+      },
+    }
+  }
+
   function getLiveHomepage(): LiveHomepage {
     const live = source.garage.live
     const enabledModuleConfigs = getEnabledModuleConfigs()
@@ -188,6 +303,8 @@ export function createLiveEngine(source: LiveEngineData) {
     getFeaturedVehicles,
     getVisibleCollections,
     getVisibleServices,
+    getPublicVehicleSlugs,
+    getVehicleDetailBySlug,
     getNavigation,
     getLiveHomepage,
   }
@@ -201,4 +318,6 @@ export const getHeroContent = defaultEngine.getHeroContent
 export const getFeaturedVehicles = defaultEngine.getFeaturedVehicles
 export const getVisibleCollections = defaultEngine.getVisibleCollections
 export const getVisibleServices = defaultEngine.getVisibleServices
+export const getPublicVehicleSlugs = defaultEngine.getPublicVehicleSlugs
+export const getVehicleDetailBySlug = defaultEngine.getVehicleDetailBySlug
 export const getLiveHomepage = defaultEngine.getLiveHomepage

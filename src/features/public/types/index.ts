@@ -74,6 +74,7 @@ export type HeroConfig = {
 export type GarageContact = {
   phone?: string
   email?: string
+  whatsapp?: string
   website?: string
 }
 
@@ -212,4 +213,28 @@ export type LiveEngineData = {
   vehicles: readonly Vehicle[]
   collections: readonly Collection[]
   services: readonly Service[]
+}
+
+export type LiveVehicleStatus = "available" | "reserved" | "unavailable"
+
+export type LiveVehicleMetadataItem = {
+  id: "year" | "mileage" | "fuel" | "gearbox" | "trim"
+  label: string
+  value: string
+}
+
+export type LiveVehicleDetail = {
+  vehicle: Vehicle
+  displayName: string
+  subtitle?: string
+  price: number | null
+  images: VehicleImage[]
+  primaryImage: VehicleImage | null
+  metadata: LiveVehicleMetadataItem[]
+  status: LiveVehicleStatus
+  contactActions: NavigationItem[]
+  seo: {
+    title: string
+    description: string
+  }
 }

@@ -109,3 +109,72 @@ test("ne modifie pas les données sources pendant la composition", () => {
   engine.getLiveHomepage()
   assert.deepEqual(data, before)
 })
+
+test("résout une fiche publique par son slug exact", () => {
+  const detail = createLiveEngine(createFixture()).getVehicleDetailBySlug("bmw-m3-2015")
+  assert.equal(detail?.displayName, "BMW M3 F80")
+  assert.equal(detail?.status, "available")
+})
+
+test("refuse un véhicule privé et un slug inconnu", () => {
+  const data = createFixture()
+  data.vehicles[0].public = false
+  const engine = createLiveEngine(data)
+  assert.equal(engine.getVehicleDetailBySlug(data.vehicles[0].slug), null)
+  assert.equal(engine.getVehicleDetailBySlug("slug-inconnu"), null)
+})
+
+test("conserve accessible un véhicule public indisponible", () => {
+  const data = createFixture()
+  data.vehicles[0].available = false
+  const detail = createLiveEngine(data).getVehicleDetailBySlug(data.vehicles[0].slug)
+  assert.equal(detail?.status, "unavailable")
+})
+
+test("déduplique les images et place l’image principale en premier", () => {
+  const data = createFixture()
+  data.vehicles[0].images = [
+    { id: "secondary", url: "/secondary.jpg", alt: "Secondaire", isPrimary: false },
+    { id: "duplicate", url: "/primary.jpg", alt: "Doublon", isPrimary: false },
+    { id: "primary", url: "/primary.jpg", alt: "Principale", isPrimary: true },
+  ]
+  const detail = createLiveEngine(data).getVehicleDetailBySlug(data.vehicles[0].slug)
+  assert.deepEqual(detail?.images.map((image) => image.id), ["primary", "secondary"])
+  assert.equal(detail?.primaryImage?.id, "primary")
+})
+
+test("prépare un fallback lorsque la fiche ne possède aucune image", () => {
+  const data = createFixture()
+  data.vehicles[0].images = []
+  const detail = createLiveEngine(data).getVehicleDetailBySlug(data.vehicles[0].slug)
+  assert.equal(detail?.images.length, 1)
+  assert.equal(detail?.primaryImage?.url, data.garage.live.vehicleFallbackImageUrl)
+})
+
+test("prépare uniquement les actions de contact configurées", () => {
+  const data = createFixture()
+  data.garage.live.contact = {
+    phone: "+33 3 00 00 00 00",
+    whatsapp: "+33 6 00 00 00 00",
+  }
+  const detail = createLiveEngine(data).getVehicleDetailBySlug(data.vehicles[0].slug)
+  assert.deepEqual(detail?.contactActions.map((action) => action.id), ["phone", "whatsapp"])
+  assert.equal(detail?.contactActions[0].href, "tel:+33300000000")
+  assert.equal(detail?.contactActions[1].href, "https://wa.me/33600000000")
+})
+
+test("ne modifie pas les sources pendant la préparation d’une fiche", () => {
+  const data = createFixture()
+  const before = structuredClone(data)
+  createLiveEngine(data).getVehicleDetailBySlug(data.vehicles[0].slug)
+  assert.deepEqual(data, before)
+})
+
+test("génère uniquement les slugs des véhicules publics", () => {
+  const data = createFixture()
+  data.vehicles[0].public = false
+  assert.deepEqual(
+    createLiveEngine(data).getPublicVehicleSlugs(),
+    data.vehicles.slice(1).map((vehicle) => vehicle.slug)
+  )
+})
