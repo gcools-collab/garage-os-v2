@@ -1,31 +1,70 @@
+import { defaultTheme } from "../theme"
 import type { GarageConfig } from "../types"
 
 export const garage: GarageConfig = {
   id: "garage-os-demo",
-  name: "Garage OS",
-  tagline: "Des véhicules sélectionnés avec exigence.",
-  description: "Un showroom automobile pensé pour une expérience simple et transparente.",
-  contact: {
-    phone: "+33 3 00 00 00 00",
-    email: "contact@example.com",
-  },
   address: {
     postalCode: "59590",
     city: "Raismes",
     country: "France",
   },
-  navigation: [
-    { id: "home", label: "Accueil", href: "/" },
-    { id: "vehicles", label: "Nos véhicules", href: "/vehicles" },
-    { id: "services", label: "Nos services", href: "/#services" },
-    { id: "contact", label: "Contact", href: "/#contact" },
-  ],
-  hero: {
-    eyebrow: "Garage OS Live",
-    title: "Votre prochain véhicule commence ici.",
-    description: "Découvrez une sélection de véhicules préparés et disponibles.",
-    primaryAction: { id: "discover", label: "Découvrir les véhicules", href: "/vehicles" },
-    featuredVehicleId: "bmw-m3-2015",
+  live: {
+    enabled: true,
+    siteName: "Garage OS",
+    slogan: "Des véhicules sélectionnés avec exigence.",
+    theme: defaultTheme,
+    contact: {
+      phone: "+33 3 00 00 00 00",
+      email: "contact@example.com",
+    },
+    socialLinks: [],
+    collectionFallbackImageUrl: "/live/collections/default.jpg",
+    modules: [
+      {
+        id: "catalog",
+        enabled: true,
+        navigation: { id: "catalog", label: "Nos véhicules", href: "/vehicles" },
+        order: 1,
+      },
+      {
+        id: "services",
+        enabled: true,
+        navigation: { id: "services", label: "Nos services", href: "/#services" },
+        order: 2,
+      },
+      {
+        id: "tradeIn",
+        enabled: true,
+        navigation: { id: "trade-in", label: "Reprise", href: "/#trade-in" },
+        order: 3,
+      },
+      {
+        id: "financing",
+        enabled: true,
+        navigation: { id: "financing", label: "Financement", href: "/#financing" },
+        order: 4,
+      },
+      {
+        id: "contact",
+        enabled: true,
+        navigation: { id: "contact", label: "Contact", href: "/#contact" },
+        order: 5,
+      },
+      { id: "about", enabled: false, navigation: null, order: 6 },
+      { id: "reviews", enabled: false, navigation: null, order: 7 },
+    ],
+    hero: {
+      mode: "auto",
+      eyebrow: "Garage OS Live",
+      title: "Votre prochain véhicule commence ici.",
+      description: "Découvrez une sélection de véhicules préparés et disponibles.",
+      primaryAction: { id: "discover", label: "Découvrir les véhicules", href: "/vehicles" },
+      secondaryAction: { id: "contact", label: "Nous contacter", href: "/#contact" },
+      vehicleId: "bmw-m3-2015",
+      trustItems: [
+        { id: "selection", label: "Véhicules sélectionnés" },
+        { id: "preparation", label: "Préparation professionnelle" },
+      ],
+    },
   },
-  themeId: "garage-os-default",
 }

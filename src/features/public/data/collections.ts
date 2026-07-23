@@ -7,6 +7,7 @@ export const collections: Collection[] = [
     name: "Sélection du moment",
     description: "Les véhicules récemment sélectionnés par notre équipe.",
     vehicleIds: ["peugeot-308-gt-line", "renault-clio-rs-line"],
+    active: true,
     order: 1,
   },
   {
@@ -16,6 +17,7 @@ export const collections: Collection[] = [
     description: "Des modèles de caractère choisis pour les passionnés.",
     vehicleIds: ["bmw-m3-2015"],
     coverImageUrl: "/live/collections/sport-prestige.jpg",
+    active: true,
     order: 2,
   },
 ]

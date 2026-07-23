@@ -1,5 +1,19 @@
-import { getGarageConfig, HeroPlaceholder } from "@/features/public"
+import {
+  getLiveHomepage,
+  HeroPlaceholder,
+  PublicLayout,
+} from "@/features/public"
 
 export default function LiveLandingPage() {
-  return <HeroPlaceholder hero={getGarageConfig().hero} />
+  const homepage = getLiveHomepage()
+
+  return (
+    <PublicLayout
+      garage={homepage.garage}
+      navigation={homepage.navigation}
+      theme={homepage.theme}
+    >
+      <HeroPlaceholder hero={homepage.hero} />
+    </PublicLayout>
+  )
 }

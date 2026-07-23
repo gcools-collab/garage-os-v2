@@ -7,6 +7,9 @@ export const services: Service[] = [
     name: "Recherche personnalisée",
     description: "Nous recherchons le véhicule adapté à vos critères.",
     icon: "search",
+    active: true,
+    public: true,
+    featured: true,
     order: 1,
   },
   {
@@ -15,6 +18,9 @@ export const services: Service[] = [
     name: "Reprise",
     description: "Une estimation claire et un accompagnement pour votre reprise.",
     icon: "refresh",
+    active: true,
+    public: true,
+    featured: false,
     order: 2,
   },
   {
@@ -23,6 +29,9 @@ export const services: Service[] = [
     name: "Financement",
     description: "Des solutions adaptées à votre projet automobile.",
     icon: "credit-card",
+    active: true,
+    public: true,
+    featured: false,
     order: 3,
   },
 ]

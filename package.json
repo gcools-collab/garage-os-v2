@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "npm run test:acquisition && npm run test:market && npm run test:documents && npm run test:live",
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts",
     "test:market": "tsx --test src/features/market/market-analysis.test.ts",
-    "test:documents": "tsx --test src/features/vehicles/documents/vehicle-documents.test.ts"
+    "test:documents": "tsx --test src/features/vehicles/documents/vehicle-documents.test.ts",
+    "test:live": "tsx --test src/features/public/lib/live-engine.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

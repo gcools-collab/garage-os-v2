@@ -1,6 +1,6 @@
-import type { HeroConfig } from "../../types"
+import type { HeroContent } from "../../types"
 
-export function HeroPlaceholder({ hero }: { hero: HeroConfig }) {
+export function HeroPlaceholder({ hero }: { hero: HeroContent }) {
   return (
     <section className="mx-auto flex min-h-[34rem] max-w-[var(--live-content-width)] items-center px-5 py-20 sm:px-8">
       <div className="w-full rounded-[var(--live-card-radius)] border border-dashed border-[var(--live-border)] bg-[var(--live-surface)] px-6 py-20 text-center sm:px-12">

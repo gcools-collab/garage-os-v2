@@ -16,7 +16,11 @@ export const vehicles: Vehicle[] = [
     images: [
       { id: "bmw-m3-primary", url: "/live/vehicles/bmw-m3.jpg", alt: "BMW M3 F80", isPrimary: true },
     ],
+    public: true,
+    available: true,
     featured: true,
+    featuredPriority: 100,
+    addedAt: "2026-07-20T10:00:00.000Z",
     collectionIds: ["sport-prestige"],
   },
   {
@@ -31,7 +35,11 @@ export const vehicles: Vehicle[] = [
     gearbox: "Automatique",
     sellingPrice: 21990,
     images: [],
+    public: true,
+    available: true,
     featured: true,
+    featuredPriority: 60,
+    addedAt: "2026-07-22T10:00:00.000Z",
     collectionIds: ["selection-du-moment"],
   },
   {
@@ -46,7 +54,11 @@ export const vehicles: Vehicle[] = [
     gearbox: "Manuelle",
     sellingPrice: 18990,
     images: [],
+    public: true,
+    available: true,
     featured: false,
+    featuredPriority: 0,
+    addedAt: "2026-07-21T10:00:00.000Z",
     collectionIds: ["selection-du-moment"],
   },
 ]
