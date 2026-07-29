@@ -134,16 +134,22 @@ function insight(vehicle: Vehicle, analysis: MarketAnalysis): MarketVehicleInsig
 export function buildMarketDashboard({ vehicles, listings }: { vehicles: readonly Vehicle[]; listings: readonly MarketListing[] }): MarketDashboardViewModel {
   if (!vehicles.length) return { header: { title: "Intelligence marché", description: "Analyse du positionnement tarifaire de votre stock.", helper: "0 véhicule analysé" }, summary: [], priorityActions: [], vehicles: [], emptyState: { title: "Aucun véhicule à analyser", description: "Ajoutez des véhicules au stock pour commencer l’analyse du marché." } }
   if (!listings.length) return { header: { title: "Intelligence marché", description: "Analyse du positionnement tarifaire de votre stock.", helper: "Aucune donnée marché" }, summary: [], priorityActions: [], vehicles: [], emptyState: { title: "Pas encore assez de données marché", description: "Importez des annonces comparables pour obtenir des recommandations tarifaires." } }
-  const insights = vehicles.map((vehicle) => insight(vehicle, analyzeVehicleMarket(toMarketVehicle(vehicle), listings)))
+  const analyzedVehicles = vehicles.map((vehicle) => {
+    const analysis = analyzeVehicleMarket(toMarketVehicle(vehicle), listings)
+    return { analysis, insight: insight(vehicle, analysis) }
+  })
+  const comparableCount = analyzedVehicles.reduce((total, { analysis }) => total + analysis.listingCount, 0)
+  if (comparableCount === 0) return { header: { title: "Intelligence marché", description: "Analyse du positionnement tarifaire de votre stock.", helper: "Aucune donnée comparable" }, summary: [], priorityActions: [], vehicles: [], emptyState: { title: "Pas encore assez de données marché", description: "Importez des annonces comparables pour obtenir des recommandations tarifaires." } }
+  const insights = analyzedVehicles.map(({ insight: vehicleInsight }) => vehicleInsight)
   const positionOrder = { OVER_MARKET: 0, UNDER_MARKET: 1, MARKET: 2, UNKNOWN: 3 }
   insights.sort((a, b) => positionOrder[a.position.key as MarketPricePosition] - positionOrder[b.position.key as MarketPricePosition] || b.comparableCount - a.comparableCount || a.vehicleLabel.localeCompare(b.vehicleLabel) || a.vehicleId.localeCompare(b.vehicleId))
   const priorities = insights.map((item) => {
     const high = item.warnings.some((warning) => warning.key === "PRICE_TOO_HIGH")
     const low = item.warnings.some((warning) => warning.key === "PRICE_TOO_LOW")
     return { item, rank: high && item.confidence.key === "HIGH" ? 0 : high ? 1 : low ? 2 : item.comparableCount === 0 ? 3 : 5 }
-  }).sort((a, b) => a.rank - b.rank || a.item.vehicleLabel.localeCompare(b.item.vehicleLabel)).slice(0, 5)
+  }).filter(({ rank }) => rank < 5).sort((a, b) => a.rank - b.rank || a.item.vehicleLabel.localeCompare(b.item.vehicleLabel)).slice(0, 5)
   const garagePrices = vehicles.flatMap((vehicle) => vehicle.sellingPrice == null ? [] : [vehicle.sellingPrice])
-  const marketPrices = insights.flatMap((item) => item.marketPrice ? [Number(item.marketPrice.replace(/[^\d]/g, ""))] : [])
+  const marketPrices = analyzedVehicles.flatMap(({ analysis }) => analysis.medianPrice == null ? [] : [analysis.medianPrice])
   const count = (key: MarketPricePosition) => insights.filter((item) => item.position.key === key).length
   return {
     header: { title: "Intelligence marché", description: "Analyse du positionnement tarifaire de votre stock à partir des annonces comparables.", helper: `${insights.length} véhicule${insights.length > 1 ? "s" : ""} analysé${insights.length > 1 ? "s" : ""}` },
@@ -153,7 +159,7 @@ export function buildMarketDashboard({ vehicles, listings }: { vehicles: readonl
       { id: "market", label: "Bien positionnés", value: String(count("MARKET")), tone: "positive" },
       { id: "under", label: "Sous le marché", value: String(count("UNDER_MARKET")), tone: "warning" },
       { id: "confidence", label: "Confiance élevée", value: String(insights.filter((item) => item.confidence.key === "HIGH").length), tone: "positive" },
-      { id: "priorities", label: "Actions prioritaires", value: String(priorities.filter((priority) => priority.rank < 5).length), tone: "warning" },
+      { id: "priorities", label: "Actions prioritaires", value: String(priorities.length), tone: "warning" },
       { id: "garage-price", label: "Prix moyen garage", value: formatMarketCurrency(garagePrices.length ? garagePrices.reduce((sum, price) => sum + price, 0) / garagePrices.length : null) ?? "Non disponible", tone: "neutral" },
       { id: "market-price", label: "Prix moyen marché", value: formatMarketCurrency(marketPrices.length ? marketPrices.reduce((sum, price) => sum + price, 0) / marketPrices.length : null) ?? "Non disponible", tone: "neutral" },
     ],

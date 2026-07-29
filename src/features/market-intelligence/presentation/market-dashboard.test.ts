@@ -1,8 +1,28 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { vehicles } from "@/features/public/data"
+import type { Vehicle } from "@/features/public/types"
+import type { MarketListing } from "../engine"
 import { marketListingsFixture } from "../models/market-listings.fixture"
 import { buildMarketDashboard, formatMarketCurrency, toMarketVehicle } from "./market-dashboard"
+
+function vehicleForMarket(id: string, brand: string, model: string, sellingPrice: number): Vehicle {
+  return { ...structuredClone(vehicles[0]), id, slug: id, brand, model, sellingPrice }
+}
+
+function listingForVehicle(vehicle: Vehicle, id: string, price: number): MarketListing {
+  return {
+    id,
+    source: "test",
+    price,
+    brand: vehicle.brand,
+    model: vehicle.model,
+    year: vehicle.year,
+    mileage: vehicle.mileage,
+    fuel: vehicle.fuel,
+    gearbox: vehicle.gearbox,
+  }
+}
 
 test("adapte un Vehicle complet sans mutation", () => {
   const source = structuredClone(vehicles[0])
@@ -32,6 +52,66 @@ test("formate les montants en français et gère null", () => {
 test("prépare les états vides véhicule et marché", () => {
   assert.match(buildMarketDashboard({ vehicles: [], listings: marketListingsFixture }).emptyState?.title ?? "", /Aucun véhicule/)
   assert.match(buildMarketDashboard({ vehicles, listings: [] }).emptyState?.title ?? "", /données marché/)
+})
+
+test("calcule le prix moyen marché depuis les médianes numériques", () => {
+  const first = vehicleForMarket("first", "Alfa Romeo", "Giulia", 20_000)
+  const second = vehicleForMarket("second", "Volvo", "V60", 30_000)
+  const dashboard = buildMarketDashboard({
+    vehicles: [first, second],
+    listings: [listingForVehicle(first, "first-listing", 10_000), listingForVehicle(second, "second-listing", 30_000)],
+  })
+
+  assert.equal(dashboard.summary.find(({ id }) => id === "market-price")?.value, formatMarketCurrency(20_000))
+})
+
+test("ne réinterprète pas les chaînes monétaires pour calculer la moyenne marché", () => {
+  const first = vehicleForMarket("decimal-first", "Alfa Romeo", "Giulia", 20_000)
+  const second = vehicleForMarket("decimal-second", "Volvo", "V60", 30_000)
+  const dashboard = buildMarketDashboard({
+    vehicles: [first, second],
+    listings: [
+      listingForVehicle(first, "decimal-first-listing", 10_000.1),
+      listingForVehicle(second, "decimal-second-listing", 10_000.5),
+    ],
+  })
+
+  assert.equal(dashboard.summary.find(({ id }) => id === "market-price")?.value, formatMarketCurrency(10_000.3))
+  assert.notEqual(dashboard.summary.find(({ id }) => id === "market-price")?.value, formatMarketCurrency(10_000.5))
+})
+
+test("retourne l'état vide lorsque les listings ne produisent aucun comparable", () => {
+  const dashboard = buildMarketDashboard({
+    vehicles: [vehicleForMarket("target", "BMW", "M3", 42_990)],
+    listings: [{ id: "unrelated", source: "test", price: 25_000, brand: "Audi", model: "A4" }],
+  })
+
+  assert.deepEqual(dashboard.emptyState, {
+    title: "Pas encore assez de données marché",
+    description: "Importez des annonces comparables pour obtenir des recommandations tarifaires.",
+  })
+})
+
+test("n'ajoute aucune action neutre aux priorités", () => {
+  const vehicle = vehicleForMarket("well-positioned", "BMW", "M3", 40_000)
+  const listings = Array.from({ length: 10 }, (_, index) => listingForVehicle(vehicle, `market-${index}`, 40_000))
+  const dashboard = buildMarketDashboard({ vehicles: [vehicle], listings })
+
+  assert.deepEqual(dashboard.priorityActions, [])
+})
+
+test("limite les actions prioritaires à cinq", () => {
+  const priorityVehicles = Array.from(
+    { length: 6 },
+    (_, index) => vehicleForMarket(`priority-${index}`, "BMW", "M3", 60_000)
+  )
+  const listings = Array.from(
+    { length: 10 },
+    (_, index) => listingForVehicle(priorityVehicles[0], `comparable-${index}`, 40_000)
+  )
+  const dashboard = buildMarketDashboard({ vehicles: priorityVehicles, listings })
+
+  assert.equal(dashboard.priorityActions.length, 5)
 })
 
 test("prépare KPIs, insights et priorités déterministes", () => {
