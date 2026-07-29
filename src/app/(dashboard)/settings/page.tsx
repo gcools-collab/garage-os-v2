@@ -1,8 +1,13 @@
+import Link from "next/link"
+
+import { Button } from "@/components/ui/button"
+
 export default function SettingsPage() {
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <h1 className="text-3xl font-bold">Paramètres</h1>
-      <p className="text-muted-foreground">Module en cours de construction</p>
+      <p className="text-muted-foreground">Gérez la configuration de votre garage.</p>
+      <Button asChild><Link href="/settings/branding">Identité du garage</Link></Button>
     </div>
   )
 }
