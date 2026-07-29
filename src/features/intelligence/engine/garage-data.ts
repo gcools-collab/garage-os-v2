@@ -52,7 +52,6 @@ export type GarageActivity = {
 }
 
 export type GarageIntelligenceData = {
-  readonly garageName: string
   readonly userFirstName: string
   readonly referenceDate: string
   readonly stock: readonly GarageStockVehicle[]

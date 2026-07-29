@@ -10,17 +10,18 @@ test("construit un ViewModel déterministe sans muter les données garage", () =
   const data = structuredClone(garageIntelligenceFixture)
   const before = structuredClone(data)
 
-  const first = buildGarageDashboard(data)
-  const second = buildGarageDashboard(data)
+  const context = { garageName: "Garage Martin" }
+  const first = buildGarageDashboard({ data, context })
+  const second = buildGarageDashboard({ data, context })
 
   assert.deepEqual(first, second)
   assert.deepEqual(data, before)
 })
 
 test("prépare toutes les valeurs métier avant le rendu", () => {
-  const dashboard = buildGarageDashboard()
+  const dashboard = buildGarageDashboard({ context: { garageName: "Garage Martin" } })
 
-  assert.equal(dashboard.summary.title, "Bonjour Julien")
+  assert.equal(dashboard.summary.title, "Aujourd’hui chez Garage Martin")
   assert.deepEqual(dashboard.kpis.map((kpi) => kpi.id), [
     "stock",
     "stock-value",
@@ -36,7 +37,7 @@ test("prépare toutes les valeurs métier avant le rendu", () => {
 })
 
 test("n'expose aucun véhicule ou MarketAnalysis brut dans le ViewModel", () => {
-  const serialized = JSON.stringify(buildGarageDashboard())
+  const serialized = JSON.stringify(buildGarageDashboard({ context: { garageName: "Garage Martin" } }))
 
   assert.equal(serialized.includes('"purchasePrice"'), false)
   assert.equal(serialized.includes('"sellingPrice"'), false)
@@ -46,7 +47,7 @@ test("n'expose aucun véhicule ou MarketAnalysis brut dans le ViewModel", () => 
 
 test("rend le dashboard depuis le seul ViewModel avec un unique h1", () => {
   const html = renderToStaticMarkup(
-    <GarageIntelligenceDashboard dashboard={buildGarageDashboard()} />
+    <GarageIntelligenceDashboard dashboard={buildGarageDashboard({ context: { garageName: "Garage Martin" } })} />
   )
 
   assert.equal((html.match(/<h1/g) ?? []).length, 1)
@@ -54,4 +55,11 @@ test("rend le dashboard depuis le seul ViewModel avec un unique h1", () => {
   assert.match(html, /Alertes/)
   assert.match(html, /Recommandations IA/)
   assert.match(html, /Dernières activités/)
+})
+
+test("injecte le garage actif sans modifier les fixtures métier", () => {
+  const dashboard = buildGarageDashboard({ context: { garageName: "S.A.P" } })
+
+  assert.equal(dashboard.summary.title, "Aujourd’hui chez S.A.P")
+  assert.equal(dashboard.kpis.find((kpi) => kpi.id === "stock")?.value, "3")
 })

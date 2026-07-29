@@ -64,7 +64,7 @@ const navigation = [
 ]
 
 
-export function Sidebar(){
+export function Sidebar({ garageName }: { readonly garageName: string }){
 
 return (
 
@@ -83,11 +83,11 @@ p-6
 <div className="mb-10">
 
 <h1 className="text-2xl font-bold">
-🚗 Garage OS
+{garageName}
 </h1>
 
 <p className="text-sm text-zinc-400 mt-1">
-Automotive Intelligence
+Propulsé par Garage OS
 </p>
 
 </div>

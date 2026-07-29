@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { persistActiveGarageCookie } from "@/features/tenant/data"
 import { redirect } from "next/navigation"
 
 
@@ -98,6 +99,7 @@ export async function register(formData: FormData) {
 
   const {
 
+    data: garageId,
     error: garageError
 
   } = await supabase.rpc(
@@ -120,6 +122,10 @@ export async function register(formData: FormData) {
       garageError.message
     )
 
+  }
+
+  if (typeof garageId === "string") {
+    await persistActiveGarageCookie(garageId)
   }
 
 

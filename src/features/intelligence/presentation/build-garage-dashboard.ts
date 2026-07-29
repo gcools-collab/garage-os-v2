@@ -34,9 +34,16 @@ function item(
 }
 
 export function buildGarageDashboard(
-  data: GarageIntelligenceData = garageIntelligenceFixture
+  {
+    data = garageIntelligenceFixture,
+    context,
+  }: {
+    readonly data?: GarageIntelligenceData
+    readonly context: { readonly garageName: string }
+  }
 ): GarageDashboardViewModel {
   const now = new Date(data.referenceDate)
+  const garageName = context.garageName
   const activeStock = data.stock.filter((vehicle) => ACTIVE_STATUSES.has(vehicle.status))
   const stockValue = activeStock.reduce((total, vehicle) => total + (vehicle.sellingPrice ?? 0), 0)
   const investedCapital = activeStock.reduce((total, vehicle) => total + capitalInvested(vehicle), 0)
@@ -106,9 +113,11 @@ export function buildGarageDashboard(
 
   return {
     summary: {
-      eyebrow: data.garageName,
-      title: data.userFirstName.trim() ? `Bonjour ${data.userFirstName.trim()}` : "Bonjour",
-      description: "Voici les points essentiels pour piloter votre garage aujourd’hui.",
+      eyebrow: "Garage Intelligence",
+      title: `Aujourd’hui chez ${garageName}`,
+      description: data.userFirstName.trim()
+        ? `Bonjour ${data.userFirstName.trim()}, voici les points essentiels pour piloter votre garage.`
+        : "Voici les points essentiels pour piloter votre garage aujourd’hui.",
       indicators: [
         { id: "priorities", value: integer.format(priorities.length), label: "actions prioritaires", tone: priorities.length > 0 ? "warning" : "positive" },
         { id: "alerts", value: integer.format(alerts.length), label: "alertes", tone: alerts.length > 0 ? "danger" : "positive" },

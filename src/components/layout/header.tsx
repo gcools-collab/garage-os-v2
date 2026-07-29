@@ -1,4 +1,4 @@
-export function Header(){
+export function Header({ garageName }: { readonly garageName: string }){
 
     return (
     
@@ -26,7 +26,7 @@ export function Header(){
     text-muted-foreground
     ">
     
-    Garage connecté
+    {garageName}
     
     </div>
     

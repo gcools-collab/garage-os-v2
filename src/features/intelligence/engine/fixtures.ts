@@ -1,7 +1,6 @@
 import type { GarageIntelligenceData } from "./garage-data"
 
 export const garageIntelligenceFixture: GarageIntelligenceData = {
-  garageName: "Garage Martin",
   userFirstName: "Julien",
   referenceDate: "2026-07-29T09:00:00.000Z",
   stock: [
