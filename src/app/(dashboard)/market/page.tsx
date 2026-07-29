@@ -1,8 +1,7 @@
+import { buildMarketDashboard, marketListingsFixture, MarketDashboardPage } from "@/features/market-intelligence"
+import { vehicles } from "@/features/public/data"
+
 export default function MarketPage() {
-  return (
-    <div className="space-y-2">
-      <h1 className="text-3xl font-bold">Market Intelligence</h1>
-      <p className="text-muted-foreground">Module en cours de construction</p>
-    </div>
-  )
+  const dashboard = buildMarketDashboard({ vehicles, listings: marketListingsFixture })
+  return <MarketDashboardPage dashboard={dashboard} />
 }
