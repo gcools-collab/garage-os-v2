@@ -16,6 +16,7 @@ import type {
   GarageBrandingUpdateResult,
 } from "./types"
 import type { ActiveGarageSession } from "@/features/tenant"
+import { LiveThemeSelector, listSelectableLiveThemes } from "@/features/theme"
 
 const GARAGE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 const OTHER_GARAGE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
@@ -66,6 +67,7 @@ const validInput: GarageBrandingUpdateInput = {
   websiteUrl: "https://example.fr",
   countryCode: "fr",
   primaryColor: "#ffd400",
+  themeKey: "black-yellow",
 }
 
 function recordFromInput(garageId: string, input: GarageBrandingUpdateInput) {
@@ -77,6 +79,7 @@ function recordFromInput(garageId: string, input: GarageBrandingUpdateInput) {
     website_url: input.websiteUrl ?? null,
     country_code: input.countryCode ?? "FR",
     primary_color: input.primaryColor ?? null,
+    theme_key: input.themeKey ?? "default",
   })
 }
 
@@ -173,6 +176,7 @@ for (const role of ["owner", "admin"]) {
     if (result.success) {
       assert.equal(result.branding.contact.email, "contact@example.fr")
       assert.equal(result.branding.colors.primary, "#FFD400")
+      assert.equal(result.branding.themeKey, "black-yellow")
     }
   })
 }
@@ -211,6 +215,7 @@ for (const [name, input] of [
   ["email", { ...validInput, email: "email-invalide" }],
   ["URL", { ...validInput, websiteUrl: "javascript:alert(1)" }],
   ["couleur", { ...validInput, primaryColor: "yellow" }],
+  ["thème", { ...validInput, themeKey: "valeur-libre" }],
 ] as const) {
   test(`refuse une valeur ${name} invalide`, async () => {
     const result = await updateGarageBrandingWithDependencies(input, {
@@ -264,7 +269,17 @@ test("rend les paramètres avec un seul h1 et le vrai displayName", () => {
   const html = renderToStaticMarkup(
     <main>
       <h1>{settings.title}</h1>
-      <BrandingSettingsForm settings={settings} updateBranding={updateBranding} />
+      <BrandingSettingsForm
+        settings={settings}
+        updateBranding={updateBranding}
+        themeSelector={
+          <LiveThemeSelector
+            themes={listSelectableLiveThemes()}
+            selectedThemeKey="black-yellow"
+            disabled={false}
+          />
+        }
+      />
     </main>
   )
   assert.equal((html.match(/<h1/g) ?? []).length, 1)

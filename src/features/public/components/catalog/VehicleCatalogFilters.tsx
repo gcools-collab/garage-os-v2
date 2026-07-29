@@ -5,7 +5,7 @@ export function VehicleCatalogFilters({ filters, activeFilterCount }: { filters:
   const values = filters.formValues
   return (
     <details open className="rounded-[var(--live-card-radius)] border border-[var(--live-border)] bg-[var(--live-surface)] p-5">
-      <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)]">Filtres{activeFilterCount ? ` (${activeFilterCount})` : ""}</summary>
+      <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]">Filtres{activeFilterCount ? ` (${activeFilterCount})` : ""}</summary>
       <form action="/vehicles" method="get" className="mt-6 space-y-5">
         <FilterSelect name="collection" label="Collection" value={values.collection} options={filters.collections} />
         <FilterSelect name="brand" label="Marque" value={values.brand} options={filters.brands} />
@@ -19,8 +19,8 @@ export function VehicleCatalogFilters({ filters, activeFilterCount }: { filters:
           </div>
         </fieldset>
         {values.sort !== "recommended" && <input type="hidden" name="sort" value={values.sort} />}
-        <button type="submit" className="min-h-11 w-full rounded-[var(--live-control-radius)] bg-[var(--live-primary)] px-4 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)]">Appliquer</button>
-        <Link href={filters.resetHref} className="block text-center text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)]">Réinitialiser</Link>
+        <button type="submit" className="min-h-11 w-full rounded-[var(--live-control-radius)] bg-[var(--live-primary)] px-4 font-semibold text-[var(--live-primary-foreground)] hover:bg-[var(--live-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]">Appliquer</button>
+        <Link href={filters.resetHref} className="block text-center text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]">Réinitialiser</Link>
       </form>
     </details>
   )

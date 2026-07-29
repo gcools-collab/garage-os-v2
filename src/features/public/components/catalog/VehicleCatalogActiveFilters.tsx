@@ -6,7 +6,7 @@ export function VehicleCatalogActiveFilters({ catalog }: { catalog: LiveVehicleC
   return (
     <div aria-label="Filtres actifs" className="flex flex-wrap items-center gap-2">
       {catalog.activeFilters.map((filter) => (
-        <Link key={filter.id} href={filter.removeHref} aria-label={`Supprimer le filtre ${filter.label} : ${filter.value}`} className="rounded-full border border-[var(--live-border)] bg-[var(--live-muted)] px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-primary)]">
+        <Link key={filter.id} href={filter.removeHref} aria-label={`Supprimer le filtre ${filter.label} : ${filter.value}`} className="rounded-full border border-[var(--live-border)] bg-[var(--live-muted)] px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">
           {filter.label} : {filter.value} ×
         </Link>
       ))}

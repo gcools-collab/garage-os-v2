@@ -22,3 +22,14 @@ export function getPublicThemeStyle(theme: Theme): PublicThemeStyle {
     "--live-content-width": theme.layout.contentMaxWidth,
   }
 }
+
+export function getPublicLayoutStyle(theme: Theme): PublicThemeStyle {
+  return {
+    "--live-font-family": theme.typography.fontFamily,
+    "--live-heading-weight": theme.typography.headingWeight,
+    "--live-body-weight": theme.typography.bodyWeight,
+    "--live-card-radius": theme.radius.card,
+    "--live-control-radius": theme.radius.control,
+    "--live-content-width": theme.layout.contentMaxWidth,
+  }
+}

@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { isLiveThemeKey } from "@/features/theme/registry"
+
 const emptyToNull = (value: unknown) =>
   typeof value === "string" && value.trim() === "" ? null : value
 
@@ -44,7 +46,7 @@ export const garageBrandingUpdateSchema = z.object({
   instagramUrl: optionalUrl,
   themeKey: z.preprocess(
     emptyToNull,
-    z.string().trim().regex(/^[a-z0-9][a-z0-9-]{0,49}$/).nullable().optional()
+    z.string().trim().refine(isLiveThemeKey, "Le thème sélectionné n’est pas disponible.").nullable().optional()
   ),
   primaryColor: optionalColor,
   secondaryColor: optionalColor,

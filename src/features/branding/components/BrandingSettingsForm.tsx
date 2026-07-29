@@ -1,7 +1,7 @@
 "use client"
 
 import { Loader2, Save } from "lucide-react"
-import { FormEvent, useState, useTransition } from "react"
+import { FormEvent, ReactNode, useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -43,9 +43,11 @@ function value(formData: FormData, name: string) {
 export function BrandingSettingsForm({
   settings,
   updateBranding,
+  themeSelector,
 }: {
   readonly settings: GarageBrandingSettingsViewModel
   readonly updateBranding: (input: GarageBrandingUpdateInput) => Promise<GarageBrandingUpdateResult>
+  readonly themeSelector: ReactNode
 }) {
   const [result, setResult] = useState<GarageBrandingUpdateResult | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -124,8 +126,8 @@ export function BrandingSettingsForm({
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Thème</CardTitle><CardDescription>La personnalisation visuelle complète sera disponible prochainement.</CardDescription></CardHeader>
-        <CardContent><Input value={settings.values.themeKey} disabled aria-label="Thème actif" /></CardContent>
+        <CardHeader><CardTitle>Thème</CardTitle><CardDescription>Cette identité visuelle sera appliquée à Garage OS Live.</CardDescription></CardHeader>
+        <CardContent>{themeSelector}</CardContent>
       </Card>
 
       {result ? (

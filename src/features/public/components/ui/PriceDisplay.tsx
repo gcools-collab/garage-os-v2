@@ -9,7 +9,7 @@ export function formatPrice(price: number | undefined) {
 
 export function PriceDisplay({ price }: { price?: number }) {
   return (
-    <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
+    <p className="text-2xl font-semibold tracking-tight text-[var(--live-accent)] sm:text-3xl">
       {formatPrice(price)}
     </p>
   )

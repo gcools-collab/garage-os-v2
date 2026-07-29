@@ -38,7 +38,7 @@ export function PublicVehicleCard({ vehicle }: { vehicle: LiveVehicleCard }) {
         </div>
         <Link
           href={vehicle.href}
-          className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--live-control-radius)] border border-[var(--live-border)] px-4 py-2.5 text-sm font-semibold text-[var(--live-foreground)] transition duration-200 lg:group-hover:border-[var(--live-primary)] lg:group-hover:bg-[var(--live-primary)] lg:group-hover:text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)] motion-reduce:transition-none"
+          className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--live-control-radius)] border border-[var(--live-border)] px-4 py-2.5 text-sm font-semibold text-[var(--live-foreground)] transition duration-200 lg:group-hover:border-[var(--live-primary)] lg:group-hover:bg-[var(--live-primary)] lg:group-hover:text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)] motion-reduce:transition-none"
           aria-label={`Voir le véhicule ${vehicle.displayName}`}
         >
           Voir le véhicule

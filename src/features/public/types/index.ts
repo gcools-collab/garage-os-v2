@@ -13,6 +13,7 @@ export type ThemeColorTokens = {
 export type Theme = {
   id: string
   name: string
+  themeKey?: string
   colors: ThemeColorTokens
   typography: {
     fontFamily: string

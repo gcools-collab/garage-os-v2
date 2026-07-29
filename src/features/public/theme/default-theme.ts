@@ -3,6 +3,7 @@ import type { Theme } from "../types"
 export const defaultTheme: Theme = {
   id: "garage-os-default",
   name: "Garage OS Default",
+  themeKey: "default",
   colors: {
     background: "#09090b",
     foreground: "#fafafa",

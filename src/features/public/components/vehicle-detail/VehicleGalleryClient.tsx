@@ -37,7 +37,7 @@ export function VehicleGalleryClient({
       aria-label={`Galerie de ${displayName}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="space-y-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-primary)]"
+      className="space-y-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]"
     >
       <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--live-card-radius)] border border-[var(--live-border)] bg-[var(--live-muted)]">
         <Image
@@ -58,7 +58,7 @@ export function VehicleGalleryClient({
               type="button"
               onClick={goPrevious}
               aria-label="Afficher l’image précédente"
-              className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-[var(--live-border)] bg-[var(--live-background)] text-[var(--live-foreground)] transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-primary)] motion-reduce:transition-none"
+              className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-[var(--live-border)] bg-[var(--live-background)] text-[var(--live-foreground)] transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)] motion-reduce:transition-none"
             >
               <ChevronLeft aria-hidden="true" className="size-5" />
             </button>
@@ -66,7 +66,7 @@ export function VehicleGalleryClient({
               type="button"
               onClick={goNext}
               aria-label="Afficher l’image suivante"
-              className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-[var(--live-border)] bg-[var(--live-background)] text-[var(--live-foreground)] transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-primary)] motion-reduce:transition-none"
+              className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-[var(--live-border)] bg-[var(--live-background)] text-[var(--live-foreground)] transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)] motion-reduce:transition-none"
             >
               <ChevronRight aria-hidden="true" className="size-5" />
             </button>
@@ -83,7 +83,7 @@ export function VehicleGalleryClient({
               onClick={() => setActiveIndex(index)}
               aria-label={`Afficher l’image ${index + 1} de ${displayName}`}
               aria-current={index === activeIndex ? "true" : undefined}
-              className="relative aspect-[4/3] overflow-hidden rounded-[var(--live-control-radius)] border border-[var(--live-border)] bg-[var(--live-muted)] transition hover:border-[var(--live-primary)] aria-current:border-[var(--live-primary)] aria-current:ring-2 aria-current:ring-[var(--live-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-primary)] motion-reduce:transition-none"
+              className="relative aspect-[4/3] overflow-hidden rounded-[var(--live-control-radius)] border border-[var(--live-border)] bg-[var(--live-muted)] transition hover:border-[var(--live-primary)] aria-current:border-[var(--live-primary)] aria-current:ring-2 aria-current:ring-[var(--live-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)] motion-reduce:transition-none"
             >
               <Image
                 src={image.url}
