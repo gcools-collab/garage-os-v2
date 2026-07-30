@@ -2,6 +2,7 @@ export interface PurchaseRecommendationViewModel {
   readonly available: boolean
   readonly title: string
   readonly description: string
+  readonly sourceLabel: string
   readonly resaleRange: string
   readonly resaleMedian: string
   readonly recommendedPrice: string

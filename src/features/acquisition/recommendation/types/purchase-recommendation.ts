@@ -1,4 +1,5 @@
 import type { AcquisitionOpportunity } from "../../types/opportunity"
+import type { AcquisitionMarketAnalysis } from "../../market/types"
 
 export type RecommendationConfidence = "LOW" | "MEDIUM" | "HIGH"
 export type RecommendationRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
@@ -6,7 +7,7 @@ export type RecommendationRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 export type RecommendationFactorCode =
   | "ASKING_PRICE" | "VEHICLE_AGE" | "MILEAGE" | "CONDITION"
   | "REPAIR_ESTIMATE" | "PROVENANCE" | "INFORMATION_QUALITY"
-  | "DOCUMENTS" | "PHOTOS" | "HISTORY"
+  | "DOCUMENTS" | "PHOTOS" | "HISTORY" | "MARKET_EVIDENCE"
 
 export interface RecommendationFactor {
   readonly code: RecommendationFactorCode
@@ -47,10 +48,13 @@ export interface PurchaseRecommendation {
   readonly recommendations: readonly string[]
   readonly factors: readonly RecommendationFactor[]
   readonly calculationBasis: string
+  readonly resaleSource: "MARKET_ANALYSIS" | "GARAGE_HISTORY" | "PROVISIONAL" | "UNAVAILABLE"
   readonly generatedAt: string
 }
 
 export interface PurchaseRecommendationInput {
   readonly opportunity: AcquisitionOpportunity
   readonly now: Date
+  readonly marketAnalysis?: AcquisitionMarketAnalysis | null
+  readonly historicalGarageEstimate?: number | null
 }

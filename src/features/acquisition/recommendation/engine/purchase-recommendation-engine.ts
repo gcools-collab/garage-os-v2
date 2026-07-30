@@ -30,27 +30,55 @@ export function buildPurchaseRecommendation(
   input: PurchaseRecommendationInput
 ): PurchaseRecommendation {
   const { opportunity, now } = input
-  const factors = buildRecommendationFactors(opportunity, now)
-  const reference = opportunity.askingPrice !== null && opportunity.askingPrice > 0
-    ? opportunity.askingPrice
+  const baseFactors = buildRecommendationFactors(opportunity, now)
+  const reliableMarket = input.marketAnalysis &&
+    input.marketAnalysis.comparableCount >= 3 &&
+    input.marketAnalysis.confidence !== "LOW" &&
+    input.marketAnalysis.medianPrice !== null
+    ? input.marketAnalysis
     : null
+  const factors = reliableMarket ? [...baseFactors, {
+    code: "MARKET_EVIDENCE" as const,
+    label: "Analyse marché",
+    weight: 0,
+    impact: 10,
+    explanation: `${reliableMarket.comparableCount} comparables fiables placent la médiane à ${Math.round(reliableMarket.medianPrice ?? 0).toLocaleString("fr-FR")} €.`,
+  }] : baseFactors
+  const reference = opportunity.askingPrice !== null && opportunity.askingPrice > 0
+    ? opportunity.askingPrice : null
   const adjustment = getResaleAdjustmentPercent(factors)
-  const resaleMedian = reference === null
-    ? null
-    : roundToFifty(reference * (1 + adjustment / 100))
-  const resaleLow = resaleMedian === null ? null : roundToFifty(resaleMedian * 0.92)
-  const resaleHigh = resaleMedian === null ? null : roundToFifty(resaleMedian * 1.08)
+  const historicalEstimate = input.historicalGarageEstimate &&
+    input.historicalGarageEstimate > 0 ? input.historicalGarageEstimate : null
+  const provisionalMedian = reference === null
+    ? null : roundToFifty(reference * (1 + adjustment / 100))
+  const resaleMedian = reliableMarket?.medianPrice ?? historicalEstimate ?? provisionalMedian
+  const resaleLow = reliableMarket?.minimumPrice ??
+    (resaleMedian === null ? null : roundToFifty(resaleMedian * 0.92))
+  const resaleHigh = reliableMarket?.maximumPrice ??
+    (resaleMedian === null ? null : roundToFifty(resaleMedian * 1.08))
+  const resaleSource = reliableMarket
+    ? "MARKET_ANALYSIS" as const
+    : historicalEstimate !== null
+      ? "GARAGE_HISTORY" as const
+      : provisionalMedian !== null
+        ? "PROVISIONAL" as const
+        : "UNAVAILABLE" as const
   const estimatedCosts = opportunity.repairEstimate ?? 0
   const targetMargin = resaleMedian === null ? null : Math.max(1_500, resaleMedian * 0.15)
   const minimumMargin = resaleMedian === null ? null : Math.max(1_000, resaleMedian * 0.1)
-  const recommendedPurchasePrice = resaleMedian === null || targetMargin === null || reference === null
-    ? null : roundToFifty(Math.min(reference, resaleMedian - estimatedCosts - targetMargin))
-  const maximumPurchasePrice = resaleMedian === null || minimumMargin === null || reference === null
-    ? null : roundToFifty(Math.min(reference, resaleMedian - estimatedCosts - minimumMargin))
+  const priceCeiling = reference ?? Number.POSITIVE_INFINITY
+  const recommendedPurchasePrice = resaleMedian === null || targetMargin === null
+    ? null : roundToFifty(Math.min(priceCeiling, resaleMedian - estimatedCosts - targetMargin))
+  const maximumPurchasePrice = resaleMedian === null || minimumMargin === null
+    ? null : roundToFifty(Math.min(priceCeiling, resaleMedian - estimatedCosts - minimumMargin))
   const grossMargin = resaleMedian === null || recommendedPurchasePrice === null
     ? null : resaleMedian - recommendedPurchasePrice
   const netMargin = grossMargin === null ? null : grossMargin - estimatedCosts
-  const market = calculateMarketScore(factors)
+  const market = reliableMarket ? {
+    value: reliableMarket.marketScore,
+    explanation: `Score issu de ${reliableMarket.comparableCount} comparables normalisés.`,
+    factorCodes: ["MARKET_EVIDENCE" as const],
+  } : calculateMarketScore(factors)
   const financial = calculateFinancialScore(resaleMedian, netMargin)
   const rotation = calculateRotationScore(opportunity, factors)
   const confidence = calculateConfidenceScore(factors)
@@ -79,9 +107,14 @@ export function buildPurchaseRecommendation(
     scores: { market, financial, rotation, confidence, opportunity: opportunityScore },
     recommendations,
     factors,
-    calculationBasis: reference === null
-      ? "Données insuffisantes : aucun prix demandé."
-      : "Estimation préliminaire fondée sur le prix demandé, l’état, l’âge et le kilométrage. Elle ne constitue pas encore une analyse du marché.",
+    calculationBasis: reliableMarket
+      ? `Estimation fondée sur ${reliableMarket.comparableCount} annonces comparables normalisées.`
+      : historicalEstimate !== null
+        ? "Estimation fondée sur l’historique du garage."
+        : reference === null
+          ? "Données insuffisantes : aucun prix demandé."
+          : "Estimation préliminaire fondée sur le prix demandé, l’état, l’âge et le kilométrage. Elle ne constitue pas encore une analyse du marché.",
+    resaleSource,
     generatedAt: now.toISOString(),
   }
 }

@@ -12,6 +12,12 @@ const RISK = {
   HIGH: { label: "Élevé", tone: "danger" },
   CRITICAL: { label: "Critique", tone: "danger" },
 } as const
+const SOURCE_LABELS = {
+  MARKET_ANALYSIS: "Donnée Leboncoin",
+  GARAGE_HISTORY: "Donnée historique",
+  PROVISIONAL: "Donnée déclarée",
+  UNAVAILABLE: "Données insuffisantes",
+} as const
 
 export function buildPurchaseRecommendationViewModel(
   recommendation: PurchaseRecommendation
@@ -21,6 +27,7 @@ export function buildPurchaseRecommendationViewModel(
     available: recommendation.recommendedPurchasePrice !== null,
     title: "Analyse d’acquisition",
     description: recommendation.calculationBasis,
+    sourceLabel: SOURCE_LABELS[recommendation.resaleSource],
     resaleRange: recommendation.resaleEstimateLow === null ||
       recommendation.resaleEstimateHigh === null
       ? "Non calculable"

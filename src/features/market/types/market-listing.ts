@@ -5,6 +5,7 @@ export type MarketListing = {
   externalId: string
   url: string | null
   title: string
+  description?: string | null
   brand: string
   model: string
   trim: string | null

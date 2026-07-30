@@ -12,7 +12,7 @@ export function PurchaseRecommendationCard({
     <CardHeader>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div><CardTitle>{recommendation.title}</CardTitle><CardDescription className="mt-1 max-w-3xl">{recommendation.description}</CardDescription></div>
-        <div className="flex gap-2"><Badge variant="outline">Confiance {recommendation.confidenceLabel}</Badge><Badge variant={recommendation.riskTone === "danger" ? "destructive" : "secondary"}>Risque {recommendation.riskLabel}</Badge></div>
+        <div className="flex flex-wrap gap-2"><Badge variant="outline">Analyse déterministe</Badge><Badge variant="secondary">{recommendation.sourceLabel}</Badge><Badge variant="outline">Confiance {recommendation.confidenceLabel}</Badge><Badge variant={recommendation.riskTone === "danger" ? "destructive" : "secondary"}>Risque {recommendation.riskLabel}</Badge></div>
       </div>
     </CardHeader>
     <CardContent className="space-y-6">

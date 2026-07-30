@@ -53,6 +53,7 @@ export function mapLeboncoinListing(listing: LeboncoinListing): MarketListing {
     externalId: listing.id,
     url: listing.url,
     title: listing.subject,
+    description: listing.body,
     brand: credibleIdentity(
       getAttributeText(listing, "u_car_brand", "brand", "marque"),
       listing.brand
