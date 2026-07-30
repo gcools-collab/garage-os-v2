@@ -16,7 +16,7 @@
     "test:live-stock": "tsx --test src/features/live-stock/live-stock.test.ts",
     "test:leads": "tsx --test src/features/leads/leads.test.tsx",
     "test:commercial": "tsx --test src/features/commercial/commercial.test.tsx src/features/notifications/notifications.test.ts",
-    "test:intelligence": "tsx --test src/features/intelligence/intelligence.test.tsx",
+    "test:intelligence": "tsx --test src/features/intelligence/intelligence.test.tsx src/features/intelligence/daily-brief.test.tsx",
     "test:tenant": "tsx --test src/features/tenant/tenant.test.ts",
     "test:branding": "tsx --test src/features/branding/branding.test.tsx",
     "test:theme": "tsx --test src/features/theme/theme.test.tsx"

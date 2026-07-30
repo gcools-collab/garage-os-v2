@@ -7,3 +7,4 @@ export type {
   DashboardTone,
   GarageDashboardViewModel,
 } from "./garage-dashboard"
+export * from "./intelligence-brief"

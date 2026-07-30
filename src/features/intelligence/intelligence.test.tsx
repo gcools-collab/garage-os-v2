@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
-import { GarageIntelligenceDashboard } from "./components"
+import { GarageIntelligenceDashboard } from "./components/GarageIntelligenceDashboard"
 import { garageIntelligenceFixture } from "./engine"
 import { buildGarageDashboard } from "./presentation"
 
