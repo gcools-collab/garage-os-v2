@@ -11,6 +11,7 @@
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts src/features/acquisition/tests/*.test.ts",
     "test:acquisition-recommendation": "tsx --test src/features/acquisition/recommendation/tests/*.test.ts",
     "test:acquisition-market": "tsx --test src/features/acquisition/market/tests/*.test.ts src/features/acquisition/market/ai/tests/*.test.ts",
+    "test:acquisition-market-geography": "tsx --test src/features/acquisition/market/geography/tests/*.test.ts",
     "test:market": "tsx --test src/features/market/market-analysis.test.ts",
     "test:market-intelligence": "tsx --test src/features/market-intelligence/engine/market.test.ts src/features/market-intelligence/presentation/market-dashboard.test.ts src/features/market-intelligence/components/dashboard/market-dashboard.test.tsx",
     "test:documents": "tsx --test src/features/vehicles/documents/vehicle-documents.test.ts",

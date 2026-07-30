@@ -20,6 +20,8 @@ class FakeLocation:
     zipcode: str | None = "75000"
     department_name: str | None = "Paris"
     region_name: str | None = "Île-de-France"
+    lat: float | None = 48.8566
+    lng: float | None = 2.3522
 
 
 @dataclass
@@ -108,6 +110,33 @@ def test_search_returns_typescript_compatible_shape() -> None:
     assert response.json()[0]["ownerType"] == "unknown"
     assert response.json()[0]["firstPublicationDate"] == "2026-01-01 10:00:00"
     assert response.json()[0]["favoriteCount"] == 12
+    assert response.json()[0]["location"]["latitude"] == 48.8566
+    assert response.json()[0]["location"]["longitude"] == 2.3522
+
+
+def test_search_accepts_geographic_contract() -> None:
+    response = make_client().post(
+        "/search",
+        headers=HEADERS,
+        json={
+            "brand": "Peugeot",
+            "model": "308",
+            "postal_code": "59590",
+            "latitude": 50.389,
+            "longitude": 3.485,
+            "radius_km": 50,
+        },
+    )
+    assert response.status_code == 200
+
+
+def test_search_rejects_partial_coordinates() -> None:
+    response = make_client().post(
+        "/search",
+        headers=HEADERS,
+        json={"brand": "Peugeot", "model": "308", "latitude": 50.389},
+    )
+    assert response.status_code == 422
 
 
 def test_search_prefers_vehicle_brand_and_model_attributes() -> None:

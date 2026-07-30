@@ -18,10 +18,12 @@ export interface AcquisitionMarketViewModel {
     readonly price: string
     readonly details: string
     readonly location: string
+    readonly geographicDetail: string
     readonly href: string | null
     readonly dataQuality: string
     readonly similarity: string
     readonly explanation: string
   }[]
   readonly emptyMessage: string | null
+  readonly geography: import("../geography").GeographicMarketViewModel
 }

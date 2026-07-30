@@ -13,6 +13,8 @@ export type LeboncoinLocation = {
   zipcode: string | null
   departmentName: string | null
   regionName: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export type LeboncoinOwnerType = "professional" | "private" | "unknown"
@@ -46,6 +48,10 @@ export type LeboncoinSearchRequest = {
   gearbox?: string
   powerDin?: readonly [number | null, number | null]
   location?: string
+  postalCode?: string
+  latitude?: number
+  longitude?: number
+  radiusKm?: number
 }
 
 /**

@@ -4,6 +4,7 @@ import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card"
 import type { AcquisitionMarketViewModel } from "../presentation"
+import { GeographicMarketSection } from "../geography"
 
 export function AcquisitionMarketCard({
   market,
@@ -66,6 +67,9 @@ export function AcquisitionMarketCard({
                     <p className="text-xs text-muted-foreground">
                       {item.dataQuality} · {item.similarity}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.geographicDetail}
+                    </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {item.explanation}
                     </p>
@@ -92,6 +96,7 @@ export function AcquisitionMarketCard({
             {market.emptyMessage}
           </p>
         )}
+        <GeographicMarketSection geography={market.geography} />
       </CardContent>
     </Card>
   )

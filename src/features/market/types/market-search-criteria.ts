@@ -13,5 +13,9 @@ export type MarketSearchCriteria = {
   powerDinFrom?: number
   powerDinTo?: number
   location?: string
+  postalCode?: string
+  latitude?: number
+  longitude?: number
+  radiusKm?: number
   limit?: number
 }

@@ -19,6 +19,9 @@ export interface ComparableVehicle {
   readonly advertisedPrice: number
   readonly priceNature: "ASKING_PRICE"
   readonly location: string | null
+  readonly postalCode?: string | null
+  readonly latitude?: number | null
+  readonly longitude?: number | null
   readonly sellerType: "PROFESSIONAL" | "PRIVATE" | "UNKNOWN"
   readonly publishedAt: string | null
   readonly collectedAt: string
@@ -66,6 +69,7 @@ export interface AcquisitionMarketAnalysis {
   readonly providerAvailable: boolean
   readonly providerMessage: string | null
   readonly analyzedAt: string
+  readonly geography: import("../geography/types").GeographicMarketAnalysis
 }
 
 export interface AcquisitionMarketQuery {
@@ -77,6 +81,10 @@ export interface AcquisitionMarketQuery {
   readonly fuel: string | null
   readonly gearbox: string | null
   readonly location: string | null
+  readonly postalCode: string | null
+  readonly latitude: number | null
+  readonly longitude: number | null
+  readonly radiusKm: number | null
   readonly sellerType: "PROFESSIONAL" | "PRIVATE"
   readonly excludedUrls: readonly string[]
   readonly limit: number
@@ -105,4 +113,15 @@ export interface MarketAnalysisContext {
     readonly mileage: number | null
     readonly location: string | null
   }[]
+  readonly geography: {
+    readonly available: boolean
+    readonly heatScore: number | null
+    readonly localMedianPrice: number | null
+    readonly nationalMedianPrice: number | null
+    readonly localNationalDifferencePercent: number | null
+    readonly signals: readonly {
+      readonly code: import("../geography/types").LocalMarketSignalCode
+      readonly explanation: string
+    }[]
+  }
 }

@@ -39,6 +39,16 @@ class LbcGateway:
 
     def search(self, criteria: SearchCriteria) -> list[AdLike]:
         filters: dict[str, object] = {}
+        locations: list[lbc.City] | None = None
+        if criteria.latitude is not None and criteria.longitude is not None:
+            locations = [
+                lbc.City(
+                    lat=criteria.latitude,
+                    lng=criteria.longitude,
+                    radius=(criteria.radius_km or 100) * 1_000,
+                    city=criteria.postal_code,
+                )
+            ]
         if criteria.min_price is not None or criteria.max_price is not None:
             filters["price"] = [criteria.min_price or 0, criteria.max_price or 999_999_999]
         if criteria.min_mileage is not None or criteria.max_mileage is not None:
@@ -57,6 +67,7 @@ class LbcGateway:
                 sort=lbc.Sort.NEWEST,
                 ad_type=lbc.AdType.OFFER,
                 category=lbc.Category.VEHICULES_VOITURES,
+                locations=locations,
                 **filters,
             )
         except InvalidValue as error:

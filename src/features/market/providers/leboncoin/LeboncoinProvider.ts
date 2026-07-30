@@ -32,6 +32,10 @@ function toLeboncoinSearchRequest(
     gearbox: criteria.gearbox,
     powerDin: toRange(criteria.powerDinFrom, criteria.powerDinTo),
     location: criteria.location,
+    postalCode: criteria.postalCode,
+    latitude: criteria.latitude,
+    longitude: criteria.longitude,
+    radiusKm: criteria.radiusKm,
   }
 }
 

@@ -17,6 +17,9 @@ export type MarketListing = {
   price: number
   currency: string
   location: string | null
+  postalCode?: string | null
+  latitude?: number | null
+  longitude?: number | null
   sellerType: MarketSellerType
   publishedAt: string | null
   imageUrls: string[]

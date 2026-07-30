@@ -7,6 +7,7 @@ import {
   calculateAcquisitionMarketScore,
   calculateMarketConfidence,
 } from "./market-signals"
+import { analyzeGeographicMarket, type GarageMarketLocation } from "../geography"
 
 const round = (value: number) => Math.round(value * 100) / 100
 const median = (values: readonly number[]): number | null => {
@@ -44,6 +45,7 @@ export function analyzeAcquisitionMarket(input: {
   readonly now: Date
   readonly providerAvailable?: boolean
   readonly providerMessage?: string | null
+  readonly origin?: GarageMarketLocation
 }): AcquisitionMarketAnalysis {
   const deduplicated = [...new Map(input.comparables.map((item) => [
     `${item.source}:${item.externalId}`, item,
@@ -97,5 +99,17 @@ export function analyzeAcquisitionMarket(input: {
     providerAvailable: input.providerAvailable ?? true,
     providerMessage: input.providerMessage ?? null,
     analyzedAt: input.now.toISOString(),
+    geography: analyzeGeographicMarket({
+      origin: input.origin ?? { postalCode: null, city: null, coordinates: null },
+      comparables: usable.map((item) => ({
+        externalId: item.externalId,
+        advertisedPrice: item.advertisedPrice,
+        location: item.location,
+        postalCode: item.postalCode ?? null,
+        coordinates: item.latitude == null || item.longitude == null
+          ? null
+          : { latitude: item.latitude, longitude: item.longitude },
+      })),
+    }),
   }
 }

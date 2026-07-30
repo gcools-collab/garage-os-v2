@@ -25,6 +25,10 @@ function criteria(query: AcquisitionMarketQuery): MarketSearchCriteria {
     fuel: query.fuel ?? undefined,
     gearbox: query.gearbox ?? undefined,
     location: query.location ?? undefined,
+    postalCode: query.postalCode ?? undefined,
+    latitude: query.latitude ?? undefined,
+    longitude: query.longitude ?? undefined,
+    radiusKm: query.radiusKm ?? undefined,
     limit: query.limit,
   }
 }

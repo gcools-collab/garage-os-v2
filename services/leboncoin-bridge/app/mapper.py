@@ -26,6 +26,8 @@ class LocationLike(Protocol):
     zipcode: str | None
     department_name: str | None
     region_name: str | None
+    lat: float | None
+    lng: float | None
 
 
 class AdLike(Protocol):
@@ -90,6 +92,8 @@ def map_listing(ad: AdLike) -> LeboncoinListing:
             zipcode=ad.location.zipcode,
             department_name=ad.location.department_name,
             region_name=ad.location.region_name,
+            latitude=ad.location.lat,
+            longitude=ad.location.lng,
         )
 
     vehicle_brand = get_vehicle_attribute(ad, "u_car_brand", "brand", "marque")

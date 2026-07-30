@@ -3,6 +3,7 @@ import type {
   MarketAnalysisContext,
 } from "../types"
 import type { AcquisitionMarketViewModel } from "../presentation"
+import { buildGeographicMarketViewModel } from "../geography"
 
 const money = new Intl.NumberFormat("fr-FR", {
   style: "currency", currency: "EUR", maximumFractionDigits: 0,
@@ -53,6 +54,18 @@ export function buildAcquisitionMarketViewModel(
         item.fuel, item.gearbox,
       ].filter((value): value is string | number => value !== null).join(" · "),
       location: item.location ?? "Localisation inconnue",
+      geographicDetail: (() => {
+        const geographic = analysis.geography.comparables.find(
+          (candidate) => candidate.externalId === item.externalId
+        )
+        if (!geographic || geographic.distanceKm === null) {
+          return "Distance non disponible · Zone nationale"
+        }
+        const radius = geographic.radiusKm
+          ? `Rayon ${geographic.radiusKm} km`
+          : "Hors rayon 100 km"
+        return `${geographic.distanceKm.toLocaleString("fr-FR")} km · ${radius} · Zone ${geographic.zone.toLowerCase()}`
+      })(),
       href: item.url,
       dataQuality: `${item.dataQuality} % de données`,
       similarity: `${item.similarityScore}/100 de similarité`,
@@ -62,6 +75,7 @@ export function buildAcquisitionMarketViewModel(
         ...item.importantDifferences,
       ].join(" · "),
     })),
+    geography: buildGeographicMarketViewModel(analysis.geography),
     emptyMessage: analysis.comparableCount ? null : analysis.providerAvailable
       ? "Aucun comparable suffisamment proche n’a été trouvé."
       : analysis.providerMessage,
@@ -85,5 +99,16 @@ export function buildMarketAnalysisContext(
       source: item.source, price: item.advertisedPrice, year: item.year,
       mileage: item.mileage, location: item.location,
     })),
+    geography: {
+      available: analysis.geography.available,
+      heatScore: analysis.geography.heatScore,
+      localMedianPrice: analysis.geography.localMedianPrice,
+      nationalMedianPrice: analysis.geography.nationalMedianPrice,
+      localNationalDifferencePercent: analysis.geography.localNationalDifferencePercent,
+      signals: analysis.geography.signals.map((signal) => ({
+        code: signal.code,
+        explanation: signal.explanation,
+      })),
+    },
   }
 }

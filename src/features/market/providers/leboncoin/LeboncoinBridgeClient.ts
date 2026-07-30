@@ -10,7 +10,12 @@ const attributeSchema = z.object({
 const listingSchema: z.ZodType<LeboncoinListing> = z.object({
   id: z.string(), subject: z.string(), body: z.string().nullable(), brand: z.string().nullable(), model: z.string().nullable().default(null), url: z.string(),
   price: z.number().nullable(), images: z.array(z.string()), attributes: z.record(z.string(), attributeSchema),
-  location: z.object({ city: z.string().nullable(), cityLabel: z.string().nullable(), zipcode: z.string().nullable(), departmentName: z.string().nullable(), regionName: z.string().nullable() }).nullable(),
+  location: z.object({
+    city: z.string().nullable(), cityLabel: z.string().nullable(),
+    zipcode: z.string().nullable(), departmentName: z.string().nullable(),
+    regionName: z.string().nullable(), latitude: z.number().nullable().default(null),
+    longitude: z.number().nullable().default(null),
+  }).nullable(),
   ownerType: z.enum(["professional", "private", "unknown"]), firstPublicationDate: z.string().nullable(), favoriteCount: z.number().int().nonnegative().nullable(),
 })
 
@@ -53,6 +58,8 @@ export class LeboncoinBridgeClient implements LeboncoinClient {
       min_year: request.registrationYear?.[0], max_year: request.registrationYear?.[1],
       min_mileage: request.mileage?.[0], max_mileage: request.mileage?.[1], fuel: request.fuel,
       gearbox: request.gearbox, limit: Math.min(request.limit ?? 20, 35),
+      postal_code: request.postalCode, latitude: request.latitude,
+      longitude: request.longitude, radius_km: request.radiusKm,
     })
     return z.array(listingSchema).parse(payload)
   }

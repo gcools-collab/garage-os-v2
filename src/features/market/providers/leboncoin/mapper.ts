@@ -82,6 +82,9 @@ export function mapLeboncoinListing(listing: LeboncoinListing): MarketListing {
       listing.location?.city ??
       listing.location?.departmentName ??
       null,
+    postalCode: listing.location?.zipcode ?? null,
+    latitude: listing.location?.latitude ?? null,
+    longitude: listing.location?.longitude ?? null,
     sellerType: mapSellerType(listing.ownerType),
     publishedAt: listing.firstPublicationDate,
     imageUrls: [...listing.images],

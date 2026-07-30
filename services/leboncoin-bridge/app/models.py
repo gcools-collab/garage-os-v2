@@ -19,6 +19,10 @@ class SearchCriteria(BaseModel):
     max_mileage: int | None = Field(default=None, ge=0)
     fuel: str | None = Field(default=None, max_length=50)
     gearbox: str | None = Field(default=None, max_length=50)
+    postal_code: str | None = Field(default=None, min_length=2, max_length=12)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    radius_km: int | None = Field(default=None, ge=1, le=500)
     limit: int = Field(default=20, ge=1, le=35)
 
     @model_validator(mode="after")
@@ -35,6 +39,8 @@ class SearchCriteria(BaseModel):
         ):
             if minimum is not None and maximum is not None and minimum > maximum:
                 raise ValueError(f"min_{label} cannot exceed max_{label}")
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must be provided together")
         return self
 
 
@@ -69,6 +75,8 @@ class LeboncoinLocation(BaseModel):
     zipcode: str | None = None
     department_name: str | None = Field(default=None, alias="departmentName")
     region_name: str | None = Field(default=None, alias="regionName")
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class LeboncoinListing(BaseModel):
