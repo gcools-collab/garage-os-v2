@@ -7,6 +7,11 @@ import {
   LeadDashboardSignal,
 } from "@/features/leads"
 import { getActiveGarageSession, resolveGarageSessionRoute } from "@/features/tenant"
+import {
+  buildCommercialDashboardSignal,
+  CommercialDashboardSignal,
+  getCommercialInboxData,
+} from "@/features/commercial"
 
 export default async function DashboardPage() {
   const session = await getActiveGarageSession()
@@ -18,7 +23,12 @@ export default async function DashboardPage() {
   const dashboard = buildGarageDashboard({
     context: { garageName: session.garageName },
   })
-  const leadSummary = buildLeadDashboardSummary(await getLeadDashboardCounts(session))
+  const [leadCounts, commercialData] = await Promise.all([
+    getLeadDashboardCounts(session),
+    getCommercialInboxData(session),
+  ])
+  const leadSummary = buildLeadDashboardSummary(leadCounts)
+  const commercialSignal = buildCommercialDashboardSignal(commercialData)
 
-  return <div className="space-y-6"><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
+  return <div className="space-y-6"><CommercialDashboardSignal signal={commercialSignal} /><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
 }

@@ -29,6 +29,19 @@ export const leadTypeLabels: Readonly<Record<LeadType, string>> = {
 const dateTime = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" })
 const dateOnly = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" })
 const currency = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })
+const commercialEventLabels: Readonly<Record<string, string>> = {
+  ASSIGNED: "Prospect pris en charge",
+  NOTE_ADDED: "Note interne ajoutée",
+  CALL_LOGGED: "Appel journalisé",
+  EMAIL_LOGGED: "E-mail journalisé",
+  FOLLOW_UP_SCHEDULED: "Relance planifiée",
+  TASK_CREATED: "Action commerciale planifiée",
+  TASK_COMPLETED: "Tâche commerciale terminée",
+  TASK_SNOOZED: "Tâche commerciale reportée",
+  APPOINTMENT_CONFIRMED: "Rendez-vous confirmé",
+  LEAD_WON: "Prospect gagné",
+  LEAD_LOST: "Prospect perdu",
+}
 
 function toListItem(lead: LeadRecord, now = new Date()): LeadListItemViewModel {
   const priority = computeLeadPriority({
@@ -83,17 +96,20 @@ export function buildLeadDetail(
     priceLabel: lead.vehicle_price_snapshot_cents === null
       ? null
       : currency.format(lead.vehicle_price_snapshot_cents / 100),
-    availableStatuses: getAvailableLeadStatuses(lead.status).map((status) => ({
-      value: status,
-      label: leadStatusLabels[status],
-    })),
+    availableStatuses: getAvailableLeadStatuses(lead.status)
+      .filter((status) => status !== "WON" && status !== "LOST")
+      .map((status) => ({
+        value: status,
+        label: leadStatusLabels[status],
+      })),
     events: events.map((event) => ({
       id: event.id,
       label: event.event_type === "CREATED"
         ? "Demande créée"
-        : event.to_status
+        : commercialEventLabels[event.event_type]
+          ?? (event.to_status
           ? `Statut : ${leadStatusLabels[event.to_status]}`
-          : event.event_type,
+          : event.event_type),
       dateLabel: dateTime.format(new Date(event.created_at)),
     })),
   }

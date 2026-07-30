@@ -3,6 +3,7 @@ import {
   Bell,
   Car,
   Globe,
+  BriefcaseBusiness,
   LayoutDashboard,
   Users,
   Megaphone,
@@ -16,6 +17,7 @@ import type { GarageBrandingShellViewModel } from "@/features/branding"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Boîte commerciale", href: "/commercial", icon: BriefcaseBusiness },
   { name: "Stock", href: "/stock", icon: Car },
   { name: "Leads", href: "/leads", icon: Users },
   { name: "Market Intelligence", href: "/market", icon: Globe },

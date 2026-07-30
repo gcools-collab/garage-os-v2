@@ -24,6 +24,8 @@ const LEAD_COLUMNS = [
   "vehicle_price_snapshot_cents", "vehicle_brand_snapshot",
   "vehicle_model_snapshot", "vehicle_year_snapshot", "created_at", "updated_at",
   "contacted_at", "closed_at", "archived_at",
+  "assigned_user_id", "first_contacted_at", "last_contacted_at",
+  "next_action_at", "loss_reason", "loss_note",
 ].join(",")
 
 export async function getGarageLeads(
@@ -78,7 +80,7 @@ export async function getGarageLeadDetail(
   if (!data) return null
   const { data: events, error: eventError } = await supabase
     .from("lead_events")
-    .select("id,event_type,from_status,to_status,created_at")
+    .select("id,event_type,from_status,to_status,actor_user_id,metadata,created_at")
     .eq("garage_id", session.garageId)
     .eq("lead_id", leadId)
     .order("created_at", { ascending: true })

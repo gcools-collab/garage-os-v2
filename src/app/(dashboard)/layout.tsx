@@ -8,6 +8,11 @@ import {
   getActiveGarageBrandingMedia,
   resolveGarageBranding,
 } from "@/features/branding"
+import {
+  buildNotificationCenter,
+  getGarageNotifications,
+  getUnreadNotificationCount,
+} from "@/features/notifications"
 import { getActiveGarageSession, resolveGarageSessionRoute } from "@/features/tenant"
 
 export default async function DashboardLayout({ children }: { readonly children: React.ReactNode }) {
@@ -29,12 +34,20 @@ export default async function DashboardLayout({ children }: { readonly children:
     activeBranding?.branding ?? fallbackBranding,
     media ?? { logoUrl: null, faviconUrl: null }
   )
+  const [recentNotifications, unreadNotificationCount] = await Promise.all([
+    getGarageNotifications(session, { limit: 5 }),
+    getUnreadNotificationCount(session),
+  ])
+  const notificationCenter = buildNotificationCenter(
+    recentNotifications,
+    unreadNotificationCount
+  )
 
   return (
     <div className="flex min-h-screen bg-zinc-50">
       <Sidebar branding={shellBranding} />
       <div className="min-w-0 flex-1">
-        <Header branding={shellBranding} />
+        <Header branding={shellBranding} notifications={notificationCenter} />
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>

@@ -88,6 +88,12 @@ export type LeadRecord = {
   readonly contacted_at: string | null
   readonly closed_at: string | null
   readonly archived_at: string | null
+  readonly assigned_user_id: string | null
+  readonly first_contacted_at: string | null
+  readonly last_contacted_at: string | null
+  readonly next_action_at: string | null
+  readonly loss_reason: string | null
+  readonly loss_note: string | null
 }
 
 export type LeadEventRecord = {
@@ -96,4 +102,6 @@ export type LeadEventRecord = {
   readonly from_status: LeadStatus | null
   readonly to_status: LeadStatus | null
   readonly created_at: string
+  readonly actor_user_id: string | null
+  readonly metadata: Readonly<Record<string, unknown>>
 }

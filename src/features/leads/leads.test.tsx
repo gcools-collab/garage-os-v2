@@ -89,6 +89,12 @@ function lead(overrides: Partial<LeadRecord> = {}): LeadRecord {
     contacted_at: null,
     closed_at: null,
     archived_at: null,
+    assigned_user_id: null,
+    first_contacted_at: null,
+    last_contacted_at: null,
+    next_action_at: null,
+    loss_reason: null,
+    loss_note: null,
     ...overrides,
   }
 }
