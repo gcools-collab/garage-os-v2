@@ -8,6 +8,7 @@ const response = {
   answer: "Aucune priorité particulière.", summary: null,
   confidence: "HIGH" as const, dataStatus: "SUFFICIENT" as const,
   references: [], suggestedActions: [], warnings: [], followUpSuggestions: [],
+  actionProposals: [],
 }
 const input = {
   systemPrompt: "prompt", messages: [], context: "{}",

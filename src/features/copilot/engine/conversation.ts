@@ -90,5 +90,6 @@ export function safeCopilotFallback(message: string): CopilotStructuredResponse 
     suggestedActions: [],
     warnings: [],
     followUpSuggestions: buildCopilotSuggestions(),
+    actionProposals: [],
   }
 }

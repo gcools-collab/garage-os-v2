@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { actionProposalSchema } from "@/features/copilot-actions/validation"
 
 export const CopilotInputSchema = z.object({
   conversationId: z.string().uuid(),
@@ -30,4 +31,5 @@ export const CopilotStructuredResponseSchema = z.object({
   suggestedActions: z.array(actionSchema).max(8),
   warnings: z.array(z.string().max(300)).max(8),
   followUpSuggestions: z.array(z.string().max(160)).max(6),
+  actionProposals: z.array(actionProposalSchema).max(3).default([]),
 }).strict()

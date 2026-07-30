@@ -80,7 +80,7 @@ test("le grounding reconstruit les références et retire les URL externes", () 
       { type: "OPEN_VEHICLE", label: "Ouvrir", href: `/stock/${vehicleId}`, requiresConfirmation: true },
       { type: "OPEN_VEHICLE", label: "Externe", href: "https://evil.example", requiresConfirmation: false },
     ],
-    warnings: [], followUpSuggestions: [],
+    warnings: [], followUpSuggestions: [], actionProposals: [],
   }
   const validated = validateCopilotGrounding(response, context)
   assert.deepEqual(validated.references, [{

@@ -6,6 +6,7 @@ import type {
   CopilotMessageViewModel,
   CopilotStructuredResponse,
 } from "../types"
+import type { CopilotActionProposalViewModel } from "@/features/copilot-actions/types"
 import { buildCopilotSuggestions } from "../engine"
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -33,7 +34,8 @@ export function buildCopilotMessageViewModel(message: CopilotMessage): CopilotMe
 export function buildCopilotConversationViewModel(
   conversation: CopilotConversation | null,
   messages: readonly CopilotMessage[],
-  contextGeneratedAt?: string
+  contextGeneratedAt?: string,
+  actionProposals: readonly CopilotActionProposalViewModel[] = []
 ): CopilotConversationViewModel {
   return {
     id: conversation?.id ?? null,
@@ -45,6 +47,7 @@ export function buildCopilotConversationViewModel(
           hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris",
         }).format(new Date(contextGeneratedAt))}.`
       : null,
+    actionProposals,
   }
 }
 

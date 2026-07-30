@@ -7,6 +7,7 @@ import { Archive, Bot, Plus, Send, UserRound } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { CopilotActionProposalCard } from "@/features/copilot-actions/components"
 import {
   archiveCopilotConversation,
   createCopilotConversation,
@@ -106,6 +107,13 @@ export function CopilotConversationPanel({
           ],
         }))
       }
+      if (result.actionProposals?.length) {
+        const proposals = result.actionProposals
+        setConversation((current) => ({
+          ...current,
+          actionProposals: [...current.actionProposals, ...proposals],
+        }))
+      }
       setMessage("")
     })
   }
@@ -147,6 +155,9 @@ export function CopilotConversationPanel({
             {conversation.messages.length
               ? conversation.messages.map((item) => <Message key={item.id} message={item} />)
               : <p className="py-10 text-center text-sm text-muted-foreground">Posez votre première question au Copilote Garage OS.</p>}
+            {conversation.actionProposals.map((proposal) => (
+              <CopilotActionProposalCard key={proposal.id} initialProposal={proposal} />
+            ))}
           </div>
           {!conversation.id ? (
             <Button onClick={newConversation} disabled={pending} className="self-center">Démarrer une conversation</Button>

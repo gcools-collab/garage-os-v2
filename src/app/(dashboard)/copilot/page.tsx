@@ -7,6 +7,10 @@ import {
   getCopilotConversation,
   listCopilotConversations,
 } from "@/features/copilot"
+import {
+  buildCopilotActionProposalViewModel,
+  listCopilotActionLogs,
+} from "@/features/copilot-actions"
 import { getActiveGarageSession } from "@/features/tenant"
 
 export default async function CopilotPage({
@@ -21,6 +25,10 @@ export default async function CopilotPage({
   const selected = params.conversation
     ? await getCopilotConversation(session, params.conversation)
     : null
+  const actionProposals = selected
+    ? (await listCopilotActionLogs(session, selected.conversation.id))
+        .map(buildCopilotActionProposalViewModel)
+    : []
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <header>
@@ -28,7 +36,12 @@ export default async function CopilotPage({
         <p className="mt-2 text-muted-foreground">Posez vos questions sur votre stock, vos prospects et vos priorités.</p>
       </header>
       <CopilotConversationPanel
-        initialConversation={buildCopilotConversationViewModel(selected?.conversation ?? null, selected?.messages ?? [])}
+        initialConversation={buildCopilotConversationViewModel(
+          selected?.conversation ?? null,
+          selected?.messages ?? [],
+          undefined,
+          actionProposals
+        )}
         conversationList={buildCopilotConversationListViewModel(conversations)}
       />
     </div>

@@ -1,4 +1,8 @@
 import type { GarageRecommendation, GarageIntelligenceSnapshot } from "@/features/intelligence"
+import type {
+  CopilotActionProposalInput,
+  CopilotActionProposalViewModel,
+} from "@/features/copilot-actions/types"
 
 export const COPILOT_INTENTS = [
   "DAILY_PRIORITIES", "COMMERCIAL_OVERVIEW", "LEAD_ANALYSIS", "VEHICLE_ANALYSIS",
@@ -60,6 +64,7 @@ export type CopilotStructuredResponse = {
   readonly suggestedActions: readonly CopilotSuggestedAction[]
   readonly warnings: readonly string[]
   readonly followUpSuggestions: readonly string[]
+  readonly actionProposals: readonly CopilotActionProposalInput[]
 }
 
 export type CopilotConversation = {
@@ -161,6 +166,7 @@ export type CopilotConversationViewModel = {
   readonly messages: readonly CopilotMessageViewModel[]
   readonly suggestions: readonly string[]
   readonly contextGeneratedAtLabel: string | null
+  readonly actionProposals: readonly CopilotActionProposalViewModel[]
 }
 
 export type CopilotConversationListViewModel = {
@@ -173,5 +179,10 @@ export type CopilotConversationListViewModel = {
 }
 
 export type CopilotActionResult =
-  | { readonly success: true; readonly conversationId: string; readonly message?: CopilotMessageViewModel }
+  | {
+      readonly success: true
+      readonly conversationId: string
+      readonly message?: CopilotMessageViewModel
+      readonly actionProposals?: readonly CopilotActionProposalViewModel[]
+    }
   | { readonly success: false; readonly error: string; readonly code: string }

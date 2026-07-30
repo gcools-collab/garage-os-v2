@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npm run test:acquisition && npm run test:market && npm run test:market-intelligence && npm run test:documents && npm run test:live && npm run test:live-stock && npm run test:leads && npm run test:commercial && npm run test:intelligence && npm run test:copilot && npm run test:tenant && npm run test:branding && npm run test:theme",
+    "test": "npm run test:acquisition && npm run test:market && npm run test:market-intelligence && npm run test:documents && npm run test:live && npm run test:live-stock && npm run test:leads && npm run test:commercial && npm run test:intelligence && npm run test:copilot && npm run test:copilot-actions && npm run test:tenant && npm run test:branding && npm run test:theme",
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts",
     "test:market": "tsx --test src/features/market/market-analysis.test.ts",
     "test:market-intelligence": "tsx --test src/features/market-intelligence/engine/market.test.ts src/features/market-intelligence/presentation/market-dashboard.test.ts src/features/market-intelligence/components/dashboard/market-dashboard.test.tsx",
@@ -18,6 +18,7 @@
     "test:commercial": "tsx --test src/features/commercial/commercial.test.tsx src/features/notifications/notifications.test.ts",
     "test:intelligence": "tsx --test src/features/intelligence/intelligence.test.tsx src/features/intelligence/daily-brief.test.tsx",
     "test:copilot": "tsx --test src/features/copilot/tests/*.test.ts",
+    "test:copilot-actions": "tsx --test src/features/copilot-actions/tests/*.test.ts",
     "test:tenant": "tsx --test src/features/tenant/tenant.test.ts",
     "test:branding": "tsx --test src/features/branding/branding.test.tsx",
     "test:theme": "tsx --test src/features/theme/theme.test.tsx"

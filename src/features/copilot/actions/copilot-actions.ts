@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { getActiveGarageSession } from "@/features/tenant"
 import { createClient } from "@/lib/supabase/server"
+import { prepareCopilotActionProposals } from "@/features/copilot-actions/actions/prepare-actions"
 import { defaultCopilotConfig } from "../config"
 import {
   archiveCopilotConversationRecord,
@@ -42,6 +43,13 @@ const RESPONSE_SCHEMA_DESCRIPTION = JSON.stringify({
   suggestedActions: [{ type: "enum", label: "string", href: "internal path", requiresConfirmation: false }],
   warnings: ["string"],
   followUpSuggestions: ["string"],
+  actionProposals: [{
+    action: "OPEN_ENTITY|CREATE_TASK|CHANGE_PRICE|CHANGE_STATUS|MARK_CONTACTED",
+    targetId: "uuid",
+    payload: {},
+    explanation: "string",
+    confidence: "LOW|MEDIUM|HIGH",
+  }],
 })
 
 async function requireSession() {
@@ -147,11 +155,19 @@ export async function sendCopilotMessage(input: unknown): Promise<CopilotActionR
       providerResult,
       errorCode: structured.success ? null : "INVALID_RESPONSE",
     })
+    const actionProposals = structured.success
+      ? await prepareCopilotActionProposals(
+          session,
+          parsed.data.conversationId,
+          response.actionProposals
+        )
+      : []
     revalidatePath("/copilot")
     return {
       success: true,
       conversationId: parsed.data.conversationId,
       message: buildCopilotMessageViewModel(stored),
+      actionProposals,
     }
   } catch (error) {
     console.error("copilot_request_failed", {
