@@ -11,6 +11,7 @@ import {
   Megaphone,
   Settings,
   ShoppingCart,
+  Search,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -23,6 +24,7 @@ const navigation = [
   { name: "Copilote", href: "/copilot", icon: Bot },
   { name: "Boîte commerciale", href: "/commercial", icon: BriefcaseBusiness },
   { name: "Stock", href: "/stock", icon: Car },
+  { name: "Acquisition", href: "/acquisition", icon: Search },
   { name: "Leads", href: "/leads", icon: Users },
   { name: "Market Intelligence", href: "/market", icon: Globe },
   { name: "Buying Assistant", href: "/buying", icon: ShoppingCart },
