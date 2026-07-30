@@ -1,46 +1,40 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import {
-  CollectionsSection,
-  FeaturedVehiclesSection,
-  Hero,
-  PublicLayout,
-} from "@/features/public"
-import { getPublicLiveHomepage } from "@/features/live-stock"
-import { buildLiveMetadata } from "@/features/theme"
+  buildPublicHomepage,
+  buildPublicSeo,
+  getPublicSiteRecord,
+  PublicHomepage,
+} from "@/features/public-site"
 
-type GarageLivePageProps = {
-  params: Promise<{ garageSlug: string }>
+type Props = { readonly params: Promise<{ readonly garageSlug: string }> }
+
+async function load(params: Props["params"]) {
+  const { garageSlug } = await params
+  const record = await getPublicSiteRecord(garageSlug)
+  return record ? buildPublicHomepage(record.garage, record.vehicles) : null
 }
 
-export async function generateMetadata({ params }: GarageLivePageProps): Promise<Metadata> {
-  const { garageSlug } = await params
-  const result = await getPublicLiveHomepage(garageSlug)
-  if (!result) return { title: "Site indisponible", robots: { index: false } }
-  const metadata = buildLiveMetadata({
-    branding: result.garage.branding,
-    theme: result.garage.liveTheme,
-    page: {},
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const homepage = await load(params)
+  if (!homepage) return { title: "Site indisponible", robots: { index: false } }
+  const seo = buildPublicSeo({
+    garage: homepage.garage,
+    canonicalPath: homepage.garage.homeHref,
+    imageUrl: homepage.hero.image?.url,
   })
   return {
-    title: metadata.title,
-    description: metadata.description,
-    icons: metadata.icons ?? undefined,
-    themeColor: metadata.themeColor,
-    alternates: { canonical: result.garage.basePath },
+    title: seo.title,
+    description: seo.description,
+    alternates: { canonical: seo.canonicalPath },
+    openGraph: { title: seo.title, description: seo.description, images: seo.openGraphImage ? [seo.openGraphImage] : undefined },
+    twitter: { card: "summary_large_image", title: seo.title, description: seo.description, images: seo.openGraphImage ? [seo.openGraphImage] : undefined },
   }
 }
 
-export default async function GarageLivePage({ params }: GarageLivePageProps) {
-  const { garageSlug } = await params
-  const result = await getPublicLiveHomepage(garageSlug)
-  if (!result) notFound()
-  const { homepage } = result
-  return (
-    <PublicLayout garage={homepage.garage} navigation={homepage.navigation} theme={homepage.theme}>
-      <Hero hero={homepage.hero} />
-      <CollectionsSection collections={homepage.collections} />
-      <FeaturedVehiclesSection vehicles={homepage.featuredVehicles} />
-    </PublicLayout>
-  )
+export default async function GaragePublicHomepage({ params }: Props) {
+  const homepage = await load(params)
+  if (!homepage) notFound()
+  const seo = buildPublicSeo({ garage: homepage.garage, canonicalPath: homepage.garage.homeHref, imageUrl: homepage.hero.image?.url })
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.structuredData) }} /><PublicHomepage homepage={homepage} /></>
 }

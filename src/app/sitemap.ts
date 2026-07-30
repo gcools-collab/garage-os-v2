@@ -10,13 +10,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const garagePath = `/g/${encodeURIComponent(entry.garageSlug)}`
     if (entry.vehicleSlug) {
       return [{
-        url: `${baseUrl}${garagePath}/vehicles/${encodeURIComponent(entry.vehicleSlug)}`,
+        url: `${baseUrl}${garagePath}/vehicules/${encodeURIComponent(entry.vehicleSlug)}`,
         lastModified: entry.updatedAt ? new Date(entry.updatedAt) : undefined,
       }]
     }
     return [
       { url: `${baseUrl}${garagePath}` },
-      { url: `${baseUrl}${garagePath}/vehicles` },
+      { url: `${baseUrl}${garagePath}/stock` },
+      { url: `${baseUrl}${garagePath}/contact` },
+      { url: `${baseUrl}${garagePath}/mentions-legales` },
+      { url: `${baseUrl}${garagePath}/politique-confidentialite` },
     ]
   })
 }

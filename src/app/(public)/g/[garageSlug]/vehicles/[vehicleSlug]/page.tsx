@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: GarageVehiclePageProps): Prom
     title: result.detail.seo.title,
     description: result.detail.seo.description,
     alternates: {
-      canonical: `${result.garage.basePath}/vehicles/${encodeURIComponent(vehicleSlug)}`,
+      canonical: `${result.garage.basePath}/vehicules/${encodeURIComponent(vehicleSlug)}`,
     },
     openGraph: {
       title: result.detail.seo.title,
@@ -33,7 +33,7 @@ export default async function GarageVehiclePage({ params }: GarageVehiclePagePro
   const { garageSlug, vehicleSlug } = await params
   const result = await getPublicLiveVehicleDetail(garageSlug, vehicleSlug)
   if (!result) notFound()
-  const publicPageUrl = `${result.garage.basePath}/vehicles/${encodeURIComponent(vehicleSlug)}`
+  const publicPageUrl = `${result.garage.basePath}/vehicules/${encodeURIComponent(vehicleSlug)}`
   const detail = {
     ...result.detail,
     contactActions: buildVehicleLeadContactActions({
