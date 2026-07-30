@@ -54,6 +54,11 @@ export function GarageRecommendationCard({
         {recommendation.snoozedUntilLabel ? <p className="text-sm text-muted-foreground">Reportée jusqu’au {recommendation.snoozedUntilLabel}</p> : null}
         <div className="flex flex-wrap gap-2">
           <Button asChild><Link href={recommendation.href}>{recommendation.ctaLabel}</Link></Button>
+          <Button asChild variant="outline">
+            <Link href={`/copilot?recommendation=${encodeURIComponent(recommendation.id)}`}>
+              Demander au Copilote
+            </Link>
+          </Button>
           <form action={markRecommendationCompleted}>
             <input type="hidden" name="recommendationKey" value={recommendation.id} />
             <Button type="submit" variant="outline">Marquer comme traité</Button>

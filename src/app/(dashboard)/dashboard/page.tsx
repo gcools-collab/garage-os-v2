@@ -18,6 +18,7 @@ import {
   CommercialDashboardSignal,
   getCommercialInboxData,
 } from "@/features/commercial"
+import { CopilotDashboardCard } from "@/features/copilot"
 
 export default async function DashboardPage() {
   const session = await getActiveGarageSession()
@@ -39,5 +40,5 @@ export default async function DashboardPage() {
 
   const dailyBrief = buildGarageDailyBriefViewModel(intelligenceBrief, { status: "ACTIVE" })
 
-  return <div className="space-y-6"><DailyBriefCard brief={dailyBrief} /><CommercialDashboardSignal signal={commercialSignal} /><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
+  return <div className="space-y-6"><DailyBriefCard brief={dailyBrief} /><CopilotDashboardCard /><CommercialDashboardSignal signal={commercialSignal} /><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
 }

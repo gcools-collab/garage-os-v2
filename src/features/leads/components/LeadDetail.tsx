@@ -39,6 +39,9 @@ export function LeadDetail({ lead }: { readonly lead: LeadDetailViewModel }) {
         </Card>
       </div>
       <aside className="space-y-6">
+        <Button asChild variant="outline" className="w-full">
+          <Link href={`/copilot?lead=${lead.id}`}>Analyser avec le Copilote</Link>
+        </Button>
         <Card>
           <CardHeader><CardTitle>{lead.customerName}</CardTitle></CardHeader>
           <CardContent className="space-y-3">

@@ -1,6 +1,8 @@
 import { CalendarDays, ChevronDown, Clock3, Plus } from "lucide-react"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 
+import { Button } from "@/components/ui/button"
 import { VehicleMarketAnalysisCard } from "@/features/market/components/vehicle-market-analysis-card"
 import { getMissingMarketCriteriaFields } from "@/features/market/services"
 import type { VehicleMarketAnalysisSnapshot } from "@/features/market/state"
@@ -213,6 +215,11 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
         vehicleId={vehicle.id}
         currentStatus={vehicle.status as VehicleStatus}
       />
+      <div className="flex justify-end">
+        <Button asChild variant="outline">
+          <Link href={`/copilot?vehicle=${vehicle.id}`}>Analyser avec le Copilote</Link>
+        </Button>
+      </div>
 
       <section
         id="vehicle-information"
