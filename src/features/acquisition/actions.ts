@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { revalidateVehicleLiveById } from "@/features/live-stock"
 
 import { createClient } from "@/lib/supabase/server"
 import {
@@ -211,6 +212,7 @@ export async function createAcquiredVehicle(
 
   revalidatePath("/stock")
   revalidatePath(`/stock/${vehicleId}`)
+  await revalidateVehicleLiveById(vehicleId)
   return {
     success: true,
     vehicleId,

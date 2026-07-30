@@ -6,7 +6,7 @@ export function VehicleCatalogFilters({ filters, activeFilterCount }: { filters:
   return (
     <details open className="rounded-[var(--live-card-radius)] border border-[var(--live-border)] bg-[var(--live-surface)] p-5">
       <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]">Filtres{activeFilterCount ? ` (${activeFilterCount})` : ""}</summary>
-      <form action="/vehicles" method="get" className="mt-6 space-y-5">
+      <form action={filters.resetHref} method="get" className="mt-6 space-y-5">
         <FilterSelect name="collection" label="Collection" value={values.collection} options={filters.collections} />
         <FilterSelect name="brand" label="Marque" value={values.brand} options={filters.brands} />
         <FilterSelect name="fuel" label="Carburant" value={values.fuel} options={filters.fuels} />

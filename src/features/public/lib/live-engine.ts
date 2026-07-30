@@ -71,6 +71,13 @@ function uniqueCleanItems(items: readonly string[], limit?: number) {
 }
 
 export function createLiveEngine(source: LiveEngineData) {
+  const basePath = source.garage.live.basePath?.replace(/\/+$/, "") ?? ""
+  const liveHref = (href: string) =>
+    href.startsWith("/") ? `${basePath}${href}` || "/" : href
+  const catalogHref = (
+    query: LiveVehicleCatalogQuery,
+    changes: Partial<Record<keyof LiveVehicleCatalogQuery, string | number | undefined>>
+  ) => liveHref(buildCatalogHref(query, changes))
   function prepareDetailImages(vehicle: Vehicle) {
     const imagesByUrl = new Map<string, Vehicle["images"][number]>()
     for (const image of vehicle.images) {
@@ -153,16 +160,17 @@ export function createLiveEngine(source: LiveEngineData) {
   }
 
   function prepareVehicle(vehicle: Vehicle): Vehicle {
+    const fallbackUrl = source.garage.live.vehicleFallbackImageUrl.trim()
     const resolvedImage =
       vehicle.displayImage ??
       vehicle.images.find((image) => image.isPrimary) ??
       vehicle.images[0] ??
-      {
+      (fallbackUrl ? {
         id: `${vehicle.id}-fallback`,
-        url: source.garage.live.vehicleFallbackImageUrl,
+        url: fallbackUrl,
         alt: `${vehicle.brand} ${vehicle.model}`,
         isPrimary: false,
-      }
+      } : null)
     return { ...clone(vehicle), displayImage: clone(resolvedImage) }
   }
 
@@ -181,7 +189,7 @@ export function createLiveEngine(source: LiveEngineData) {
       badge: prepared.featured
         ? { label: "Coup de cœur", icon: "heart" }
         : undefined,
-      href: `/vehicles/${encodeURIComponent(prepared.slug)}`,
+      href: liveHref(`/vehicles/${encodeURIComponent(prepared.slug)}`),
     }
   }
 
@@ -450,22 +458,22 @@ export function createLiveEngine(source: LiveEngineData) {
       .slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE)
       .map(prepareVehicleCard)
     const activeFilters = [
-      q ? { id: "q", label: "Recherche", value: q, removeHref: buildCatalogHref(query, { q: undefined, page: undefined }) } : null,
+      q ? { id: "q", label: "Recherche", value: q, removeHref: catalogHref(query, { q: undefined, page: undefined }) } : null,
       validCollection
-        ? { id: "collection", label: "Collection", value: validCollection.name, removeHref: buildCatalogHref(query, { collection: undefined, page: undefined }) }
+        ? { id: "collection", label: "Collection", value: validCollection.name, removeHref: catalogHref(query, { collection: undefined, page: undefined }) }
         : null,
-      brand ? { id: "brand", label: "Marque", value: brand, removeHref: buildCatalogHref(query, { brand: undefined, page: undefined }) } : null,
-      fuel ? { id: "fuel", label: "Carburant", value: fuel, removeHref: buildCatalogHref(query, { fuel: undefined, page: undefined }) } : null,
-      gearbox ? { id: "gearbox", label: "Boîte", value: gearbox, removeHref: buildCatalogHref(query, { gearbox: undefined, page: undefined }) } : null,
-      normalizedMinPrice !== undefined ? { id: "minPrice", label: "Prix minimum", value: `${new Intl.NumberFormat("fr-FR").format(normalizedMinPrice)} €`, removeHref: buildCatalogHref(query, { minPrice: undefined, page: undefined }) } : null,
-      maxPrice !== undefined ? { id: "maxPrice", label: "Prix maximum", value: `${new Intl.NumberFormat("fr-FR").format(maxPrice)} €`, removeHref: buildCatalogHref(query, { maxPrice: undefined, page: undefined }) } : null,
+      brand ? { id: "brand", label: "Marque", value: brand, removeHref: catalogHref(query, { brand: undefined, page: undefined }) } : null,
+      fuel ? { id: "fuel", label: "Carburant", value: fuel, removeHref: catalogHref(query, { fuel: undefined, page: undefined }) } : null,
+      gearbox ? { id: "gearbox", label: "Boîte", value: gearbox, removeHref: catalogHref(query, { gearbox: undefined, page: undefined }) } : null,
+      normalizedMinPrice !== undefined ? { id: "minPrice", label: "Prix minimum", value: `${new Intl.NumberFormat("fr-FR").format(normalizedMinPrice)} €`, removeHref: catalogHref(query, { minPrice: undefined, page: undefined }) } : null,
+      maxPrice !== undefined ? { id: "maxPrice", label: "Prix maximum", value: `${new Intl.NumberFormat("fr-FR").format(maxPrice)} €`, removeHref: catalogHref(query, { maxPrice: undefined, page: undefined }) } : null,
     ].filter((item): item is NonNullable<typeof item> => item !== null)
     const technicalFilter = Boolean(q || brand || fuel || gearbox || normalizedMinPrice !== undefined || maxPrice !== undefined || sort !== "recommended" || page > 1)
     const collectionTitle = validCollection ? `Collection ${validCollection.name}` : "Tous nos véhicules"
     const collectionDescription = cleanText(validCollection?.description) ?? "Découvrez les véhicules actuellement disponibles."
     const canonicalPath = validCollection
-      ? buildCatalogHref({ collection: validCollection.slug }, {})
-      : "/vehicles"
+      ? catalogHref({ collection: validCollection.slug }, {})
+      : liveHref("/vehicles")
     const sortLabels: Record<LiveCatalogSort, string> = {
       recommended: "Recommandés",
       "price-asc": "Prix croissant",
@@ -480,8 +488,8 @@ export function createLiveEngine(source: LiveEngineData) {
         title: collectionTitle,
         description: collectionDescription,
         breadcrumbs: [
-          { id: "home", label: "Accueil", href: "/" },
-          { id: "vehicles", label: "Véhicules", href: "/vehicles" },
+          { id: "home", label: "Accueil", href: liveHref("/") },
+          { id: "vehicles", label: "Véhicules", href: liveHref("/vehicles") },
           ...(validCollection ? [{ id: "collection", label: validCollection.name, href: canonicalPath }] : []),
         ],
       },
@@ -506,18 +514,19 @@ export function createLiveEngine(source: LiveEngineData) {
         sortOptions: sorts.map((value) => ({
           value,
           label: sortLabels[value],
-          href: buildCatalogHref(query, { sort: value, page: undefined }),
+          href: catalogHref(query, { sort: value, page: undefined }),
         })),
         formValues: { collection: validCollection?.slug, brand, fuel, gearbox, minPrice: normalizedMinPrice, maxPrice, sort },
-        resetHref: "/vehicles",
+        resetHref: liveHref("/vehicles"),
       },
       activeFilters,
       activeFilterCount: activeFilters.length,
       search: {
+        action: liveHref("/vehicles"),
         value: q,
         placeholder: "Marque, modèle, finition…",
         submitLabel: "Rechercher",
-        clearHref: q ? buildCatalogHref(query, { q: undefined, page: undefined }) : null,
+        clearHref: q ? catalogHref(query, { q: undefined, page: undefined }) : null,
         preservedParams: Object.entries(query)
           .filter(([key, value]) => key !== "q" && key !== "page" && value !== undefined)
           .map(([name, value]) => ({ name, value: String(value) })),
@@ -526,26 +535,26 @@ export function createLiveEngine(source: LiveEngineData) {
         ? `${totalItems} véhicule${totalItems > 1 ? "s" : ""} pour “${q}”`
         : `${totalItems} véhicule${totalItems > 1 ? "s" : ""} disponible${totalItems > 1 ? "s" : ""}`,
       suggestions: totalItems === 0 && tokens.length > 1
-        ? tokens.filter((token) => availableVehicles.some((vehicle) => buildVehicleSearchDocument(vehicle, source.collections).includes(token))).slice(0, 3).map((token) => ({ label: `Rechercher ${token}`, href: buildCatalogHref({}, { q: token }) }))
+        ? tokens.filter((token) => availableVehicles.some((vehicle) => buildVehicleSearchDocument(vehicle, source.collections).includes(token))).slice(0, 3).map((token) => ({ label: `Rechercher ${token}`, href: catalogHref({}, { q: token }) }))
         : [],
       resultCount: totalItems,
       emptyState: totalItems === 0 ? {
         title: q ? `Aucun véhicule trouvé pour “${q}”` : "Aucun véhicule ne correspond à vos critères",
         description: "Essayez de modifier ou de supprimer certains filtres.",
-        resetHref: activeFilters.length ? "/vehicles" : undefined,
+        resetHref: activeFilters.length ? liveHref("/vehicles") : undefined,
       } : null,
       pagination: {
         page,
         pageSize: CATALOG_PAGE_SIZE,
         totalItems,
         totalPages,
-        previousHref: page > 1 ? buildCatalogHref(query, { page: page - 1 }) : null,
-        nextHref: page < totalPages ? buildCatalogHref(query, { page: page + 1 }) : null,
+        previousHref: page > 1 ? catalogHref(query, { page: page - 1 }) : null,
+        nextHref: page < totalPages ? catalogHref(query, { page: page + 1 }) : null,
       },
       seo: {
         title: `${collectionTitle} | ${source.garage.live.siteName}`,
         description: collectionDescription,
-        canonicalPath: technicalFilter ? "/vehicles" : canonicalPath,
+        canonicalPath: technicalFilter ? liveHref("/vehicles") : canonicalPath,
         noIndex: technicalFilter,
       },
     }
@@ -643,7 +652,7 @@ export function createLiveEngine(source: LiveEngineData) {
             collection.coverImageUrl ??
             primaryImage?.url ??
             source.garage.live.collectionFallbackImageUrl,
-          catalogHref: buildCatalogHref({ collection: collection.slug }, {}),
+          catalogHref: catalogHref({ collection: collection.slug }, {}),
         }
       })
       .filter((collection): collection is VisibleCollection => collection !== null)
@@ -678,6 +687,8 @@ export function createLiveEngine(source: LiveEngineData) {
       : `${new Intl.NumberFormat("fr-FR").format(vehicle.mileage)} km`
     const seoParts = [displayName, vehicle.year, mileage].filter(Boolean)
     return {
+      homeHref: liveHref("/"),
+      catalogHref: liveHref("/vehicles"),
       vehicle: clone(vehicle),
       displayName,
       subtitle: cleanText(vehicle.trim),
@@ -713,6 +724,7 @@ export function createLiveEngine(source: LiveEngineData) {
         address: clone(source.garage.address),
         contact: clone(live.contact),
         socialLinks: clone(live.socialLinks),
+        homeHref: liveHref("/"),
       },
       theme: clone(live.theme),
       navigation: getNavigation(),

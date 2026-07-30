@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 import {
+  revalidateGarageLive,
+  revalidateVehicleLiveById,
+} from "@/features/live-stock"
+import {
   type VehicleActionState,
   type VehicleInput,
   parseVehicleFormData,
@@ -134,6 +138,7 @@ export async function updateVehicle(
 
   revalidatePath("/stock")
   revalidatePath(`/stock/${vehicleId}`)
+  await revalidateVehicleLiveById(vehicleId)
   return { success: true, message: "Informations mises à jour." }
 }
 
@@ -151,7 +156,7 @@ export async function deleteVehicle(
 
   const { data: vehicle, error: vehicleError } = await supabase
     .from("vehicles")
-    .select("id, vehicle_images(storage_path)")
+    .select("id, garage_id, live_slug, vehicle_images(storage_path)")
     .eq("id", vehicleId)
     .single()
 
@@ -165,6 +170,11 @@ export async function deleteVehicle(
   const storagePaths = (vehicle.vehicle_images ?? []).flatMap((image) =>
     image.storage_path ? [image.storage_path] : []
   )
+  const { data: garage } = await supabase
+    .from("garages")
+    .select("live_slug")
+    .eq("id", vehicle.garage_id)
+    .maybeSingle()
   const { error: deleteError } = await supabase
     .from("vehicles")
     .delete()
@@ -193,6 +203,12 @@ export async function deleteVehicle(
 
   revalidatePath("/stock")
   revalidatePath("/dashboard")
+  if (garage?.live_slug) {
+    revalidateGarageLive({
+      garageSlug: garage.live_slug,
+      vehicleSlug: vehicle.live_slug,
+    })
+  }
 
   return {
     success: true,

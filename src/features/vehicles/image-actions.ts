@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { revalidateVehicleLiveById } from "@/features/live-stock"
 import { createClient } from "@/lib/supabase/server"
 import { vehicleImageCategorySchema } from "./image-category"
 
@@ -129,6 +130,7 @@ export async function uploadVehicleImages(formData: FormData) {
   }
 
   revalidatePath(`/stock/${vehicleId}`)
+  await revalidateVehicleLiveById(vehicleId)
 }
 
 export async function setVehiclePrimaryImage(formData: FormData) {
@@ -165,6 +167,7 @@ export async function setVehiclePrimaryImage(formData: FormData) {
   }
 
   revalidatePath(`/stock/${image.vehicle_id}`)
+  await revalidateVehicleLiveById(image.vehicle_id)
 }
 
 export async function deleteVehicleImage(formData: FormData) {
@@ -206,6 +209,7 @@ export async function deleteVehicleImage(formData: FormData) {
     .remove([image.storage_path])
 
   revalidatePath(`/stock/${image.vehicle_id}`)
+  await revalidateVehicleLiveById(image.vehicle_id)
 
   if (storageError) {
     throw new Error(storageError.message)
@@ -242,5 +246,6 @@ export async function updateVehicleImageCategory(
   }
 
   revalidatePath(`/stock/${image.vehicle_id}`)
+  await revalidateVehicleLiveById(image.vehicle_id)
   return { success: true }
 }

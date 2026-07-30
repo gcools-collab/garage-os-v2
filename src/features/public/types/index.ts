@@ -14,6 +14,11 @@ export type Theme = {
   id: string
   name: string
   themeKey?: string
+  colorOverrides?: {
+    primary?: string | null
+    secondary?: string | null
+    accent?: string | null
+  }
   colors: ThemeColorTokens
   typography: {
     fontFamily: string
@@ -93,6 +98,7 @@ export type GarageLogo = {
 
 export type LiveSiteConfig = {
   enabled: boolean
+  basePath?: string
   siteName: string
   slogan?: string
   logo?: GarageLogo
@@ -213,6 +219,7 @@ export type LiveGarageViewModel = {
   address: GarageAddress
   contact: GarageContact
   socialLinks: NavigationItem[]
+  homeHref?: string
 }
 
 export type LiveHomepage = {
@@ -380,6 +387,7 @@ export type LiveVehicleCatalog = {
   activeFilters: LiveCatalogActiveFilter[]
   activeFilterCount: number
   search: {
+    action?: string
     value: string
     placeholder: string
     submitLabel: string
@@ -407,6 +415,8 @@ export type LiveVehicleCatalog = {
 }
 
 export type LiveVehicleDetail = {
+  homeHref?: string
+  catalogHref?: string
   vehicle: Vehicle
   displayName: string
   subtitle?: string

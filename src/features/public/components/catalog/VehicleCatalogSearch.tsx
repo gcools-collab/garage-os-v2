@@ -3,7 +3,7 @@ import type { LiveVehicleCatalog } from "../../types"
 
 export function VehicleCatalogSearch({ search }: { search: LiveVehicleCatalog["search"] }) {
   return (
-    <form action="/vehicles" method="get" role="search" className="flex flex-col gap-3 sm:flex-row">
+    <form action={search.action ?? "/vehicles"} method="get" role="search" className="flex flex-col gap-3 sm:flex-row">
       {search.preservedParams.map((param) => <input key={param.name} type="hidden" name={param.name} value={param.value} />)}
       <label htmlFor="catalog-search" className="sr-only">Rechercher un véhicule</label>
       <input id="catalog-search" type="search" name="q" defaultValue={search.value} placeholder={search.placeholder} className="min-h-12 flex-1 rounded-[var(--live-control-radius)] border border-[var(--live-border)] bg-[var(--live-surface)] px-4" />

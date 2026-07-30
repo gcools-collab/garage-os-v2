@@ -16,7 +16,10 @@ export function PublicLayout({
   navigation: NavigationItem[]
   theme: Theme
 }) {
-  const liveTheme = resolveLiveTheme({ themeKey: theme.themeKey })
+  const liveTheme = resolveLiveTheme({
+    themeKey: theme.themeKey,
+    colors: theme.colorOverrides,
+  })
 
   return (
     <LiveThemeProvider
