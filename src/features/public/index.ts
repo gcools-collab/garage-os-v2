@@ -80,6 +80,7 @@ export type {
   LiveModuleConfig,
   LiveModuleId,
   LiveVehicleDetail,
+  LiveContactAction,
   LiveVehicleCard,
   LiveCatalogActiveFilter,
   LiveCatalogFilterOption,

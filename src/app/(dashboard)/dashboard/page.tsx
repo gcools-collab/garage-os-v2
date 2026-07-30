@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation"
 
 import { buildGarageDashboard, GarageIntelligenceDashboard } from "@/features/intelligence"
+import {
+  buildLeadDashboardSummary,
+  getLeadDashboardCounts,
+  LeadDashboardSignal,
+} from "@/features/leads"
 import { getActiveGarageSession, resolveGarageSessionRoute } from "@/features/tenant"
 
 export default async function DashboardPage() {
@@ -13,6 +18,7 @@ export default async function DashboardPage() {
   const dashboard = buildGarageDashboard({
     context: { garageName: session.garageName },
   })
+  const leadSummary = buildLeadDashboardSummary(await getLeadDashboardCounts(session))
 
-  return <GarageIntelligenceDashboard dashboard={dashboard} />
+  return <div className="space-y-6"><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
 }

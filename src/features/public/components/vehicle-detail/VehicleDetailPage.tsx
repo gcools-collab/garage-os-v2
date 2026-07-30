@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { ReactNode } from "react"
 import type { LiveVehicleDetail } from "../../types"
 import { VehicleContactActions } from "./VehicleContactActions"
 import { VehicleDescriptionSection } from "./VehicleDescriptionSection"
@@ -12,8 +13,10 @@ import { VehicleTrustSection } from "./VehicleTrustSection"
 
 export function VehicleDetailPage({
   detail,
+  leadForm,
 }: {
   detail: LiveVehicleDetail
+  leadForm?: ReactNode
 }) {
   return (
     <article className="bg-[var(--live-background)] px-5 py-8 sm:px-8 sm:py-12">
@@ -41,6 +44,7 @@ export function VehicleDetailPage({
         </div>
 
         <div className="mt-16 space-y-16 sm:mt-20 sm:space-y-20">
+          {leadForm}
           <VehicleDescriptionSection description={detail.description} />
           <VehicleSpecifications groups={detail.specifications} />
           <VehicleEquipment groups={detail.equipmentGroups} />

@@ -2,6 +2,10 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { PublicLayout, VehicleDetailPage } from "@/features/public"
 import { getPublicLiveVehicleDetail } from "@/features/live-stock"
+import {
+  buildVehicleLeadContactActions,
+  PublicVehicleLeadForm,
+} from "@/features/leads"
 
 type GarageVehiclePageProps = {
   params: Promise<{ garageSlug: string; vehicleSlug: string }>
@@ -29,13 +33,33 @@ export default async function GarageVehiclePage({ params }: GarageVehiclePagePro
   const { garageSlug, vehicleSlug } = await params
   const result = await getPublicLiveVehicleDetail(garageSlug, vehicleSlug)
   if (!result) notFound()
+  const publicPageUrl = `${result.garage.basePath}/vehicles/${encodeURIComponent(vehicleSlug)}`
+  const detail = {
+    ...result.detail,
+    contactActions: buildVehicleLeadContactActions({
+      phone: result.garage.branding.phone,
+      email: result.garage.branding.email,
+      vehicleTitle: result.detail.displayName,
+      publicUrl: publicPageUrl,
+    }),
+  }
   return (
     <PublicLayout
       garage={result.homepage.garage}
       navigation={result.homepage.navigation}
       theme={result.homepage.theme}
     >
-      <VehicleDetailPage detail={result.detail} />
+      <VehicleDetailPage
+        detail={detail}
+        leadForm={
+          <PublicVehicleLeadForm
+            garageSlug={garageSlug}
+            vehicleSlug={vehicleSlug}
+            vehicleTitle={detail.displayName}
+            publicPageUrl={publicPageUrl}
+          />
+        }
+      />
     </PublicLayout>
   )
 }
