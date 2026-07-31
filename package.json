@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npm run test:acquisition && npm run test:acquisition-recommendation && npm run test:acquisition-market && npm run test:market && npm run test:market-intelligence && npm run test:documents && npm run test:live && npm run test:live-stock && npm run test:leads && npm run test:commercial && npm run test:intelligence && npm run test:copilot && npm run test:copilot-actions && npm run test:tenant && npm run test:branding && npm run test:theme && npm run test:public-site && npm run test:media && npm run test:vehicle-detail",
+    "test": "npm run test:acquisition && npm run test:acquisition-recommendation && npm run test:acquisition-market && npm run test:market && npm run test:market-intelligence && npm run test:documents && npm run test:live && npm run test:live-stock && npm run test:leads && npm run test:commercial && npm run test:intelligence && npm run test:copilot && npm run test:copilot-actions && npm run test:tenant && npm run test:branding && npm run test:theme && npm run test:public-site && npm run test:media && npm run test:vehicle-detail && npm run test:publication",
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts src/features/acquisition/tests/*.test.ts",
     "test:acquisition-recommendation": "tsx --test src/features/acquisition/recommendation/tests/*.test.ts",
     "test:acquisition-market": "tsx --test src/features/acquisition/market/tests/*.test.ts src/features/acquisition/market/ai/tests/*.test.ts",
@@ -27,7 +27,8 @@
     "test:theme": "tsx --test src/features/theme/theme.test.tsx",
     "test:public-site": "tsx --test src/features/public-site/tests/*.test.ts",
     "test:media": "tsx --test src/features/media/tests/*.test.ts",
-    "test:vehicle-detail": "tsx --test src/features/public-site/vehicle-detail/tests/*.test.tsx"
+    "test:vehicle-detail": "tsx --test src/features/public-site/vehicle-detail/tests/*.test.tsx",
+    "test:publication": "tsx --test src/features/publication/tests/*.test.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

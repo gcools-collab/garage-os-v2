@@ -1,4 +1,5 @@
-import { Camera, CircleDollarSign, Pencil } from "lucide-react"
+import { Camera, CircleDollarSign, Megaphone, Pencil } from "lucide-react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { VehicleStatusDialog } from "../status/vehicle-status-dialog"
@@ -24,6 +25,12 @@ export function VehicleActionBar({
       </Button>
       <Button asChild variant="ghost" size="sm">
         <a href="#vehicle-photos"><Camera aria-hidden="true" />Ajouter des photos</a>
+      </Button>
+      <Button asChild variant="ghost" size="sm">
+        <Link href={`/publication/${vehicleId}`}>
+          <Megaphone aria-hidden="true" />
+          Préparer la publication
+        </Link>
       </Button>
       <VehicleStatusDialog vehicleId={vehicleId} currentStatus={currentStatus} />
     </nav>
