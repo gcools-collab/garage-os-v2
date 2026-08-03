@@ -57,12 +57,16 @@ export interface PublicHomepageViewModel {
   readonly garage: GaragePublicViewModel
   readonly hero: PublicHeroViewModel
   readonly sections: readonly PublicHomepageSectionViewModel[]
+  readonly vehicleCount: number
   readonly featuredVehicles: readonly VehiclePublicCardViewModel[]
   readonly latestVehicles: readonly VehiclePublicCardViewModel[]
   readonly quickSearch: {
     readonly action: string
     readonly brands: readonly string[]
+    readonly models: readonly string[]
     readonly fuels: readonly string[]
+    readonly gearboxes: readonly string[]
+    readonly years: readonly string[]
   }
 }
 

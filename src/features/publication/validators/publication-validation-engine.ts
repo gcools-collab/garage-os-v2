@@ -123,6 +123,25 @@ const rules: readonly RuleDefinition[] = [
         ? result("PASS", "Le minimum SEO est disponible.", null, null)
         : result("WARNING", "Le titre, la description ou l’image SEO sont incomplets.", "Compléter le contenu", vehicleHref(context, "#vehicle-information")),
   },
+  {
+    id: "vehicle-360", title: "Visite extérieure 360°", order: 150,
+    evaluate: (context) => {
+      const visit = context.vehicle360
+      if (!visit || visit.state === "NOT_APPLICABLE") return result("NOT_APPLICABLE", "La visite 360° est facultative.", null, null)
+      if (visit.state === "PASS") return result("PASS", visit.description, null, visit.href)
+      return result("WARNING", visit.description, "Finaliser la visite 360°", visit.href)
+    },
+  },
+  {
+    id: "media-quality", title: "Qualité des médias", order: 160,
+    evaluate: (context) => {
+      const quality = context.mediaQuality
+      if (!quality) return result("NOT_APPLICABLE", "Aucun rapport qualité n’est disponible.", null, null)
+      if (quality.deterministic.blockers.length) return result("BLOCKER", quality.summary, "Corriger les médias", vehicleHref(context, "#vehicle-photos"))
+      if (quality.deterministic.warnings.length) return result("WARNING", quality.summary, "Vérifier les médias", vehicleHref(context, "#vehicle-photos"))
+      return result("PASS", `Qualité média validée (${quality.score}/100).`, null, null)
+    },
+  },
 ] as const
 
 export class PublicationValidationEngine {

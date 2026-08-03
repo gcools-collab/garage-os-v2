@@ -6,6 +6,8 @@ import {
   PremiumVehicleDetailPage,
   VehicleDetailPageBuilder,
 } from "@/features/public-site"
+import { Vehicle360ViewerBuilder } from "@/features/vehicle-360"
+import { getPublicVehicle360Sequence } from "@/features/vehicle-360/repositories"
 
 export const revalidate = 300
 
@@ -56,6 +58,14 @@ export default async function PremiumVehicleRoute({ params }: Props) {
   const { garageSlug, vehicleSlug } = await params
   const detail = await loadDetail(garageSlug, vehicleSlug)
   if (!detail) notFound()
+  const record = await getPublicSiteRecord(garageSlug)
+  const vehicle = record?.vehicles.find((candidate) => candidate.slug === vehicleSlug)
+  const sequence = vehicle && record
+    ? await getPublicVehicle360Sequence(record.garage.garageId, vehicle.id)
+    : null
+  const vehicle360 = sequence && vehicle
+    ? new Vehicle360ViewerBuilder().build(sequence, `${vehicle.make} ${vehicle.model}`)
+    : null
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(detail.seo.breadcrumbJsonLd) }} />
@@ -64,7 +74,7 @@ export default async function PremiumVehicleRoute({ params }: Props) {
       {detail.seo.imageJsonLd ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(detail.seo.imageJsonLd.structuredImage) }} />
       ) : null}
-      <PremiumVehicleDetailPage detail={detail} />
+      <PremiumVehicleDetailPage detail={detail} vehicle360={vehicle360} />
     </>
   )
 }

@@ -14,6 +14,9 @@ import { getActiveGarageSession } from "@/features/tenant"
 import { resolveLiveTheme } from "@/features/theme"
 import { createClient } from "@/lib/supabase/server"
 import type { PublicationWorkspaceSource } from "../types"
+import { Vehicle360PublicationBuilder } from "@/features/vehicle-360"
+import { getVehicle360Sequence } from "@/features/vehicle-360/repositories"
+import { buildDeterministicMediaQualityReport } from "@/features/media-quality"
 
 const VEHICLE_COLUMNS = [
   "id", "garage_id", "live_slug", "brand", "model", "version", "year",
@@ -91,16 +94,28 @@ export async function getPublicationWorkspaceSource(
     },
   }
 
+  const vehicle360 = new Vehicle360PublicationBuilder().build(
+    await getVehicle360Sequence(vehicleId),
+    vehicleId
+  )
+  const mappedVehicle = mapPublicVehicle(
+    vehicle as unknown as PublicVehicleRecord,
+    (images ?? []) as unknown as PublicVehicleImageRecord[]
+  )
+  const mediaQuality = buildDeterministicMediaQualityReport(mappedVehicle.photos.map((photo, index) => ({
+    id: photo.id, position: index + 1, url: photo.url, width: null, height: null,
+    fileSize: null, mimeType: "image/unknown", hash: null, ready: true,
+  })))
+
   return {
     garage: garageContext,
-    vehicle: mapPublicVehicle(
-      vehicle as unknown as PublicVehicleRecord,
-      (images ?? []) as unknown as PublicVehicleImageRecord[]
-    ),
+    vehicle: mappedVehicle,
     garageActive: Boolean(garage.live_enabled),
     brandingConfigured: Boolean(
       branding.displayName.trim()
       && (branding.contact.phone || branding.contact.email)
     ),
+    vehicle360,
+    mediaQuality,
   }
 }

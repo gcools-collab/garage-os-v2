@@ -4,8 +4,8 @@ import {
   buildPublicHomepage,
   buildPublicSeo,
   getPublicSiteRecord,
-  PublicHomepage,
 } from "@/features/public-site"
+import { PremiumHomepage, PremiumHomepageBuilder } from "@/features/public-site-premium"
 
 type Props = { readonly params: Promise<{ readonly garageSlug: string }> }
 
@@ -36,5 +36,6 @@ export default async function GaragePublicHomepage({ params }: Props) {
   const homepage = await load(params)
   if (!homepage) notFound()
   const seo = buildPublicSeo({ garage: homepage.garage, canonicalPath: homepage.garage.homeHref, imageUrl: homepage.hero.image?.url })
-  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.structuredData) }} /><PublicHomepage homepage={homepage} /></>
+  const premium = new PremiumHomepageBuilder().build(homepage)
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.structuredData).replace(/</g, "\\u003c") }} /><PremiumHomepage homepage={premium} /></>
 }

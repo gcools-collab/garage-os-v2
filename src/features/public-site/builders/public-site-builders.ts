@@ -118,12 +118,16 @@ export function buildPublicHomepage(
       { id: "REVIEWS", enabled: false, title: "Avis clients", description: "Les avis seront prochainement disponibles." },
       { id: "CONTACT", enabled: true, title: "Parlons de votre projet", description: "Notre équipe est à votre écoute." },
     ],
+    vehicleCount: cards.length,
     featuredVehicles: cards.slice(0, 3),
     latestVehicles: cards.slice(0, 6),
     quickSearch: {
       action: `${garage.homeHref}/stock`,
       brands: unique(vehicles.map((vehicle) => vehicle.make)),
+      models: unique(vehicles.map((vehicle) => vehicle.model)),
       fuels: unique(vehicles.map((vehicle) => vehicle.fuelType)),
+      gearboxes: unique(vehicles.map((vehicle) => vehicle.transmission)),
+      years: unique(vehicles.map((vehicle) => vehicle.year === null ? null : String(vehicle.year))).sort((left, right) => right.localeCompare(left)),
     },
   }
 }

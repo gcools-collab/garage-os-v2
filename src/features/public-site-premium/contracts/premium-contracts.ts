@@ -1,0 +1,3 @@
+export interface PremiumConversionCapabilities { readonly whatsapp: "CONTRACT"; readonly financing: "LEAD"; readonly tradeIn: "LEAD"; readonly reservation: "CONTRACT"; readonly informationRequest: "LEAD" }
+export interface PremiumAnimationContract { readonly fade: true; readonly slide: true; readonly stagger: true; readonly hover: true; readonly scrollReveal: "CSS"; readonly countUp: "STATIC_ACCESSIBLE"; readonly lazyAppearance: true; readonly reducedMotion: true }
+export interface PremiumSeoCapabilities { readonly autoDealer: true; readonly vehicle: true; readonly offer: true; readonly imageObject: true; readonly faq: "PREPARED"; readonly review: "ONLY_REAL_DATA"; readonly aggregateRating: "ONLY_REAL_DATA" }

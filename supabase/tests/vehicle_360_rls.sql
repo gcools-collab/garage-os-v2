@@ -1,0 +1,12 @@
+begin;
+select plan(8);
+select has_table('public', 'vehicle_360_sequences');
+select has_table('public', 'vehicle_360_frames');
+select has_column('public', 'vehicle_360_sequences', 'garage_id');
+select has_column('public', 'vehicle_360_frames', 'sequence_id');
+select policies_are('public', 'vehicle_360_sequences', array['Garage members can read 360 sequences','Garage admins can create 360 sequences','Garage admins can update 360 sequences','Garage admins can delete 360 sequences']);
+select policies_are('public', 'vehicle_360_frames', array['Garage members can read 360 frames','Garage admins can manage 360 frames']);
+select has_view('public', 'public_live_vehicle_360_frames');
+select col_is_fk('public', 'vehicle_360_frames', array['sequence_id','garage_id','vehicle_id']);
+select * from finish();
+rollback;

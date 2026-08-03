@@ -1,0 +1,10 @@
+.premium-reveal { animation: premium-reveal 600ms ease-out both; }
+.premium-stagger > * { animation: premium-reveal 600ms ease-out both; }
+.premium-stagger > *:nth-child(2) { animation-delay: 80ms; }
+.premium-stagger > *:nth-child(3) { animation-delay: 160ms; }
+.premium-stagger > *:nth-child(4) { animation-delay: 240ms; }
+.premium-card { transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease; }
+.premium-card img { transition: transform 300ms ease; }
+@media (hover: hover) and (pointer: fine) { .premium-card:hover { transform: translateY(-4px); box-shadow: 0 18px 45px var(--live-shadow-color); border-color: var(--live-border-strong); } .premium-card:hover img { transform: scale(1.035); } }
+@keyframes premium-reveal { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .premium-reveal, .premium-stagger > *, .premium-card, .premium-card img { animation: none; transition: none; } }

@@ -1,4 +1,6 @@
 import type { LiveStockVehicle, PublicGarageContext } from "@/features/live-stock"
+import type { Vehicle360PublicationViewModel } from "@/features/vehicle-360"
+import type { MediaQualityReport } from "@/features/media-quality"
 
 export const publicationWorkflowStatuses = [
   "DRAFT",
@@ -40,6 +42,8 @@ export interface PublicationWorkspaceSource {
   readonly vehicle: LiveStockVehicle
   readonly garageActive: boolean
   readonly brandingConfigured: boolean
+  readonly vehicle360?: Vehicle360PublicationViewModel
+  readonly mediaQuality?: MediaQualityReport
 }
 
 export type PublicationActionType =

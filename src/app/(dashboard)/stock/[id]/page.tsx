@@ -38,6 +38,7 @@ import {
   type VehicleDocument,
 } from "@/features/vehicles/documents"
 import { createClient } from "@/lib/supabase/server"
+import { buildDeterministicMediaQualityReport, buildMediaQualityViewModel, MediaQualityReportCard } from "@/features/media-quality"
 
 type VehiclePageProps = {
   params: Promise<{ id: string }>
@@ -191,6 +192,10 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
     return check
   })
   const completeness = getCompletenessPercentage(completenessChecks)
+  const mediaQuality = buildMediaQualityViewModel(buildDeterministicMediaQualityReport(sortedImages.map((image, index) => ({
+    id: image.id, position: index + 1, url: image.url, width: null, height: null,
+    fileSize: null, mimeType: "image/unknown", hash: null, ready: true,
+  }))))
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 pb-4">
@@ -260,6 +265,13 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
 
       <VehicleMarketplacePresence links={marketplaceLinks} />
 
+      <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div><h2 className="text-xl font-semibold">Visite extérieure 360°</h2><p className="mt-1 text-sm text-muted-foreground">Créez et publiez une rotation immersive à partir d’une séquence de photos.</p></div>
+          <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/360`}>Gérer la visite 360°</Link></Button>
+        </div>
+      </section>
+
       <VehicleDocumentsSection vehicleId={vehicle.id} documents={vehicleDocuments} />
 
       <section id="vehicle-photos" className="scroll-mt-6 rounded-xl border bg-white p-5 shadow-xs sm:p-6">
@@ -277,6 +289,8 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
           vehicleName={`${vehicle.brand} ${vehicle.model}`}
         />
       </section>
+
+      <MediaQualityReportCard report={mediaQuality} />
 
       <section className="grid items-stretch gap-6 xl:grid-cols-2">
         <article id="vehicle-costs" className="flex min-h-[420px] scroll-mt-6 flex-col rounded-xl border bg-white p-5 shadow-xs sm:p-6">
