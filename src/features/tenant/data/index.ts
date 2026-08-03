@@ -1,5 +1,5 @@
 export { getActiveGarageSession } from "./get-active-garage-session"
 export { loadCurrentUserGarageMemberships } from "./load-garage-memberships"
-export { persistActiveGarageCookie } from "./active-garage-cookie"
+export { clearActiveGarageCookie, persistActiveGarageCookie } from "./active-garage-cookie"
 export { setActiveGarageWithDependencies } from "./set-active-garage"
 export type { SetActiveGarageDependencies } from "./set-active-garage"

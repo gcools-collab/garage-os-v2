@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation"
 
-export default function LiveLandingPage() {
-  const garageSlug = process.env.NEXT_PUBLIC_DEFAULT_LIVE_GARAGE_SLUG?.trim()
-  if (garageSlug) redirect(`/g/${encodeURIComponent(garageSlug)}`)
-  return <main><h1>Garage OS Live</h1><p>Aucun site public n’est configuré.</p></main>
+import { getActiveGarageSession } from "@/features/tenant"
+import { resolveRootAuthRoute } from "@/features/auth/session-flow"
+
+export default async function RootPage() {
+  const session = await getActiveGarageSession()
+  redirect(resolveRootAuthRoute(session))
 }

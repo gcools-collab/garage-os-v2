@@ -13,6 +13,8 @@ export const getActiveGarageSession = cache(async (): Promise<ActiveGarageSessio
 
   return resolveActiveGarageSession({
     userId: context.userId,
+    userEmail: context.userEmail,
+    userDisplayName: context.userDisplayName,
     memberships: context.memberships,
     persistedGarageId: await readActiveGarageCookie(),
   })

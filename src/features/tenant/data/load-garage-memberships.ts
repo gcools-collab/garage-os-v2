@@ -12,27 +12,26 @@ type MembershipRow = {
 type GarageRow = {
   readonly id: string
   readonly name: string
-}
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
+  readonly live_slug: string
 }
 
 export async function loadCurrentUserGarageMemberships(): Promise<{
   readonly userId: string
+  readonly userEmail: string | null
+  readonly userDisplayName: string | null
   readonly memberships: readonly GarageMembership[]
 } | null> {
   const supabase = await createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
 
   if (userError) {
-    console.error("Unable to resolve tenant user", { code: userError.code, message: userError.message })
-    throw new Error("Impossible de vérifier la session utilisateur.")
+    if (process.env.NODE_ENV === "development") {
+      console.info("Auth session unavailable", {
+        reason: "invalid_or_expired",
+        code: userError.code,
+      })
+    }
+    return null
   }
   if (!user) return null
 
@@ -40,42 +39,50 @@ export async function loadCurrentUserGarageMemberships(): Promise<{
     .from("garage_members")
     .select("garage_id, user_id, role")
     .eq("user_id", user.id)
-
   if (membershipError) {
-    console.error("Unable to resolve garage memberships", { code: membershipError.code, message: membershipError.message })
+    console.error("Unable to resolve garage memberships", {
+      code: membershipError.code,
+      message: membershipError.message,
+    })
     throw new Error("Impossible de charger les appartenances aux garages.")
   }
 
-  const membershipRows = (membershipData ?? []) as MembershipRow[]
-  const garageIds = [...new Set(membershipRows.flatMap((membership) => membership.garage_id ? [membership.garage_id] : []))]
-  if (garageIds.length === 0) return { userId: user.id, memberships: [] }
+  const identity = {
+    userId: user.id,
+    userEmail: user.email ?? null,
+    userDisplayName: typeof user.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : null,
+  }
+  const rows = (membershipData ?? []) as MembershipRow[]
+  const garageIds = [...new Set(rows.flatMap((row) => row.garage_id ? [row.garage_id] : []))]
+  if (garageIds.length === 0) return { ...identity, memberships: [] }
 
   const { data: garageData, error: garageError } = await supabase
     .from("garages")
-    .select("id, name")
+    .select("id, name, live_slug")
     .in("id", garageIds)
-
   if (garageError) {
-    console.error("Unable to resolve authorized garages", { code: garageError.code, message: garageError.message })
+    console.error("Unable to resolve authorized garages", {
+      code: garageError.code,
+      message: garageError.message,
+    })
     throw new Error("Impossible de charger les garages autorisés.")
   }
 
-  const garagesById = new Map(
-    ((garageData ?? []) as GarageRow[]).map((garage) => [garage.id, garage])
-  )
-  const memberships = membershipRows.flatMap((membership): GarageMembership[] => {
-    if (!membership.garage_id || membership.user_id !== user.id) return []
-    const garage = garagesById.get(membership.garage_id)
+  const garages = new Map(((garageData ?? []) as GarageRow[]).map((garage) => [garage.id, garage]))
+  const memberships = rows.flatMap((row): GarageMembership[] => {
+    if (!row.garage_id || row.user_id !== user.id) return []
+    const garage = garages.get(row.garage_id)
     if (!garage) return []
     return [{
       userId: user.id,
       garageId: garage.id,
       garageName: garage.name,
-      garageSlug: slugify(garage.name),
-      memberRole: membership.role ?? "member",
+      garageSlug: garage.live_slug,
+      memberRole: row.role ?? "member",
       city: null,
     }]
   })
-
-  return { userId: user.id, memberships }
+  return { ...identity, memberships }
 }

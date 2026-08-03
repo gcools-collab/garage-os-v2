@@ -50,6 +50,8 @@ function brandingRecord(overrides: Partial<GarageBrandingRecord> = {}): GarageBr
 function session(role: string): ActiveGarageSession {
   return {
     userId: "11111111-1111-4111-8111-111111111111",
+    userEmail: "owner@example.com",
+    userDisplayName: "Owner",
     garageId: GARAGE_ID,
     garageName: "Garage source",
     garageSlug: "garage-source",

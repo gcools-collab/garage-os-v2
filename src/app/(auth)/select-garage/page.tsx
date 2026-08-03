@@ -9,9 +9,9 @@ import {
 
 export default async function SelectGaragePage() {
   const session = await getActiveGarageSession()
+  if (!session) redirect("/auth/recover")
   const destination = resolveGarageSessionRoute(session)
   if (destination !== "/select-garage") redirect(destination)
-  if (!session) redirect("/register")
 
   return <GarageSelector selection={buildGarageSelection(session)} />
 }

@@ -8,6 +8,7 @@ import { getActiveGarageSession, resolveGarageSessionRoute } from "@/features/te
 
 export default async function OnboardingPage() {
   const session = await getActiveGarageSession()
+  if (!session) redirect("/auth/recover")
   const destination = resolveGarageSessionRoute(session)
   if (destination !== "/onboarding") redirect(destination)
 

@@ -20,10 +20,14 @@ function availableGarage(membership: GarageMembership): AvailableGarage {
 
 export function resolveActiveGarageSession({
   userId,
+  userEmail = null,
+  userDisplayName = null,
   memberships,
   persistedGarageId,
 }: {
   readonly userId: string
+  readonly userEmail?: string | null
+  readonly userDisplayName?: string | null
   readonly memberships: readonly GarageMembership[]
   readonly persistedGarageId: string | null
 }): ActiveGarageSession {
@@ -36,6 +40,8 @@ export function resolveActiveGarageSession({
   if (availableGarages.length === 0) {
     return {
       userId,
+      userEmail,
+      userDisplayName,
       garageId: null,
       garageName: null,
       garageSlug: null,
@@ -53,6 +59,8 @@ export function resolveActiveGarageSession({
 
   return {
     userId,
+    userEmail,
+    userDisplayName,
     garageId: activeGarage?.garageId ?? null,
     garageName: activeGarage?.garageName ?? null,
     garageSlug: activeGarage?.garageSlug ?? null,

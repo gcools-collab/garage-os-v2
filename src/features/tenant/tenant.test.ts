@@ -144,7 +144,7 @@ test("route vers onboarding et sélecteur uniquement lorsque nécessaire", () =>
     persistedGarageId: null,
   })
 
-  assert.equal(resolveGarageSessionRoute(null), "/register")
+  assert.equal(resolveGarageSessionRoute(null), "/login")
   assert.equal(resolveGarageSessionRoute(onboarding), "/onboarding")
   assert.equal(resolveGarageSessionRoute(selection), "/select-garage")
   assert.equal(resolveGarageSessionRoute(dashboard), "/dashboard")

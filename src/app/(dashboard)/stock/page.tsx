@@ -24,7 +24,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
   const query = parseStockQuery(await searchParams)
   const supabase = await createClient()
   const data = await new StockService(supabase).getStock(query)
-  if (!data) redirect("/register")
+  if (!data) redirect("/auth/recover")
 
   return (
     <div className="mx-auto max-w-7xl space-y-7">

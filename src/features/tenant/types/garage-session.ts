@@ -10,6 +10,8 @@ export type AvailableGarage = {
 
 export type ActiveGarageSession = {
   readonly userId: string
+  readonly userEmail?: string | null
+  readonly userDisplayName?: string | null
   readonly garageId: string | null
   readonly garageName: string | null
   readonly garageSlug: string | null

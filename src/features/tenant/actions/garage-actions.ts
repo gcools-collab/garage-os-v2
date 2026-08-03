@@ -28,7 +28,7 @@ export async function createFirstGarage(formData: FormData): Promise<void> {
   if (!parsedName.success) throw new Error("Le nom du garage doit contenir entre 2 et 120 caractères.")
 
   const context = await loadCurrentUserGarageMemberships()
-  if (!context) redirect("/register")
+  if (!context) redirect("/login")
   if (context.memberships.length > 0) {
     throw new Error("Un garage est déjà associé à cet utilisateur.")
   }

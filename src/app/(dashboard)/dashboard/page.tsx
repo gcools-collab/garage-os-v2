@@ -22,9 +22,9 @@ import { CopilotDashboardCard } from "@/features/copilot"
 
 export default async function DashboardPage() {
   const session = await getActiveGarageSession()
+  if (!session) redirect("/auth/recover")
   const destination = resolveGarageSessionRoute(session)
   if (destination !== "/dashboard") redirect(destination)
-  if (!session) redirect("/register")
   if (!session.garageName) redirect("/select-garage")
 
   const dashboard = buildGarageDashboard({

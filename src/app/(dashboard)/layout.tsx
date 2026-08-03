@@ -14,13 +14,39 @@ import {
   getUnreadNotificationCount,
 } from "@/features/notifications"
 import { getActiveGarageSession, resolveGarageSessionRoute } from "@/features/tenant"
+import { logAuthDiagnostic } from "@/features/auth/session-flow"
 
 export default async function DashboardLayout({ children }: { readonly children: React.ReactNode }) {
   const session = await getActiveGarageSession()
+  if (!session) {
+    logAuthDiagnostic({
+      userId: null,
+      email: null,
+      membershipCount: 0,
+      activeGarageId: null,
+      reason: "dashboard_without_session",
+    })
+    redirect("/auth/recover")
+  }
   const destination = resolveGarageSessionRoute(session)
-  if (destination !== "/dashboard") redirect(destination)
-  if (!session) redirect("/register")
+  if (destination !== "/dashboard") {
+    logAuthDiagnostic({
+      userId: session.userId,
+      email: session.userEmail ?? null,
+      membershipCount: session.availableGarages.length,
+      activeGarageId: session.garageId,
+      reason: `dashboard_redirect:${destination}`,
+    })
+    redirect(destination)
+  }
   if (!session.garageId || !session.garageName) redirect("/select-garage")
+  logAuthDiagnostic({
+    userId: session.userId,
+    email: session.userEmail ?? null,
+    membershipCount: session.availableGarages.length,
+    activeGarageId: session.garageId,
+    reason: "dashboard_session_resolved",
+  })
 
   const fallbackBranding = resolveGarageBranding({
     garage: { id: session.garageId, name: session.garageName },
@@ -47,7 +73,16 @@ export default async function DashboardLayout({ children }: { readonly children:
     <div className="flex min-h-screen bg-zinc-50">
       <Sidebar branding={shellBranding} />
       <div className="min-w-0 flex-1">
-        <Header branding={shellBranding} notifications={notificationCenter} />
+        <Header
+          branding={shellBranding}
+          notifications={notificationCenter}
+          user={{
+            displayName: session.userDisplayName ?? null,
+            email: session.userEmail ?? null,
+            garageName: session.garageName,
+            role: session.memberRole ?? "member",
+          }}
+        />
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>

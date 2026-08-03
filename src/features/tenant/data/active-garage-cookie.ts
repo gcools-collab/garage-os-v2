@@ -16,3 +16,8 @@ export async function persistActiveGarageCookie(garageId: string) {
     maxAge: 60 * 60 * 24 * 365,
   })
 }
+
+export async function clearActiveGarageCookie() {
+  const cookieStore = await cookies()
+  cookieStore.delete(ACTIVE_GARAGE_COOKIE)
+}
