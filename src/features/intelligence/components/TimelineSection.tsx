@@ -1,9 +1,4 @@
-git add .
-
-git commit -m "feat(branding): add tenant-scoped garage branding foundation"
-
-git pushimport { Clock3 } from "lucide-react"
-
+import { Clock3 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import type { DashboardTimelineItemViewModel } from "../types"
 
