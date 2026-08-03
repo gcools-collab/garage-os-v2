@@ -1,3 +1,7 @@
+"use client"
+
+import { useState } from "react"
+
 import type { LiveThemeDefinition } from "../types"
 import { LiveThemePreview } from "./LiveThemePreview"
 
@@ -10,6 +14,8 @@ export function LiveThemeSelector({
   readonly selectedThemeKey: string
   readonly disabled: boolean
 }) {
+  const [currentThemeKey, setCurrentThemeKey] = useState(selectedThemeKey)
+
   return (
     <fieldset disabled={disabled}>
       <legend className="text-base font-medium">Thème du site public</legend>
@@ -18,10 +24,17 @@ export function LiveThemeSelector({
       </p>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {themes.map((theme) => {
-          const selected = theme.key === selectedThemeKey
+          const selected = theme.key === currentThemeKey
           return (
             <label key={theme.key} className="cursor-pointer rounded-xl border bg-card p-3 has-checked:ring-2 has-checked:ring-primary has-disabled:cursor-not-allowed has-disabled:opacity-60">
-              <input className="sr-only" type="radio" name="themeKey" value={theme.key} defaultChecked={selected} />
+              <input
+                checked={selected}
+                className="sr-only"
+                type="radio"
+                name="themeKey"
+                value={theme.key}
+                onChange={() => setCurrentThemeKey(theme.key)}
+              />
               <LiveThemePreview theme={theme} />
               <span className="mt-3 flex items-center justify-between gap-3">
                 <span>

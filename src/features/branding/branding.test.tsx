@@ -3,6 +3,7 @@ import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
 import { BrandingSettingsForm } from "./components"
+import { buildGarageBrandingUpdateInput } from "./components/BrandingSettingsForm"
 import { updateGarageBrandingWithDependencies } from "./data/update-garage-branding"
 import { createBrandingInitials, resolveGarageBranding } from "./engine"
 import {
@@ -84,6 +85,30 @@ function recordFromInput(garageId: string, input: GarageBrandingUpdateInput) {
     theme_key: input.themeKey ?? "default",
   })
 }
+
+test("builds editable branding values from the current FormData", () => {
+  const formData = new FormData()
+  formData.set("displayName", "S.A.P")
+  formData.set("themeKey", "black-yellow")
+  formData.set("primaryColor", "#111111")
+  formData.set("secondaryColor", "#222222")
+  formData.set("accentColor", "#FFD400")
+
+  const input = buildGarageBrandingUpdateInput(formData)
+
+  assert.equal(input.themeKey, "black-yellow")
+  assert.equal(input.primaryColor, "#111111")
+  assert.equal(input.secondaryColor, "#222222")
+  assert.equal(input.accentColor, "#FFD400")
+})
+
+test("uses the newly selected theme instead of an initial theme value", () => {
+  const formData = new FormData()
+  formData.set("displayName", "S.A.P")
+  formData.set("themeKey", "midnight")
+
+  assert.equal(buildGarageBrandingUpdateInput(formData).themeKey, "midnight")
+})
 
 test("résout un branding complet normalisé", () => {
   const branding = resolveGarageBranding({
@@ -287,4 +312,29 @@ test("rend les paramètres avec un seul h1 et le vrai displayName", () => {
   assert.equal((html.match(/<h1/g) ?? []).length, 1)
   assert.match(html, /S\.A\.P/)
   assert.doesNotMatch(html, /Garage Martin/)
+})
+
+test("persists successive theme changes through the repository dependency", async () => {
+  let stored = brandingRecord({ theme_key: "default" })
+  const dependencies = {
+    getSession: async () => session("owner"),
+    upsert: async (garageId: string, input: GarageBrandingUpdateInput) => {
+      stored = recordFromInput(garageId, input)
+      return { data: stored, error: null }
+    },
+  }
+
+  const blackYellow = await updateGarageBrandingWithDependencies(
+    { ...validInput, themeKey: "black-yellow" },
+    dependencies
+  )
+  assert.equal(blackYellow.success && blackYellow.branding.themeKey, "black-yellow")
+  assert.equal(stored.theme_key, "black-yellow")
+
+  const midnight = await updateGarageBrandingWithDependencies(
+    { ...validInput, themeKey: "midnight" },
+    dependencies
+  )
+  assert.equal(midnight.success && midnight.branding.themeKey, "midnight")
+  assert.equal(stored.theme_key, "midnight")
 })

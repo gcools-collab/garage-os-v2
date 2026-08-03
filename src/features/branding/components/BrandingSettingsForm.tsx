@@ -40,6 +40,28 @@ function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? "")
 }
 
+export function buildGarageBrandingUpdateInput(formData: FormData): GarageBrandingUpdateInput {
+  return {
+    displayName: value(formData, "displayName"),
+    legalName: value(formData, "legalName"),
+    phone: value(formData, "phone"),
+    email: value(formData, "email"),
+    websiteUrl: value(formData, "websiteUrl"),
+    addressLine1: value(formData, "addressLine1"),
+    addressLine2: value(formData, "addressLine2"),
+    postalCode: value(formData, "postalCode"),
+    city: value(formData, "city"),
+    countryCode: value(formData, "countryCode"),
+    shortDescription: value(formData, "shortDescription"),
+    facebookUrl: value(formData, "facebookUrl"),
+    instagramUrl: value(formData, "instagramUrl"),
+    themeKey: value(formData, "themeKey"),
+    primaryColor: value(formData, "primaryColor"),
+    secondaryColor: value(formData, "secondaryColor"),
+    accentColor: value(formData, "accentColor"),
+  }
+}
+
 export function BrandingSettingsForm({
   settings,
   updateBranding,
@@ -57,25 +79,7 @@ export function BrandingSettingsForm({
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    const input: GarageBrandingUpdateInput = {
-      displayName: value(formData, "displayName"),
-      legalName: value(formData, "legalName"),
-      phone: value(formData, "phone"),
-      email: value(formData, "email"),
-      websiteUrl: value(formData, "websiteUrl"),
-      addressLine1: value(formData, "addressLine1"),
-      addressLine2: value(formData, "addressLine2"),
-      postalCode: value(formData, "postalCode"),
-      city: value(formData, "city"),
-      countryCode: value(formData, "countryCode"),
-      shortDescription: value(formData, "shortDescription"),
-      facebookUrl: value(formData, "facebookUrl"),
-      instagramUrl: value(formData, "instagramUrl"),
-      themeKey: settings.values.themeKey,
-      primaryColor: settings.values.primaryColor,
-      secondaryColor: settings.values.secondaryColor,
-      accentColor: settings.values.accentColor,
-    }
+    const input = buildGarageBrandingUpdateInput(formData)
     startTransition(async () => {
       const actionResult = await updateBranding(input)
       setResult(actionResult)
@@ -127,7 +131,14 @@ export function BrandingSettingsForm({
 
       <Card>
         <CardHeader><CardTitle>Thème</CardTitle><CardDescription>Cette identité visuelle sera appliquée à Garage OS Live.</CardDescription></CardHeader>
-        <CardContent>{themeSelector}</CardContent>
+        <CardContent className="space-y-6">
+          {themeSelector}
+          <div className="grid gap-5 md:grid-cols-3">
+            <Field label="Couleur principale" name="primaryColor" value={settings.values.primaryColor} disabled={disabled} error={errors?.primaryColor} />
+            <Field label="Couleur secondaire" name="secondaryColor" value={settings.values.secondaryColor} disabled={disabled} error={errors?.secondaryColor} />
+            <Field label="Couleur d’accent" name="accentColor" value={settings.values.accentColor} disabled={disabled} error={errors?.accentColor} />
+          </div>
+        </CardContent>
       </Card>
 
       {result ? (
