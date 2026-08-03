@@ -47,7 +47,7 @@ export function PublicationWorkspace({
         <PublicationSeoPreview preview={workspace.seoPreview} />
       </section>
 
-      <PublicationActions actions={workspace.actions} />
+      <PublicationActions vehicleId={workspace.vehicleId} actions={workspace.actions} />
     </div>
   )
 }

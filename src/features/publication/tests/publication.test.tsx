@@ -137,7 +137,7 @@ test("la checklist conserve l'ordre et prépare les actions suggérées", () => 
 test("les transitions sont centralisées et refusent les raccourcis", () => {
   assert.equal(isPublicationTransitionAllowed("READY", "PUBLISHED"), true)
   assert.equal(isPublicationTransitionAllowed("DRAFT", "PUBLISHED"), false)
-  assert.deepEqual(getPublicationTransitions("ARCHIVED"), ["DRAFT"])
+  assert.deepEqual(getPublicationTransitions("ARCHIVED"), [])
 })
 
 test("le Workspace Builder prépare score, preview publique et SEO", () => {

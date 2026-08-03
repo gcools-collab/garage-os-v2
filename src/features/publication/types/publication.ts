@@ -42,7 +42,13 @@ export interface PublicationWorkspaceSource {
   readonly brandingConfigured: boolean
 }
 
-export type PublicationActionType = "PUBLISH" | "UNPUBLISH" | "ARCHIVE" | "REACTIVATE"
+export type PublicationActionType =
+  | "MARK_READY"
+  | "PUBLISH"
+  | "UNPUBLISH"
+  | "RESERVE"
+  | "SELL"
+  | "ARCHIVE"
 
 export interface PublicationActionContract {
   readonly type: PublicationActionType

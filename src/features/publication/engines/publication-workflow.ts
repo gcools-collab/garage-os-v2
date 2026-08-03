@@ -4,13 +4,13 @@ const transitions: Readonly<Record<
   PublicationWorkflowStatus,
   readonly PublicationWorkflowStatus[]
 >> = {
-  DRAFT: ["IN_PREPARATION", "READY", "ARCHIVED"],
-  IN_PREPARATION: ["DRAFT", "READY", "ARCHIVED"],
-  READY: ["IN_PREPARATION", "PUBLISHED", "ARCHIVED"],
-  PUBLISHED: ["IN_PREPARATION", "RESERVED", "SOLD", "ARCHIVED"],
-  RESERVED: ["PUBLISHED", "SOLD", "ARCHIVED"],
+  DRAFT: ["READY"],
+  IN_PREPARATION: ["READY"],
+  READY: ["PUBLISHED"],
+  PUBLISHED: ["READY", "RESERVED"],
+  RESERVED: ["SOLD"],
   SOLD: ["ARCHIVED"],
-  ARCHIVED: ["DRAFT"],
+  ARCHIVED: [],
 }
 
 export function getPublicationTransitions(status: PublicationWorkflowStatus) {
