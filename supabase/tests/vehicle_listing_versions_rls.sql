@@ -1,0 +1,1 @@
+begin;select plan(3);select has_table('public','vehicle_listing_versions','listing versions table');select row_security_active('public','vehicle_listing_versions','listing versions RLS');select col_is_fk('public','vehicle_listing_versions','garage_id','garage foreign key');select * from finish();rollback;

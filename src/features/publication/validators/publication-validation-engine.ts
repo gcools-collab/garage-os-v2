@@ -142,6 +142,15 @@ const rules: readonly RuleDefinition[] = [
       return result("PASS", `Qualité média validée (${quality.score}/100).`, null, null)
     },
   },
+  {
+    id: "interior-tour", title: "Visite intérieure", order: 170,
+    evaluate: (context) => {
+      const visit = context.interiorTour
+      if (!visit || visit.state === "NOT_APPLICABLE") return result("NOT_APPLICABLE", "La visite intérieure est facultative.", null, null)
+      if (visit.state === "PASS") return result("PASS", visit.description, null, visit.href)
+      return result("WARNING", visit.description, "Finaliser la visite intérieure", visit.href)
+    },
+  },
 ] as const
 
 export class PublicationValidationEngine {

@@ -1,0 +1,28 @@
+import type { AssetImageViewModel } from "@/features/media"
+import { MediaQualityEngine, MediaQualityReportBuilder } from "@/features/media-quality"
+import { InteriorHotspotEngine, InteriorTourEngine } from "../engine"
+import type { InteriorTour, InteriorTourContext, InteriorTourEditorViewModel, InteriorTourPublicationViewModel, InteriorTourScene, InteriorTourViewerViewModel } from "../types"
+import { InteriorTourValidationEngine } from "../validation"
+
+const LABELS = { DRAFT: "Brouillon", READY: "Prête", PUBLISHED: "Publiée", FAILED: "Erreur", ARCHIVED: "Archivée" } as const
+function image(scene: InteriorTourScene, vehicleName: string): AssetImageViewModel | null { return scene.publicUrl ? { id: scene.id, alt: `${vehicleName} — panorama intérieur ${scene.name || scene.position}`, caption: scene.name || null, source: { url: scene.publicUrl, width: scene.width ?? undefined, height: scene.height ?? undefined }, placeholder: { dominantColor: null, blurHash: null }, badge: null, status: "READY" } : null }
+export class InteriorTourViewerBuilder {
+  build(tour: InteriorTour, vehicleName: string): InteriorTourViewerViewModel | null {
+    const ready = new InteriorTourEngine().order(tour.scenes.filter((scene) => scene.status === "READY"))
+    const projection = new InteriorHotspotEngine()
+    const scenes = ready.flatMap((scene) => { const resolved = image(scene, vehicleName); if (!resolved) return []; return [{ id: scene.id, name: scene.name || `Scène ${scene.position}`, image: resolved, initialYaw: scene.initialYaw ?? 0, initialPitch: scene.initialPitch ?? 0, initialFov: scene.initialFov ?? 90, hotspots: tour.hotspots.filter((hotspot) => hotspot.sourceSceneId === scene.id && ready.some((target) => target.id === hotspot.targetSceneId)).map((hotspot) => ({ id: hotspot.id, label: hotspot.label, targetSceneId: hotspot.targetSceneId, targetSceneName: ready.find((target) => target.id === hotspot.targetSceneId)?.name || "Scène suivante", ...projection.project(hotspot.yaw, hotspot.pitch) })) }] })
+    if (!scenes.length) return null
+    return { tourId: tour.id, label: `Visite intérieure panoramique de ${vehicleName}`, instructions: "Faites glisser pour regarder autour de vous. Utilisez les flèches, plus et moins pour ajuster la vue.", startSceneId: scenes.some((scene) => scene.id === tour.startSceneId) ? tour.startSceneId! : scenes[0].id, scenes, fallbackLabel: "Voir les photos classiques", fullscreenLabel: "Afficher en plein écran", resetLabel: "Revenir à la vue initiale" }
+  }
+}
+export class InteriorTourSceneBuilder {
+  build(tour: InteriorTour, vehicleName: string): InteriorTourEditorViewModel {
+    const ordered = new InteriorTourEngine().order(tour.scenes)
+    const validation = new InteriorTourValidationEngine().validate(tour)
+    const analysis = new MediaQualityEngine().analyze(ordered.map((scene) => ({ id: scene.id, position: scene.position, url: scene.publicUrl, width: scene.width, height: scene.height, fileSize: scene.fileSize, mimeType: scene.mimeType, hash: null, ready: scene.status === "READY" })), "GALLERY")
+    const mediaQuality = new MediaQualityReportBuilder().build(analysis, null)
+    return { tourId: tour.id, vehicleId: tour.vehicleId, statusLabel: LABELS[tour.status], sceneCountLabel: `${ordered.filter((scene) => scene.status === "READY").length} scène(s) prête(s)`, startSceneLabel: ordered.find((scene) => scene.id === tour.startSceneId)?.name || "Non définie", publicLabel: tour.isPublic ? "Visible publiquement" : "Privée", validation, scenes: ordered.map((scene) => ({ id: scene.id, name: scene.name || `Scène ${scene.position}`, position: scene.position, status: scene.status, isStart: scene.id === tour.startSceneId, imageUrl: scene.publicUrl })), hotspots: tour.hotspots.map((hotspot) => ({ id: hotspot.id, sourceLabel: ordered.find((scene) => scene.id === hotspot.sourceSceneId)?.name || "Scène inconnue", targetLabel: ordered.find((scene) => scene.id === hotspot.targetSceneId)?.name || "Scène inconnue", label: hotspot.label, positionLabel: `${hotspot.yaw}° / ${hotspot.pitch}°` })), viewer: new InteriorTourViewerBuilder().build(tour, vehicleName), mediaQuality }
+  }
+}
+export class InteriorTourPublicationBuilder { build(tour: InteriorTour | null, vehicleId: string): InteriorTourPublicationViewModel { const href = `/stock/${vehicleId}/interior-tour`; if (!tour) return { state: "NOT_APPLICABLE", label: "Aucune visite intérieure", description: "La visite intérieure est facultative.", href }; if (tour.status === "PUBLISHED" && tour.isPublic) return { state: "PASS", label: "Visite intérieure publiée", description: "La visite intérieure est visible sur la fiche publique.", href }; const validation = new InteriorTourValidationEngine().validate(tour); return { state: "WARNING", label: validation.ready ? "Visite intérieure prête à publier" : "Visite intérieure incomplète", description: validation.summary, href } } }
+export function buildInteriorTourContext(tour: InteriorTour | null): InteriorTourContext { if (!tour) return { status: null, score: null, blockers: [], warnings: [], missingViews: [], suggestedHotspots: [] }; const validation = new InteriorTourValidationEngine().validate(tour); const names = tour.scenes.map((scene) => scene.name.toLowerCase()); const missingViews = ["Poste de conduite", "Places arrière", "Coffre"].filter((view) => !names.some((name) => name.includes(view.toLowerCase()))); return { status: tour.status, score: validation.score, blockers: validation.blockers.map((item) => item.description), warnings: validation.warnings.map((item) => item.description), missingViews, suggestedHotspots: tour.scenes.length > 1 && !tour.hotspots.length ? ["Relier les scènes disponibles"] : [] } }

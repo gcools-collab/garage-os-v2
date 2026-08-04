@@ -1,0 +1,12 @@
+begin;
+select plan(8);
+select has_table('public','interior_tours','interior tours table');
+select has_table('public','interior_tour_scenes','interior scenes table');
+select has_table('public','interior_tour_hotspots','interior hotspots table');
+select row_security_active('public','interior_tours','tour RLS enabled');
+select row_security_active('public','interior_tour_scenes','scene RLS enabled');
+select row_security_active('public','interior_tour_hotspots','hotspot RLS enabled');
+select has_view('public','public_live_interior_tours','public restrictive projection');
+select col_is_fk('public','interior_tour_hotspots','garage_id','hotspot garage foreign key');
+select * from finish();
+rollback;

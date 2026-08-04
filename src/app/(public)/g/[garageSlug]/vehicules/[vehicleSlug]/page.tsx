@@ -8,6 +8,8 @@ import {
 } from "@/features/public-site"
 import { Vehicle360ViewerBuilder } from "@/features/vehicle-360"
 import { getPublicVehicle360Sequence } from "@/features/vehicle-360/repositories"
+import { InteriorTourViewerBuilder } from "@/features/interior-tour"
+import { getPublicInteriorTour } from "@/features/interior-tour/repositories"
 
 export const revalidate = 300
 
@@ -66,6 +68,12 @@ export default async function PremiumVehicleRoute({ params }: Props) {
   const vehicle360 = sequence && vehicle
     ? new Vehicle360ViewerBuilder().build(sequence, `${vehicle.make} ${vehicle.model}`)
     : null
+  const interior = vehicle && record
+    ? await getPublicInteriorTour(record.garage.garageId, vehicle.id)
+    : null
+  const interiorTour = interior && vehicle
+    ? new InteriorTourViewerBuilder().build(interior, `${vehicle.make} ${vehicle.model}`)
+    : null
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(detail.seo.breadcrumbJsonLd) }} />
@@ -74,7 +82,7 @@ export default async function PremiumVehicleRoute({ params }: Props) {
       {detail.seo.imageJsonLd ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(detail.seo.imageJsonLd.structuredImage) }} />
       ) : null}
-      <PremiumVehicleDetailPage detail={detail} vehicle360={vehicle360} />
+      <PremiumVehicleDetailPage detail={detail} vehicle360={vehicle360} interiorTour={interiorTour} />
     </>
   )
 }

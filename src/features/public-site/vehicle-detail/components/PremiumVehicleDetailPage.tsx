@@ -7,8 +7,9 @@ import { VehicleGallerySection } from "./VehicleGallerySection"
 import { VehicleOverviewSections } from "./VehicleOverviewSections"
 import { VehicleSupportSections } from "./VehicleSupportSections"
 import { Vehicle360ViewerClient, type Vehicle360ViewerViewModel } from "@/features/vehicle-360"
+import { InteriorTourViewerClient, type InteriorTourViewerViewModel } from "@/features/interior-tour"
 
-export function PremiumVehicleDetailPage({ detail, vehicle360 = null }: { readonly detail: VehicleDetailPageViewModel; readonly vehicle360?: Vehicle360ViewerViewModel | null }) {
+export function PremiumVehicleDetailPage({ detail, vehicle360 = null, interiorTour = null }: { readonly detail: VehicleDetailPageViewModel; readonly vehicle360?: Vehicle360ViewerViewModel | null; readonly interiorTour?: InteriorTourViewerViewModel | null }) {
   return (
     <PublicSiteLayout garage={detail.garage}>
       <nav aria-label="Fil d’Ariane" className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 py-4 text-sm text-[var(--live-muted-foreground)] md:px-8">
@@ -19,6 +20,7 @@ export function PremiumVehicleDetailPage({ detail, vehicle360 = null }: { readon
         <div className="space-y-8">
           <VehicleGallerySection gallery={detail.gallery} capabilities={detail.galleryCapabilities} />
           {vehicle360 ? <section className="rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)] p-5 md:p-7"><div className="mb-5"><p className="text-sm font-medium text-[var(--live-primary)]">Expérience immersive</p><h2 className="mt-1 text-2xl font-semibold">Vue extérieure 360°</h2><p className="mt-2 text-sm text-[var(--live-muted-foreground)]">Faites glisser pour faire tourner le véhicule.</p></div><Vehicle360ViewerClient viewer={vehicle360} /></section> : null}
+          {interiorTour ? <section className="rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)] p-5 md:p-7"><div className="mb-5"><p className="text-sm font-medium text-[var(--live-primary)]">Expérience immersive</p><h2 className="mt-1 text-2xl font-semibold">Visite intérieure</h2><p className="mt-2 text-sm text-[var(--live-muted-foreground)]">Explorez l’habitacle grâce aux panoramas reliés entre eux.</p></div><InteriorTourViewerClient viewer={interiorTour} /></section> : null}
           <VehicleOverviewSections detail={detail} />
           <VehicleSupportSections detail={detail} />
           <section className="rounded-2xl bg-[var(--live-primary)] p-8 text-[var(--live-primary-foreground)]">

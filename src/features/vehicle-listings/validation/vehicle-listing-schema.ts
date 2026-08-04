@@ -1,0 +1,3 @@
+import {z} from "zod"
+const text=z.string().trim().min(1).max(8000)
+export const vehicleListingContentSchema=z.object({premium:text.max(5000),leboncoin:text.max(5000),laCentrale:text.max(5000),facebook:text.max(2500),instagram:text.max(2200),googleBusiness:text.max(1500),short:text.max(600),long:text.max(8000),seo:z.object({title:text.max(100),description:text.max(1000),metaDescription:text.max(170),suggestedSlug:z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120),keywords:z.array(z.string().trim().min(1).max(60)).max(15)}).strict(),salesArguments:z.array(text.max(300)).max(12),negotiationArguments:z.array(text.max(300)).max(12),copilotSummary:z.array(text.max(300)).min(1).max(5)}).strict()

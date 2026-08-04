@@ -17,6 +17,8 @@ import type { PublicationWorkspaceSource } from "../types"
 import { Vehicle360PublicationBuilder } from "@/features/vehicle-360"
 import { getVehicle360Sequence } from "@/features/vehicle-360/repositories"
 import { buildDeterministicMediaQualityReport } from "@/features/media-quality"
+import { InteriorTourPublicationBuilder } from "@/features/interior-tour"
+import { getInteriorTour } from "@/features/interior-tour/repositories"
 
 const VEHICLE_COLUMNS = [
   "id", "garage_id", "live_slug", "brand", "model", "version", "year",
@@ -98,6 +100,10 @@ export async function getPublicationWorkspaceSource(
     await getVehicle360Sequence(vehicleId),
     vehicleId
   )
+  const interiorTour = new InteriorTourPublicationBuilder().build(
+    await getInteriorTour(vehicleId),
+    vehicleId
+  )
   const mappedVehicle = mapPublicVehicle(
     vehicle as unknown as PublicVehicleRecord,
     (images ?? []) as unknown as PublicVehicleImageRecord[]
@@ -116,6 +122,7 @@ export async function getPublicationWorkspaceSource(
       && (branding.contact.phone || branding.contact.email)
     ),
     vehicle360,
+    interiorTour,
     mediaQuality,
   }
 }

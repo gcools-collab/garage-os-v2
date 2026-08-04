@@ -271,6 +271,18 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
           <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/360`}>Gérer la visite 360°</Link></Button>
         </div>
       </section>
+      <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div><h2 className="text-xl font-semibold">Visite intérieure 360°</h2><p className="mt-1 text-sm text-muted-foreground">Importez des panoramas et reliez les scènes de l’habitacle.</p></div>
+          <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/interior-tour`}>Gérer la visite intérieure</Link></Button>
+        </div>
+      </section>
+      <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div><h2 className="text-xl font-semibold">Génération IA</h2><p className="mt-1 text-sm text-muted-foreground">Préparez les déclinaisons de l’annonce à partir des faits vérifiés.</p></div>
+          <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/listings`}>Générer les annonces</Link></Button>
+        </div>
+      </section>
 
       <VehicleDocumentsSection vehicleId={vehicle.id} documents={vehicleDocuments} />
 
