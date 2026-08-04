@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npm run test:acquisition && npm run test:acquisition-recommendation && npm run test:acquisition-market && npm run test:market && npm run test:market-intelligence && npm run test:documents && npm run test:live && npm run test:live-stock && npm run test:leads && npm run test:commercial && npm run test:intelligence && npm run test:copilot && npm run test:copilot-actions && npm run test:tenant && npm run test:auth && npm run test:branding && npm run test:theme && npm run test:public-site && npm run test:public-premium && npm run test:media && npm run test:vehicle-detail && npm run test:publication && npm run test:publication-targets && npm run test:publication-execution && npm run test:vehicle-360 && npm run test:media-quality && npm run test:interior-tour && npm run test:vehicle-listings",
+    "test": "npm run test:acquisition && npm run test:acquisition-recommendation && npm run test:acquisition-market && npm run test:market && npm run test:market-intelligence && npm run test:documents && npm run test:live && npm run test:live-stock && npm run test:leads && npm run test:commercial && npm run test:intelligence && npm run test:copilot && npm run test:copilot-actions && npm run test:tenant && npm run test:auth && npm run test:branding && npm run test:theme && npm run test:public-site && npm run test:public-premium && npm run test:media && npm run test:vehicle-detail && npm run test:publication && npm run test:publication-targets && npm run test:publication-execution && npm run test:vehicle-360 && npm run test:media-quality && npm run test:interior-tour && npm run test:vehicle-listings && npm run test:v1-readiness",
     "test:acquisition": "tsx --test src/features/acquisition/acquisition.test.ts src/features/acquisition/tests/*.test.ts",
     "test:acquisition-recommendation": "tsx --test src/features/acquisition/recommendation/tests/*.test.ts",
     "test:acquisition-market": "tsx --test src/features/acquisition/market/tests/*.test.ts src/features/acquisition/market/ai/tests/*.test.ts",
@@ -36,7 +36,8 @@
     "test:media-quality": "tsx --test src/features/media-quality/tests/*.test.tsx",
     "test:public-premium": "tsx --test src/features/public-site-premium/tests/*.test.tsx",
     "test:interior-tour": "tsx --test src/features/interior-tour/tests/*.test.tsx",
-    "test:vehicle-listings": "tsx --test src/features/vehicle-listings/tests/*.test.tsx"
+    "test:vehicle-listings": "tsx --test src/features/vehicle-listings/tests/*.test.tsx",
+    "test:v1-readiness": "tsx --test src/features/v1-readiness/tests/*.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
