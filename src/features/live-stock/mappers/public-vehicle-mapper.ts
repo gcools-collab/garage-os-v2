@@ -47,7 +47,8 @@ export function mapPublicVehicleImages({
 
 export function mapPublicVehicle(
   record: PublicVehicleRecord,
-  images: readonly PublicVehicleImageRecord[]
+  images: readonly PublicVehicleImageRecord[],
+  immersive: { readonly exterior360: boolean; readonly interiorTour: boolean } = { exterior360: false, interiorTour: false },
 ): LiveStockVehicle {
   const version = record.version?.trim() || null
   return {
@@ -84,5 +85,7 @@ export function mapPublicVehicle(
     euroStandard: record.euro_standard,
     ownersCount: record.owners_count,
     photos: mapPublicVehicleImages({ vehicle: record, images }),
+    hasExterior360: immersive.exterior360,
+    hasInteriorTour: immersive.interiorTour,
   }
 }

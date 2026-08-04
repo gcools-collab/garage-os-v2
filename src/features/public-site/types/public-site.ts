@@ -1,8 +1,10 @@
 import type { LiveThemeDefinition } from "@/features/theme"
+import type { PublicServiceViewModel } from "../services"
 
 export interface PublicNavigationItemViewModel {
   readonly label: string
   readonly href: string
+  readonly children?: readonly PublicNavigationItemViewModel[]
 }
 
 export interface GaragePublicViewModel {
@@ -17,6 +19,7 @@ export interface GaragePublicViewModel {
   readonly openingHours: readonly string[]
   readonly homeHref: string
   readonly navigation: readonly PublicNavigationItemViewModel[]
+  readonly services: readonly PublicServiceViewModel[]
   readonly theme: LiveThemeDefinition
 }
 
@@ -34,7 +37,7 @@ export interface VehiclePublicCardViewModel {
   readonly gearbox: string
   readonly bodyType: string
   readonly badges: readonly string[]
-  readonly futureCapabilities: readonly ("360" | "FINANCING" | "COMPARE" | "FAVORITE")[]
+  readonly futureCapabilities: readonly ("360" | "VIRTUAL_TOUR" | "COMPARE" | "FAVORITE")[]
 }
 
 export interface PublicHeroViewModel {
@@ -117,10 +120,27 @@ export interface PublicContactViewModel {
   readonly phoneHref: string | null
   readonly emailHref: string | null
   readonly mapLabel: string
+  readonly journeys: readonly PublicNavigationItemViewModel[]
   readonly form: {
     readonly fields: readonly { readonly name: string; readonly label: string; readonly type: "text" | "email" | "tel" | "textarea" }[]
     readonly submitLabel: string
   }
+}
+
+export interface PublicServicesPageViewModel {
+  readonly garage: GaragePublicViewModel
+  readonly title: string
+  readonly description: string
+  readonly services: readonly PublicServiceViewModel[]
+}
+
+export interface PublicProgramPageViewModel {
+  readonly garage: GaragePublicViewModel
+  readonly eyebrow: string
+  readonly title: string
+  readonly description: string
+  readonly benefits: readonly string[]
+  readonly action: PublicNavigationItemViewModel
 }
 
 export interface PublicSeoViewModel {

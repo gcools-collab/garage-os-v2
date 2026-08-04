@@ -84,8 +84,6 @@ export class VehicleDetailPageBuilder {
         mainPrice: input.vehicle.priceCents === null
           ? "Prix sur demande"
           : money.format(input.vehicle.priceCents / 100),
-        monthlyPayment: null,
-        financingLabel: "Simulation de financement prochainement disponible",
         vatLabel: null,
       },
       cta,
@@ -104,13 +102,7 @@ export class VehicleDetailPageBuilder {
           ? { date: formatDate(input.vehicle.publishedAt), label: `Publié par ${garage.name}` }
           : null,
       ].filter((item): item is NonNullable<typeof item> => item !== null),
-      services: [
-        { id: "financing", title: "Financement", description: "Étudions une solution adaptée à votre projet.", status: "PLACEHOLDER" },
-        { id: "warranty", title: "Extension de garantie", description: "Renseignez-vous sur les garanties disponibles.", status: "PLACEHOLDER" },
-        { id: "delivery", title: "Livraison", description: "Modalités à définir avec le garage.", status: "PLACEHOLDER" },
-        { id: "trade-in", title: "Reprise", description: "Présentez-nous votre véhicule actuel.", status: "AVAILABLE" },
-        { id: "test-drive", title: "Essai", description: "Contactez-nous pour organiser un essai.", status: "AVAILABLE" },
-      ],
+      services: garage.services.map((service) => ({ id: service.id, title: service.title, description: service.description, href: service.href })),
       trust: new VehicleTrustBuilder().build(input.vehicle, garage),
       location: {
         garageName: garage.name,

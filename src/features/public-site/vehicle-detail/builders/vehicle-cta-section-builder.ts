@@ -10,17 +10,9 @@ export class VehicleCTASectionBuilder {
     return {
       title: "Ce véhicule vous intéresse ?",
       description: "Échangez directement avec notre équipe pour obtenir plus d’informations.",
-      primary: garage.phone
-        ? { label: "Téléphoner", href: `tel:${garage.phone.replace(/\s/g, "")}` }
-        : { label: "Envoyer un message", href: contactHref },
-      secondary: garage.phone
-        ? { label: "Envoyer un message", href: contactHref }
-        : null,
-      placeholders: [
-        { id: "test-drive", label: "Réserver un essai" },
-        { id: "financing", label: "Demander un financement" },
-        { id: "trade-in", label: "Estimer ma reprise" },
-      ],
+      primary: { label: "Nous contacter", href: contactHref },
+      secondary: { label: "Réserver un essai", href: `${contactHref}&project=test-drive` },
+      tertiary: { label: "Demander une reprise", href: `${contactHref}&project=trade-in` },
     }
   }
 }

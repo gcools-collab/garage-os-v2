@@ -3,11 +3,14 @@ import type {
   GaragePublicViewModel,
   PublicContactViewModel,
   PublicHomepageViewModel,
+  PublicProgramPageViewModel,
   PublicSeoViewModel,
+  PublicServicesPageViewModel,
   PublicStockQuery,
   PublicStockViewModel,
   VehiclePublicCardViewModel,
 } from "../types"
+import { buildEnabledPublicServices } from "../services"
 
 const money = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -37,6 +40,15 @@ export function buildGaragePublicViewModel(
   garage: PublicGarageContext
 ): GaragePublicViewModel {
   const base = garage.basePath
+  const services = buildEnabledPublicServices(base, garage.serviceConfigurations ?? [{
+    serviceKey: "VEHICLE_SALES",
+    status: "ENABLED",
+    publicTitle: null,
+    publicDescription: null,
+    publicCtaLabel: null,
+    displayOrder: 0,
+  }])
+  const serviceIds = new Set(services.map((service) => service.id))
   return {
     slug: garage.garageSlug,
     name: garage.displayName,
@@ -54,10 +66,13 @@ export function buildGaragePublicViewModel(
     openingHours: [],
     homeHref: base,
     navigation: [
-      { label: "Accueil", href: base },
-      { label: "Stock", href: `${base}/stock` },
-      { label: "Contact", href: `${base}/contact` },
-    ],
+      { label: "Nos véhicules", href: `${base}/stock`, children: [{ label: "Tous nos véhicules", href: `${base}/stock` }] },
+      serviceIds.has("RENTAL") ? { label: "Location", href: `${base}/location` } : null,
+      services.some((service) => service.id !== "VEHICLE_SALES") ? { label: "Services", href: `${base}/services` } : null,
+      serviceIds.has("CONSIGNMENT") ? { label: "Dépôt-vente", href: `${base}/depot-vente` } : null,
+      { label: "Nous contacter", href: `${base}/contact` },
+    ].filter((item): item is NonNullable<typeof item> => item !== null),
+    services,
     theme: garage.liveTheme,
   }
 }
@@ -67,6 +82,15 @@ export function buildVehiclePublicCard(
   garage: GaragePublicViewModel
 ): VehiclePublicCardViewModel {
   const image = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0] ?? null
+  const publicationDate = new Date(vehicle.publishedAt ?? vehicle.createdAt)
+  const isNew = Number.isFinite(publicationDate.getTime())
+    && Date.now() - publicationDate.getTime() <= 14 * 24 * 60 * 60 * 1000
+  const badges = [
+    vehicle.status === "RESERVED" ? "Réservé" : "Disponible",
+    isNew ? "Nouveau" : null,
+    vehicle.hasExterior360 ? "360°" : null,
+    vehicle.hasInteriorTour ? "Visite virtuelle" : null,
+  ].filter((badge): badge is string => badge !== null)
   return {
     id: vehicle.id,
     slug: vehicle.slug,
@@ -80,8 +104,8 @@ export function buildVehiclePublicCard(
     fuel: vehicle.fuelType ?? "Énergie non renseignée",
     gearbox: vehicle.transmission ?? "Boîte non renseignée",
     bodyType: vehicle.bodyType ?? "Carrosserie non renseignée",
-    badges: [],
-    futureCapabilities: ["360", "FINANCING", "COMPARE", "FAVORITE"],
+    badges,
+    futureCapabilities: ["360", "VIRTUAL_TOUR", "COMPARE", "FAVORITE"],
   }
 }
 
@@ -102,7 +126,7 @@ export function buildPublicHomepage(
         : "Votre prochain véhicule commence ici",
       description: garage.description,
       image: heroImage ? { url: heroImage.url, alt: heroImage.alt } : null,
-      primaryAction: { label: "Découvrir le stock", href: `${garage.homeHref}/stock` },
+      primaryAction: { label: "Découvrir nos véhicules", href: `${garage.homeHref}/stock` },
       secondaryAction: garage.phone
         ? { label: "Appeler le garage", href: `tel:${garage.phone.replace(/\s/g, "")}` }
         : null,
@@ -113,7 +137,7 @@ export function buildPublicHomepage(
       { id: "LATEST", enabled: cards.length > 0, title: "Dernières arrivées", description: "Les véhicules récemment publiés." },
       { id: "WHY_US", enabled: true, title: `Pourquoi choisir ${garage.name}`, description: "Un accompagnement professionnel, transparent et personnalisé." },
       { id: "SERVICES", enabled: true, title: "Nos services", description: "Des services pensés pour simplifier votre projet automobile." },
-      { id: "FINANCING", enabled: true, title: "Financement", description: "Des solutions de financement seront bientôt disponibles." },
+      { id: "FINANCING", enabled: false, title: "Financement", description: "" },
       { id: "TRADE_IN", enabled: true, title: "Reprise", description: "Préparez la reprise de votre véhicule avec notre équipe." },
       { id: "REVIEWS", enabled: false, title: "Avis clients", description: "Les avis seront prochainement disponibles." },
       { id: "CONTACT", enabled: true, title: "Parlons de votre projet", description: "Notre équipe est à votre écoute." },
@@ -197,6 +221,13 @@ export function buildPublicContact(
   garageRecord: PublicGarageContext
 ): PublicContactViewModel {
   const garage = buildGaragePublicViewModel(garageRecord)
+  const ids = new Set(garage.services.map((service) => service.id))
+  const serviceProjects = new Set([
+    ...(ids.has("VEHICLE_SALES") ? ["buy", "test-drive", "trade-in"] : []),
+    ...(ids.has("CONSIGNMENT") ? ["consignment"] : []),
+    ...(ids.has("REGISTRATION") ? ["registration"] : []),
+    ...(ids.has("ENGINE_CLEANING") ? ["engine-cleaning"] : []),
+  ])
   return {
     garage,
     title: "Contactez-nous",
@@ -204,6 +235,16 @@ export function buildPublicContact(
     phoneHref: garage.phone ? `tel:${garage.phone.replace(/\s/g, "")}` : null,
     emailHref: garage.email ? `mailto:${garage.email}` : null,
     mapLabel: garage.address ?? "Localisation du garage",
+    journeys: [
+      ["Acheter un véhicule", "buy"],
+      ["Réserver un essai", "test-drive"],
+      ["Faire reprendre mon véhicule", "trade-in"],
+      ["Déposer un véhicule", "consignment"],
+      ["Demander une carte grise", "registration"],
+      ["Prendre rendez-vous pour un décalaminage", "engine-cleaning"],
+      ["Demande libre", "other"],
+    ].filter(([, project]) => project === "other" || serviceProjects.has(project))
+      .map(([label, project]) => ({ label, href: `${garage.homeHref}/contact?project=${project}` })),
     form: {
       fields: [
         { name: "name", label: "Nom", type: "text" },
@@ -213,6 +254,40 @@ export function buildPublicContact(
       ],
       submitLabel: "Envoyer ma demande",
     },
+  }
+}
+
+export function buildPublicServices(garageRecord: PublicGarageContext): PublicServicesPageViewModel {
+  const garage = buildGaragePublicViewModel(garageRecord)
+  return {
+    garage,
+    title: "Nos services automobiles",
+    description: "Découvrez uniquement les services proposés par notre équipe.",
+    services: garage.services.filter((service) => service.id !== "VEHICLE_SALES"),
+  }
+}
+
+export function buildPublicProgram(
+  garageRecord: PublicGarageContext,
+  kind: "RENTAL" | "CONSIGNMENT",
+): PublicProgramPageViewModel | null {
+  const garage = buildGaragePublicViewModel(garageRecord)
+  const service = garage.services.find((item) => item.id === kind)
+  if (!service) return null
+  return kind === "RENTAL" ? {
+    garage,
+    eyebrow: "Location",
+    title: "Une solution de mobilité adaptée à votre besoin",
+    description: "Contactez notre équipe pour connaître les véhicules et conditions actuellement disponibles.",
+    benefits: ["Un accompagnement direct", "Des disponibilités confirmées par le garage", "Une demande sans engagement"],
+    action: { label: "Nous contacter", href: `${garage.homeHref}/contact?project=rental` },
+  } : {
+    garage,
+    eyebrow: "Dépôt-vente",
+    title: "Confiez-nous la vente de votre véhicule",
+    description: "Notre équipe vous accompagne dans la présentation et la commercialisation de votre véhicule.",
+    benefits: ["Présentation professionnelle", "Gestion des contacts", "Accompagnement jusqu’à la vente"],
+    action: { label: "Déposer mon véhicule", href: `${garage.homeHref}/contact?project=consignment` },
   }
 }
 

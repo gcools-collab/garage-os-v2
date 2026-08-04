@@ -23,6 +23,7 @@ export function VehicleCTASection({
               {cta.secondary.label}
             </Link>
           ) : null}
+          {cta.tertiary ? <Link href={cta.tertiary.href} className={`${actionClassName} border border-[var(--live-border)]`}>{cta.tertiary.label}</Link> : null}
         </div>
       </div>
     )
@@ -41,18 +42,7 @@ export function VehicleCTASection({
             {cta.secondary.label}
           </Link>
         ) : null}
-        {cta.placeholders.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            disabled
-            aria-disabled="true"
-            title="Fonctionnalité non disponible dans cette version"
-            className="min-h-11 rounded-lg border border-[var(--live-border)] px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {item.label}
-          </button>
-        ))}
+        {cta.tertiary ? <Link href={cta.tertiary.href} className={`${actionClassName} border border-[var(--live-border)]`}>{cta.tertiary.label}</Link> : null}
       </div>
     </aside>
   )

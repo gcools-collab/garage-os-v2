@@ -26,7 +26,7 @@ export interface VehicleCTASectionViewModel {
   readonly description: string
   readonly primary: PublicNavigationItemViewModel
   readonly secondary: PublicNavigationItemViewModel | null
-  readonly placeholders: readonly { readonly id: string; readonly label: string }[]
+  readonly tertiary: PublicNavigationItemViewModel | null
 }
 
 export interface VehicleTrustViewModel {
@@ -61,8 +61,6 @@ export interface VehicleDetailPageViewModel {
   readonly commercialSummary: readonly string[]
   readonly pricing: {
     readonly mainPrice: string
-    readonly monthlyPayment: string | null
-    readonly financingLabel: string
     readonly vatLabel: string | null
   }
   readonly cta: VehicleCTASectionViewModel
@@ -82,7 +80,7 @@ export interface VehicleDetailPageViewModel {
     readonly id: string
     readonly title: string
     readonly description: string
-    readonly status: "AVAILABLE" | "PLACEHOLDER"
+    readonly href: string
   }[]
   readonly trust: VehicleTrustViewModel
   readonly location: {

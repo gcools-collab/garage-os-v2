@@ -24,7 +24,7 @@ export function PremiumHomepage({ homepage }: { readonly homepage: PremiumHomepa
 
       <section className="mx-auto max-w-7xl px-5 py-20 md:px-8"><SectionHeading heading={homepage.services.heading} centered /><FeatureGrid items={homepage.services.items} /></section>
       <section className="border-y border-[var(--live-border)] bg-[var(--live-surface)]"><div className="mx-auto max-w-7xl px-5 py-20 md:px-8"><SectionHeading heading={homepage.whyUs.heading} /><FeatureGrid items={homepage.whyUs.items} /></div></section>
-      <ConversionPanels financing={homepage.financing} tradeIn={homepage.tradeIn} />
+      <ConversionPanels tradeIn={homepage.tradeIn} />
 
       <section className="mx-auto max-w-7xl px-5 py-16 md:px-8"><div className="rounded-3xl border border-[var(--live-border)] p-8 text-center"><SectionHeading heading={homepage.reviews.heading} centered /><p className="mt-6 text-sm text-[var(--live-muted-foreground)]">{homepage.reviews.message}</p></div></section>
 

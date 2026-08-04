@@ -1,5 +1,6 @@
 import type { GarageLiveBrandingViewModel } from "@/features/branding"
 import type { LiveThemeDefinition } from "@/features/theme"
+import type { GarageServiceConfiguration } from "@/features/public-site/services"
 
 export type VehiclePublicationStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED"
 
@@ -48,6 +49,8 @@ export type LiveStockVehicle = {
   readonly euroStandard: string | null
   readonly ownersCount: number | null
   readonly photos: readonly LiveVehiclePhoto[]
+  readonly hasExterior360?: boolean
+  readonly hasInteriorTour?: boolean
 }
 
 export type PublicGarageContext = {
@@ -58,6 +61,7 @@ export type PublicGarageContext = {
   readonly liveTheme: LiveThemeDefinition
   readonly status: "ACTIVE" | "DISABLED"
   readonly basePath: string
+  readonly serviceConfigurations?: readonly GarageServiceConfiguration[]
 }
 
 export type PublicationValidation = {

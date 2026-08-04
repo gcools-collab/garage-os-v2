@@ -13,7 +13,6 @@ export function VehicleOverviewSections({
       </VehicleSection>
       <VehicleSection id="vehicle-price" title="Prix">
         <p className="text-4xl font-semibold">{detail.pricing.mainPrice}</p>
-        <p className="mt-3 text-sm text-[var(--live-muted-foreground)]">{detail.pricing.financingLabel}</p>
         {detail.pricing.vatLabel ? <p className="mt-2 text-sm">{detail.pricing.vatLabel}</p> : null}
       </VehicleSection>
       <VehicleSection id="vehicle-specifications" title="Caractéristiques">

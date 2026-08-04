@@ -63,7 +63,7 @@ test("le builder garage prépare branding, navigation et coordonnées", () => {
   const view = buildGaragePublicViewModel(garage)
   assert.equal(view.name, "Garage Martin")
   assert.equal(view.address, "10 rue de Paris, 59590 Raismes")
-  assert.equal(view.navigation[1].href, "/g/garage-martin/stock")
+  assert.equal(view.navigation[0].href, "/g/garage-martin/stock")
   assert.equal(view.socialLinks.length, 1)
 })
 
@@ -76,11 +76,13 @@ test("la homepage prépare toutes les sections sans entité brute", () => {
 })
 
 test("la carte véhicule prépare slug, image, prix et capacités futures", () => {
-  const card = buildVehiclePublicCard(vehicle("1"), buildGaragePublicViewModel(garage))
+  const card = buildVehiclePublicCard(vehicle("1", { hasExterior360: true, hasInteriorTour: true }), buildGaragePublicViewModel(garage))
   assert.equal(card.href, "/g/garage-martin/vehicules/bmw-m3-1")
   assert.equal(card.price, "70 000 €")
   assert.equal(card.image?.alt, "BMW M3")
-  assert.deepEqual(card.futureCapabilities, ["360", "FINANCING", "COMPARE", "FAVORITE"])
+  assert.deepEqual(card.futureCapabilities, ["360", "VIRTUAL_TOUR", "COMPARE", "FAVORITE"])
+  assert.ok(card.badges.includes("360°"))
+  assert.ok(card.badges.includes("Visite virtuelle"))
 })
 
 test("le stock filtre, trie et pagine de manière déterministe", () => {

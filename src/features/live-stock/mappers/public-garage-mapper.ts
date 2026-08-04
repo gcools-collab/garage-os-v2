@@ -7,7 +7,10 @@ function publicStorageUrl(bucket: string, path: string | null) {
   return `${base}/storage/v1/object/public/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`
 }
 
-export function mapPublicGarage(record: PublicGarageRecord): PublicGarageContext {
+export function mapPublicGarage(
+  record: PublicGarageRecord,
+  serviceConfigurations?: PublicGarageContext["serviceConfigurations"],
+): PublicGarageContext {
   const logoUrl = publicStorageUrl("garage-branding", record.logo_path)
   const faviconUrl = publicStorageUrl("garage-branding", record.favicon_path)
   const colors = {
@@ -21,6 +24,7 @@ export function mapPublicGarage(record: PublicGarageRecord): PublicGarageContext
     displayName: record.display_name,
     status: record.live_enabled ? "ACTIVE" : "DISABLED",
     basePath: `/g/${encodeURIComponent(record.live_slug)}`,
+    serviceConfigurations,
     liveTheme: resolveLiveTheme({ themeKey: record.theme_key, colors }),
     branding: {
       displayName: record.display_name,

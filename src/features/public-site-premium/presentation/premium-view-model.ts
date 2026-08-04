@@ -1,7 +1,7 @@
 import type { GaragePublicViewModel, PublicNavigationItemViewModel, VehiclePublicCardViewModel } from "@/features/public-site/types"
 
 export interface PremiumSectionHeadingViewModel { readonly eyebrow: string; readonly title: string; readonly description: string }
-export interface PremiumFeatureViewModel { readonly id: string; readonly title: string; readonly description: string; readonly icon: "SHIELD" | "HANDSHAKE" | "SPARKLES" | "CAR" | "WALLET" | "MAP" }
+export interface PremiumFeatureViewModel { readonly id: string; readonly title: string; readonly description: string; readonly icon: "SHIELD" | "HANDSHAKE" | "SPARKLES" | "CAR" | "WALLET" | "MAP"; readonly action?: PublicNavigationItemViewModel }
 export interface PremiumHomepageViewModel {
   readonly garage: GaragePublicViewModel
   readonly hero: {
@@ -18,7 +18,6 @@ export interface PremiumHomepageViewModel {
   readonly latest: { readonly heading: PremiumSectionHeadingViewModel; readonly vehicles: readonly VehiclePublicCardViewModel[] }
   readonly services: { readonly heading: PremiumSectionHeadingViewModel; readonly items: readonly PremiumFeatureViewModel[] }
   readonly whyUs: { readonly heading: PremiumSectionHeadingViewModel; readonly items: readonly PremiumFeatureViewModel[] }
-  readonly financing: { readonly heading: PremiumSectionHeadingViewModel; readonly action: PublicNavigationItemViewModel }
   readonly tradeIn: { readonly heading: PremiumSectionHeadingViewModel; readonly action: PublicNavigationItemViewModel }
   readonly reviews: { readonly heading: PremiumSectionHeadingViewModel; readonly available: false; readonly message: string }
   readonly metrics: readonly { readonly id: string; readonly value: string; readonly label: string }[]

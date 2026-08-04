@@ -121,16 +121,14 @@ test("les caractéristiques masquent les absences et n’exposent jamais le VIN"
   assert.equal(specifications.some((item) => item.label === "Puissance DIN"), true)
 })
 
-test("le CTA prépare téléphone, message et extensions sans les activer", () => {
+test("le CTA prépare les trois parcours commerciaux", () => {
   const cta = new VehicleCTASectionBuilder().build(
     buildGaragePublicViewModel(garage),
     "BMW M3"
   )
-  assert.equal(cta.primary.href, "tel:0327000000")
-  assert.match(cta.secondary?.href ?? "", /contact\?vehicle=BMW%20M3/)
-  assert.deepEqual(cta.placeholders.map((item) => item.id), [
-    "test-drive", "financing", "trade-in",
-  ])
+  assert.match(cta.primary.href, /contact\?vehicle=BMW%20M3/)
+  assert.match(cta.secondary?.href ?? "", /project=test-drive/)
+  assert.match(cta.tertiary?.href ?? "", /project=trade-in/)
 })
 
 test("le résumé commercial et les équipements sont déterministes", () => {

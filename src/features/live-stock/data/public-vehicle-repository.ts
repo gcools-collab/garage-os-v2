@@ -38,15 +38,25 @@ export async function getPublicGarageVehicles(
   const vehicles = (rows ?? []) as unknown as PublicVehicleRecord[]
   if (vehicles.length === 0) return []
   const vehicleIds = vehicles.map((vehicle) => vehicle.id)
-  const { data: images, error: imageError } = await supabase
-    .from("public_live_vehicle_images")
-    .select(PUBLIC_IMAGE_COLUMNS)
-    .eq("garage_id", garage.garageId)
-    .in("vehicle_id", vehicleIds)
-    .order("created_at", { ascending: true })
+  const [imageResult, exteriorResult, interiorResult] = await Promise.all([
+    supabase.from("public_live_vehicle_images").select(PUBLIC_IMAGE_COLUMNS)
+      .eq("garage_id", garage.garageId).in("vehicle_id", vehicleIds).order("created_at", { ascending: true }),
+    supabase.from("public_live_vehicle_360_frames").select("vehicle_id")
+      .eq("garage_id", garage.garageId).in("vehicle_id", vehicleIds),
+    supabase.from("public_live_interior_tours").select("vehicle_id")
+      .eq("garage_id", garage.garageId).in("vehicle_id", vehicleIds),
+  ])
+  const { data: images, error: imageError } = imageResult
   if (imageError) throw new Error(`Lecture des photos Live impossible (${imageError.code}).`)
+  if (exteriorResult.error) throw new Error(`Lecture des visites extérieures impossible (${exteriorResult.error.code}).`)
+  if (interiorResult.error) throw new Error(`Lecture des visites intérieures impossible (${interiorResult.error.code}).`)
+  const exteriorVehicleIds = new Set((exteriorResult.data ?? []).map((row) => row.vehicle_id))
+  const interiorVehicleIds = new Set((interiorResult.data ?? []).map((row) => row.vehicle_id))
   return vehicles.map((vehicle) =>
-    mapPublicVehicle(vehicle, (images ?? []) as unknown as PublicVehicleImageRecord[])
+    mapPublicVehicle(vehicle, (images ?? []) as unknown as PublicVehicleImageRecord[], {
+      exterior360: exteriorVehicleIds.has(vehicle.id),
+      interiorTour: interiorVehicleIds.has(vehicle.id),
+    })
   )
 }
 

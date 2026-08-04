@@ -7,7 +7,10 @@ export default function SettingsPage() {
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">Paramètres</h1>
       <p className="text-muted-foreground">Gérez la configuration de votre garage.</p>
-      <Button asChild><Link href="/settings/branding">Identité du garage</Link></Button>
+      <div className="flex flex-wrap gap-3">
+        <Button asChild><Link href="/settings/branding">Identité du garage</Link></Button>
+        <Button variant="outline" asChild><Link href="/settings/services">Services publics</Link></Button>
+      </div>
     </div>
   )
 }

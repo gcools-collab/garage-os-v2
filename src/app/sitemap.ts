@@ -14,10 +14,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: entry.updatedAt ? new Date(entry.updatedAt) : undefined,
       }]
     }
+    const services = new Set(entry.serviceIds)
     return [
       { url: `${baseUrl}${garagePath}` },
       { url: `${baseUrl}${garagePath}/stock` },
       { url: `${baseUrl}${garagePath}/contact` },
+      ...(services.size > 1 ? [{ url: `${baseUrl}${garagePath}/services` }] : []),
+      ...(services.has("RENTAL") ? [{ url: `${baseUrl}${garagePath}/location` }] : []),
+      ...(services.has("CONSIGNMENT") ? [{ url: `${baseUrl}${garagePath}/depot-vente` }] : []),
       { url: `${baseUrl}${garagePath}/mentions-legales` },
       { url: `${baseUrl}${garagePath}/politique-confidentialite` },
     ]

@@ -22,6 +22,9 @@ const routeFiles = [
   "src/app/(public)/g/[garageSlug]/stock/page.tsx",
   "src/app/(public)/g/[garageSlug]/vehicules/page.tsx",
   "src/app/(public)/g/[garageSlug]/contact/page.tsx",
+  "src/app/(public)/g/[garageSlug]/services/page.tsx",
+  "src/app/(public)/g/[garageSlug]/location/page.tsx",
+  "src/app/(public)/g/[garageSlug]/depot-vente/page.tsx",
   "src/app/(public)/g/[garageSlug]/vehicules/[vehicleSlug]/page.tsx",
 ] as const
 
@@ -77,15 +80,7 @@ test("la publication invalide toutes les routes publiques V1", () => {
   assert.match(revalidation, /basePath}\/vehicles/)
 })
 
-test("les CTA préparés mais indisponibles sont explicitement désactivés", () => {
-  const cta = readFileSync(
-    "src/features/public-site/vehicle-detail/components/VehicleCTASection.tsx",
-    "utf8",
-  )
-  assert.match(cta, /disabled/)
-  assert.match(cta, /aria-disabled="true"/)
-  assert.match(cta, /Fonctionnalité non disponible/)
-
+test("les parcours indisponibles sont explicitement désactivés", () => {
   const contact = readFileSync(
     "src/features/public-site/components/PublicContactPage.tsx",
     "utf8",

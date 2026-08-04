@@ -1,5 +1,6 @@
 import { mapPublicGarage } from "../mappers"
 import type { PublicGarageRecord } from "../types"
+import { isPublicServiceId, type GarageServiceConfiguration } from "@/features/public-site/services"
 import { createPublicSupabaseClient } from "./public-supabase-client"
 
 const PUBLIC_GARAGE_COLUMNS = [
@@ -19,5 +20,32 @@ export async function resolvePublicGarageContext(garageSlug: string) {
     .eq("live_slug", slug)
     .maybeSingle()
   if (error) throw new Error(`Lecture du garage Live impossible (${error.code}).`)
-  return data ? mapPublicGarage(data as unknown as PublicGarageRecord) : null
+  if (!data) return null
+  const record = data as unknown as PublicGarageRecord
+  const { data: services, error: servicesError } = await createPublicSupabaseClient()
+    .from("public_live_garage_services")
+    .select("service_key,public_title,public_description,public_cta_label,display_order")
+    .eq("garage_slug", slug)
+    .order("display_order")
+    .order("service_key")
+  if (servicesError) throw new Error(`Lecture des services Live impossible (${servicesError.code}).`)
+  const configurations: GarageServiceConfiguration[] = (services ?? []).flatMap((row) => {
+    const serviceKey = (row as { service_key?: unknown }).service_key
+    if (!isPublicServiceId(serviceKey)) return []
+    const value = row as {
+      public_title: string | null
+      public_description: string | null
+      public_cta_label: string | null
+      display_order: number
+    }
+    return [{
+      serviceKey,
+      status: "ENABLED" as const,
+      publicTitle: value.public_title,
+      publicDescription: value.public_description,
+      publicCtaLabel: value.public_cta_label,
+      displayOrder: value.display_order,
+    }]
+  })
+  return mapPublicGarage(record, configurations)
 }
