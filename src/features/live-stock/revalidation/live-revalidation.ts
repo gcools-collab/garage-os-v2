@@ -10,8 +10,13 @@ export function revalidateGarageLive({
 }) {
   const basePath = `/g/${encodeURIComponent(garageSlug)}`
   revalidatePath(basePath)
+  revalidatePath(`${basePath}/stock`)
   revalidatePath(`${basePath}/vehicles`)
-  if (vehicleSlug) revalidatePath(`${basePath}/vehicles/${encodeURIComponent(vehicleSlug)}`)
+  if (vehicleSlug) {
+    const encodedSlug = encodeURIComponent(vehicleSlug)
+    revalidatePath(`${basePath}/vehicules/${encodedSlug}`)
+    revalidatePath(`${basePath}/vehicles/${encodedSlug}`)
+  }
 }
 
 export async function revalidateVehicleLiveById(vehicleId: string) {

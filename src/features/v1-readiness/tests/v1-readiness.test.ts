@@ -14,8 +14,13 @@ const routeFiles = [
   "src/app/(dashboard)/commercial/page.tsx",
   "src/app/(dashboard)/leads/page.tsx",
   "src/app/(dashboard)/publication/[vehicleId]/page.tsx",
+  "src/app/(dashboard)/stock/[id]/360/page.tsx",
+  "src/app/(dashboard)/stock/[id]/interior-tour/page.tsx",
+  "src/app/(dashboard)/stock/[id]/listings/page.tsx",
+  "src/app/(dashboard)/copilot/page.tsx",
   "src/app/(public)/g/[garageSlug]/page.tsx",
   "src/app/(public)/g/[garageSlug]/stock/page.tsx",
+  "src/app/(public)/g/[garageSlug]/vehicules/page.tsx",
   "src/app/(public)/g/[garageSlug]/contact/page.tsx",
   "src/app/(public)/g/[garageSlug]/vehicules/[vehicleSlug]/page.tsx",
 ] as const
@@ -45,4 +50,46 @@ test("le sélecteur de garage déduplique les appartenances par garage", () => {
     "utf8",
   )
   assert.match(resolver, /candidate\.garageId === membership\.garageId/)
+})
+
+test("les segments privés et publics possèdent chargement et récupération d'erreur", () => {
+  for (const file of [
+    "src/app/(dashboard)/error.tsx",
+    "src/app/(dashboard)/loading.tsx",
+    "src/app/(public)/error.tsx",
+    "src/app/(public)/loading.tsx",
+    "src/app/not-found.tsx",
+  ]) assert.equal(existsSync(file), true, file)
+
+  const errorState = readFileSync("src/components/states/RouteErrorState.tsx", "utf8")
+  assert.match(errorState, /Réessayer/)
+  assert.match(errorState, /Vos données n’ont pas été modifiées/)
+  assert.doesNotMatch(errorState, /error\.message|stack|digest/)
+})
+
+test("la publication invalide toutes les routes publiques V1", () => {
+  const revalidation = readFileSync(
+    "src/features/live-stock/revalidation/live-revalidation.ts",
+    "utf8",
+  )
+  assert.match(revalidation, /basePath}\/stock/)
+  assert.match(revalidation, /basePath}\/vehicules/)
+  assert.match(revalidation, /basePath}\/vehicles/)
+})
+
+test("les CTA préparés mais indisponibles sont explicitement désactivés", () => {
+  const cta = readFileSync(
+    "src/features/public-site/vehicle-detail/components/VehicleCTASection.tsx",
+    "utf8",
+  )
+  assert.match(cta, /disabled/)
+  assert.match(cta, /aria-disabled="true"/)
+  assert.match(cta, /Fonctionnalité non disponible/)
+
+  const contact = readFileSync(
+    "src/features/public-site/components/PublicContactPage.tsx",
+    "utf8",
+  )
+  assert.match(contact, /fieldset disabled aria-disabled="true"/)
+  assert.match(contact, /Utilisez le téléphone ou l’e-mail/)
 })
