@@ -158,3 +158,23 @@ test("le repository ne lit pas le stock d’un garage introuvable", async () => 
   assert.equal(record, null)
   assert.equal(stockRead, false)
 })
+
+test("un garage désactivé est traité comme absent par la projection publique", async () => {
+  let stockRead = false
+  const record = await loadPublicSiteRecord("garage-desactive", {
+    async resolveGarage() { return null },
+    async getVehicles() { stockRead = true; return [] },
+  })
+  assert.equal(record, null)
+  assert.equal(stockRead, false)
+})
+
+test("un garage live reste disponible avec une configuration de services vide", async () => {
+  const withoutServices = { ...garage, serviceConfigurations: [] }
+  const record = await loadPublicSiteRecord("garage-martin", {
+    async resolveGarage() { return withoutServices },
+    async getVehicles() { return [] },
+  })
+  assert.equal(record?.garage.garageId, garage.garageId)
+  assert.deepEqual(record?.garage.serviceConfigurations, [])
+})

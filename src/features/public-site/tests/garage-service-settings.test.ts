@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import test from "node:test"
 
 import { buildEnabledPublicServices, buildGarageServiceSettingsViewModel, garageServiceUpdateSchema } from "../services"
@@ -51,4 +51,24 @@ test("les chemins publics et le sitemap sont revalidés", () => {
   for (const path of ["/settings/services", "/services", "/location", "/depot-vente", "/contact", "/stock", "/sitemap.xml"]) {
     assert.match(action, new RegExp(path.replace("/", "\\/")))
   }
+})
+
+test("les routes settings et publiques canoniques existent", () => {
+  assert.equal(existsSync("src/app/(dashboard)/settings/services/page.tsx"), true)
+  for (const route of ["page.tsx", "services/page.tsx", "location/page.tsx", "depot-vente/page.tsx"]) {
+    assert.equal(existsSync(`src/app/(public)/g/[garageSlug]/${route}`), true)
+  }
+})
+
+test("une erreur de services dégrade le contexte sans masquer le garage", () => {
+  const repository = readFileSync("src/features/live-stock/data/public-garage-repository.ts", "utf8")
+  assert.match(repository, /servicesError \? \[\] : \(services \?\? \[\]\)/)
+  assert.match(repository, /return mapPublicGarage\(record, configurations\)/)
+  assert.doesNotMatch(repository, /if \(servicesError\) throw/)
+})
+
+test("la résolution publique utilise uniquement live_slug et jamais le nom", () => {
+  const repository = readFileSync("src/features/live-stock/data/public-garage-repository.ts", "utf8")
+  assert.match(repository, /\.eq\("live_slug", slug\)/)
+  assert.doesNotMatch(repository, /\.eq\("(?:name|display_name)"/)
 })
