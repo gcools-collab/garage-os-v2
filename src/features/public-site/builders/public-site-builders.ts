@@ -121,9 +121,7 @@ export function buildPublicHomepage(
     garage,
     hero: {
       eyebrow: garage.name,
-      title: vehicles.length
-        ? `${vehicles.length} véhicule${vehicles.length > 1 ? "s" : ""} sélectionné${vehicles.length > 1 ? "s" : ""} pour vous`
-        : "Votre prochain véhicule commence ici",
+      title: "Votre prochain véhicule commence ici",
       description: garage.description,
       image: heroImage ? { url: heroImage.url, alt: heroImage.alt } : null,
       primaryAction: { label: "Découvrir nos véhicules", href: `${garage.homeHref}/stock` },

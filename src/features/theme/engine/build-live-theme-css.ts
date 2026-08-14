@@ -25,6 +25,7 @@ export function buildLiveThemeCssVariables(
     "--live-danger": tokens.danger,
     "--live-focus-ring": tokens.focusRing,
     "--live-overlay": tokens.overlay,
+    "--live-hero-foreground": tokens.heroForeground ?? "#FFFFFF",
     "--live-shadow-color": tokens.shadowColor,
     "--live-muted": tokens.surfaceMuted,
     "--live-surface-foreground": tokens.foreground,

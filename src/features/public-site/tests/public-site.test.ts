@@ -69,7 +69,7 @@ test("le builder garage prépare branding, navigation et coordonnées", () => {
 
 test("la homepage prépare toutes les sections sans entité brute", () => {
   const homepage = buildPublicHomepage(garage, [vehicle("1"), vehicle("2")])
-  assert.equal(homepage.hero.title, "2 véhicules sélectionnés pour vous")
+  assert.equal(homepage.hero.title, "Votre prochain véhicule commence ici")
   assert.equal(homepage.featuredVehicles.length, 2)
   assert.equal(homepage.sections.find((item) => item.id === "REVIEWS")?.enabled, false)
   assert.equal("priceCents" in homepage.featuredVehicles[0], false)

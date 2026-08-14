@@ -9,11 +9,21 @@ export class PremiumHomepageBuilder {
     const contact = `${home}/contact`
     const phoneHref = homepage.garage.phone ? `tel:${homepage.garage.phone.replace(/\s/g, "")}` : null
     const years = homepage.quickSearch.years
+    const serviceIds = new Set(homepage.garage.services.map((service) => service.id))
+    const appointmentActions = [
+      serviceIds.has("VEHICLE_SALES") ? { label: "Voir / essayer un véhicule", href: `${contact}?project=test-drive` } : null,
+      serviceIds.has("ENGINE_CLEANING") ? { label: "Décalaminage", href: `${contact}?project=engine-cleaning` } : null,
+      serviceIds.has("REGISTRATION") ? { label: "Carte grise", href: `${contact}?project=registration` } : null,
+    ].filter((action): action is NonNullable<typeof action> => action !== null)
+    const contactActions = [
+      phoneHref ? { label: "Appeler", href: phoneHref } : null,
+      homepage.garage.email ? { label: "Envoyer un e-mail", href: `mailto:${homepage.garage.email}` } : null,
+      homepage.garage.address ? { label: "Itinéraire", href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(homepage.garage.address)}` } : null,
+      { label: "Formulaire de contact", href: contact },
+    ].filter((action): action is NonNullable<typeof action> => action !== null)
     return {
       garage: homepage.garage,
-      hero: { eyebrow: homepage.hero.eyebrow, title: homepage.hero.title, description: homepage.hero.description, image: homepage.hero.image, actions: [
-        { label: "Découvrir nos véhicules", href: stock }, { label: "Nous contacter", href: contact }, { label: "Faire reprendre mon véhicule", href: `${contact}?project=trade-in` },
-      ] },
+      hero: { eyebrow: homepage.hero.eyebrow, title: homepage.hero.title, description: homepage.hero.description, image: homepage.hero.image, actions: [{ label: "Découvrir nos véhicules", href: stock }] },
       search: { action: stock, submitLabel: "Afficher les véhicules", fields: [
         { name: "brand", label: "Marque", type: "select", options: homepage.quickSearch.brands, placeholder: "Toutes les marques" },
         { name: "model", label: "Modèle", type: "select", options: homepage.quickSearch.models, placeholder: "Tous les modèles" },
@@ -23,8 +33,8 @@ export class PremiumHomepageBuilder {
         { name: "minYear", label: "Année minimum", type: "select", options: years, placeholder: "Toutes les années" },
         { name: "maxMileage", label: "Kilométrage maximum", type: "number", options: [], placeholder: "Ex. 80 000 km" },
       ] },
-      featured: { heading: heading("Notre sélection", "Le véhicule à découvrir", "Une automobile choisie pour son caractère, sa présentation et sa disponibilité."), vehicle: homepage.featuredVehicles[0] ?? null },
-      latest: { heading: heading("Nouveautés", "Dernières arrivées", "Découvrez les véhicules récemment publiés par notre équipe."), vehicles: homepage.latestVehicles },
+      featured: { heading: heading("", "", ""), vehicle: null },
+      latest: { heading: heading("Stock disponible", "Nos véhicules disponibles", "Découvrez les véhicules actuellement publiés par le garage."), vehicles: homepage.latestVehicles.slice(0, 6) },
       services: { heading: heading("À vos côtés", "Nos services", "Uniquement les services actuellement proposés par notre équipe."), items: homepage.garage.services.map((service) => ({
         id: service.id,
         title: service.title,
@@ -39,10 +49,12 @@ export class PremiumHomepageBuilder {
       ] },
       tradeIn: { heading: heading("Changez simplement", "Faites reprendre votre véhicule", "Présentez-nous votre véhicule actuel et avançons ensemble sur votre prochain achat."), action: { label: "Demander une reprise", href: `${contact}?project=trade-in` } },
       reviews: { heading: heading("Expérience client", "La confiance se construit", "Les avis vérifiés seront affichés lorsqu’ils seront disponibles."), available: false, message: "Aucun avis public vérifié pour le moment." },
-      metrics: [{ id: "stock", value: String(homepage.vehicleCount), label: "véhicules à découvrir" }],
+      metrics: [],
       primaryCta: { title: "Votre prochain véhicule vous attend peut-être ici.", description: "Parcourez notre sélection ou échangez directement avec notre équipe.", actions: [{ label: "Découvrir nos véhicules", href: stock }, { label: "Nous contacter", href: contact }] },
       contact: { title: `Rencontrez l’équipe ${homepage.garage.name}`, description: "Une question, un essai ou un projet de reprise ? Contactez-nous.", phone: phoneHref ? { label: homepage.garage.phone ?? "Appeler", href: phoneHref } : null, email: homepage.garage.email ? { label: homepage.garage.email, href: `mailto:${homepage.garage.email}` } : null, address: homepage.garage.address, action: { label: "Nous contacter", href: contact } },
-      floatingCta: [phoneHref ? { id: "PHONE" as const, label: "Appeler", href: phoneHref, enabled: true } : null, { id: "CONTACT" as const, label: "Demande d’information", href: contact, enabled: true }, { id: "TRADE_IN" as const, label: "Reprise", href: `${contact}?project=trade-in`, enabled: true }].filter((action): action is NonNullable<typeof action> => action !== null),
+      floatingCta: [{ id: "APPOINTMENT" as const, label: "Prendre rendez-vous", href: "#customer-appointment", enabled: appointmentActions.length > 0 }, { id: "CONTACT" as const, label: "Nous contacter", href: "#customer-contact", enabled: true }],
+      appointmentActions,
+      contactActions,
       animation: { reveal: "FADE_SLIDE", stagger: true, reducedMotion: true },
     }
   }

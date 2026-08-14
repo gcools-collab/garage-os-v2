@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 
 import { LiveThemeProvider } from "@/features/theme"
 import type { GaragePublicViewModel } from "../types"
+import { PublicNavigation } from "./PublicNavigation"
 
 export function PublicSiteLayout({ garage, children }: { readonly garage: GaragePublicViewModel; readonly children: ReactNode }) {
   return (
@@ -12,18 +13,7 @@ export function PublicSiteLayout({ garage, children }: { readonly garage: Garage
           <Link href={garage.homeHref} aria-label={`Accueil ${garage.name}`} className="font-semibold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]">
             {garage.name}
           </Link>
-          <nav aria-label="Navigation principale" className="flex max-w-full flex-wrap items-center justify-end gap-3 sm:gap-5">
-            {garage.navigation.map((item) => item.children?.length ? (
-              <details key={item.href} className="group relative shrink-0">
-                <summary className="cursor-pointer list-none text-sm hover:underline focus-visible:outline-2 focus-visible:outline-[var(--live-focus-ring)]">{item.label}</summary>
-                <div className="absolute right-0 z-30 mt-3 min-w-48 rounded-xl border border-[var(--live-border)] bg-[var(--live-surface-elevated)] p-2 shadow-[0_12px_36px_var(--live-shadow-color)]">
-                  {item.children.map((child) => <Link key={child.href} href={child.href} className="block rounded-lg px-3 py-2 text-sm hover:bg-[var(--live-surface-muted)] focus-visible:outline-2 focus-visible:outline-[var(--live-focus-ring)]">{child.label}</Link>)}
-                </div>
-              </details>
-            ) : (
-              <Link key={item.href} href={item.href} className="shrink-0 text-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]">{item.label}</Link>
-            ))}
-          </nav>
+          <PublicNavigation navigation={garage.navigation}/>
         </div>
       </header>
       <main className="flex-1">{children}</main>

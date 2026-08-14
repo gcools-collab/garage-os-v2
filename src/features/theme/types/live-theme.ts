@@ -31,6 +31,7 @@ export type LiveThemeTokens = {
   readonly danger: string
   readonly focusRing: string
   readonly overlay: string
+  readonly heroForeground?: string
   readonly shadowColor: string
 }
 

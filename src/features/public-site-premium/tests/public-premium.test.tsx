@@ -14,30 +14,41 @@ const vehicle = (id: string): LiveStockVehicle => ({ id, garageId: "garage-1", s
 
 test("builder prepares every premium homepage section", () => {
   const premium = new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1"), vehicle("2")]))
-  assert.equal(premium.featured.vehicle?.name, "BMW M3")
+  assert.equal(premium.featured.vehicle, null)
   assert.equal(premium.latest.vehicles.length, 2)
   assert.equal(premium.services.items.length, 1)
-  assert.equal(premium.whyUs.items.length, 3)
+  assert.equal(premium.hero.actions.length, 1)
+  assert.equal(premium.metrics.length, 0)
   assert.equal(premium.reviews.available, false)
   assert.equal(premium.animation.reducedMotion, true)
 })
 
-test("homepage renders hero, search, conversion and contact CTAs", () => {
+test("homepage renders real stock and customer actions", () => {
   const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1")]))} />)
   assert.match(html, /Découvrir nos véhicules/)
   assert.match(html, /name="brand"/)
   assert.match(html, /name="model"/)
   assert.match(html, /name="maxPrice"/)
   assert.match(html, /name="maxMileage"/)
-  assert.match(html, /Demander une reprise/)
+  assert.match(html, /Nos véhicules disponibles/)
+  assert.match(html, /Voir tous nos véhicules/)
+  assert.doesNotMatch(html, /sélectionnés pour vous|véhicules à découvrir/i)
+  assert.match(html, /Prendre rendez-vous/)
+  assert.match(html, /Nous contacter/)
+  assert.match(html, /Voir \/ essayer un véhicule/)
+  assert.doesNotMatch(html, /Diagnostic/)
   assert.doesNotMatch(html, /financement/i)
   assert.match(html, /Navigation principale/)
   assert.match(html, /Actions rapides/)
 })
 
+test("customer actions only expose enabled appointment workflows",()=>{const configured={...garage(),serviceConfigurations:(["VEHICLE_SALES","ENGINE_CLEANING","REGISTRATION"] as const).map((serviceKey,displayOrder)=>({serviceKey,status:"ENABLED" as const,displayOrder,publicTitle:null,publicDescription:null,publicCtaLabel:null}))};const premium=new PremiumHomepageBuilder().build(buildPublicHomepage(configured,[]));assert.deepEqual(premium.appointmentActions.map(action=>action.label),["Voir / essayer un véhicule","Décalaminage","Carte grise"]);assert.doesNotMatch(premium.appointmentActions.map(action=>action.label).join(" "),/Diagnostic|Carrosserie|Mécanique/)})
+
+test("empty stock and missing coordinates stay honest",()=>{const sparse={...garage(),branding:{...garage().branding,phone:null,email:null,formattedAddress:null}};const premium=new PremiumHomepageBuilder().build(buildPublicHomepage(sparse,[]));const html=renderToStaticMarkup(<PremiumHomepage homepage={premium}/>);assert.doesNotMatch(html,/Nos véhicules disponibles|Voir tous nos véhicules/);assert.deepEqual(premium.contactActions.map(action=>action.label),["Formulaire de contact"])})
+
 test("premium vehicle cards use responsive Next images and accessible links", () => {
   const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1")]))} />)
-  assert.match(html, /sizes="\(max-width: 1024px\) 100vw, 65vw"/)
+  assert.match(html, /sizes="\(max-width: 768px\) 100vw, 33vw"/)
   assert.match(html, /aria-label="Voir BMW M3"/)
   assert.match(html, /Découvrir ce véhicule/)
 })

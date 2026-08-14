@@ -23,6 +23,8 @@ export interface PremiumHomepageViewModel {
   readonly metrics: readonly { readonly id: string; readonly value: string; readonly label: string }[]
   readonly primaryCta: { readonly title: string; readonly description: string; readonly actions: readonly PublicNavigationItemViewModel[] }
   readonly contact: { readonly title: string; readonly description: string; readonly phone: PublicNavigationItemViewModel | null; readonly email: PublicNavigationItemViewModel | null; readonly address: string | null; readonly action: PublicNavigationItemViewModel }
-  readonly floatingCta: readonly { readonly id: "PHONE" | "CONTACT" | "TRADE_IN" | "WHATSAPP"; readonly label: string; readonly href: string; readonly enabled: boolean }[]
+  readonly floatingCta: readonly { readonly id: "APPOINTMENT" | "CONTACT"; readonly label: string; readonly href: string; readonly enabled: boolean }[]
+  readonly appointmentActions: readonly PublicNavigationItemViewModel[]
+  readonly contactActions: readonly PublicNavigationItemViewModel[]
   readonly animation: { readonly reveal: "FADE_SLIDE"; readonly stagger: true; readonly reducedMotion: true }
 }

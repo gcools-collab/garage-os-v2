@@ -1,4 +1,5 @@
 export * from "./PremiumHomepage"
+export * from "./PremiumCustomerActions"
 export * from "./PremiumVehicleCard"
 export * from "./PremiumQuickSearch"
 export * from "./PremiumAssetGallery"
