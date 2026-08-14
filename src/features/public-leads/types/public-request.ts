@@ -10,6 +10,7 @@ export type PublicRequestState = {
   readonly message: string
   readonly reference?: string
   readonly appointmentStatus?: "PENDING" | "CONFIRMED" | "AWAITING_PAYMENT"
+  readonly paymentUrl?: string
   readonly fieldErrors?: Readonly<Record<string, readonly string[]>>
 }
 export type PublicRequestField = {

@@ -1,0 +1,3 @@
+import type{CreateProviderPaymentInput,PaymentProvider}from"../contracts/payment-provider"
+import type{ProviderPayment}from"../types/payment"
+export class FakePaymentProvider implements PaymentProvider{readonly name="FAKE";constructor(private readonly result:ProviderPayment){}async createPayment(input:CreateProviderPaymentInput){void input;return this.result}async retrievePayment(id:string){void id;return this.result}async refundPayment(id:string,amount?:number){void id;void amount;return{...this.result,status:"REFUNDED"as const}}async abortPayment(id:string){void id;return{...this.result,status:"CANCELLED"as const}}}

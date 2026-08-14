@@ -1,0 +1,3 @@
+import type{ProviderPayment}from"../types/payment"
+export type CreateProviderPaymentInput=Readonly<{amountCents:number;currency:string;description:string;customer:Readonly<{firstName:string;lastName:string;email:string|null;phone:string|null}>;returnUrl:string;cancelUrl:string;notificationUrl:string;metadata:Readonly<Record<string,string>>}>
+export interface PaymentProvider{readonly name:string;createPayment(input:CreateProviderPaymentInput):Promise<ProviderPayment>;retrievePayment(id:string):Promise<ProviderPayment>;refundPayment(id:string,amountCents?:number):Promise<ProviderPayment>;abortPayment(id:string):Promise<ProviderPayment>}

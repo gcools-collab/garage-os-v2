@@ -9,6 +9,7 @@ import { createPublicCustomerRequest } from "../repositories"
 import type { PublicRequestState } from "../types"
 import { validatePublicRequest } from "../validation"
 import { bookPublicAppointment } from "@/features/scheduling/repositories/scheduling-repository"
+import { createAppointmentPayment } from "@/features/payments/actions/payment-actions"
 
 const humanError = "Nous n’avons pas pu transmettre votre demande. Vérifiez vos informations puis réessayez."
 export async function submitPublicCustomerRequest(_state: PublicRequestState, formData: FormData): Promise<PublicRequestState> {
@@ -35,14 +36,16 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
     return { status, message: status === "duplicate_submission" ? "Votre demande a déjà été transmise." : humanError }
   }
   let appointmentStatus: "PENDING" | "CONFIRMED" | "AWAITING_PAYMENT" | undefined
+  let paymentUrl: string | undefined
   if (data.appointmentStartsAt) {
     const booking = await bookPublicAppointment({ offerSlug:data.offerSlug, garageSlug: data.garageSlug, vehicleSlug: data.vehicleSlug, leadId: result.leadId, type: data.requestType, startsAt: data.appointmentStartsAt, customerName: `${data.firstName} ${data.lastName}`.trim(), phone: data.phone, email: data.email, details: data.payload, fingerprint })
     if (booking.outcome !== "success") return { status: "unavailable", message: "Ce créneau n’est plus disponible. Votre demande a été conservée et le garage pourra vous recontacter." }
     if (booking.status === "PENDING" || booking.status === "CONFIRMED" || booking.status === "AWAITING_PAYMENT") appointmentStatus = booking.status
+    if (booking.status === "AWAITING_PAYMENT" && booking.appointmentId) { const payment = await createAppointmentPayment(booking.appointmentId, data.garageSlug); if (payment.ok) paymentUrl = payment.url }
   }
   revalidatePath("/leads"); revalidatePath("/commercial"); revalidatePath("/dashboard"); revalidatePath("/notifications")
   const bookingMessage = appointmentStatus === "CONFIRMED" ? " Votre rendez-vous est confirmé." : appointmentStatus === "PENDING" ? " Le garage doit encore confirmer votre rendez-vous." : appointmentStatus === "AWAITING_PAYMENT" ? " Votre créneau est réservé temporairement et devra être payé pour être confirmé." : ""
-  return { status: "success", message: `Votre demande a bien été transmise.${bookingMessage || ` L’équipe de ${garage.displayName} vous recontactera rapidement.`}`, reference: buildPublicLeadReference(result.leadId), appointmentStatus }
+  return { status: "success", paymentUrl, message: `Votre demande a bien été transmise.${bookingMessage || ` L’équipe de ${garage.displayName} vous recontactera rapidement.`}`, reference: buildPublicLeadReference(result.leadId), appointmentStatus }
   } catch (error) {
     console.error("Public request submission failed", { operation: "submit_public_customer_request", errorType: error instanceof Error ? error.name : "UnknownError" })
     return { status: "persistence_error", message: humanError }
