@@ -2,7 +2,7 @@ import { createPublicSupabaseClient } from "@/features/live-stock/data/public-su
 import { createClient } from "@/lib/supabase/server"
 import type { AppointmentRecord, AppointmentTypeSetting } from "../types/scheduling"
 
-const columns = "id,garage_id,lead_id,vehicle_id,type,status,starts_at,ends_at,timezone,customer_name,customer_phone,customer_email,payment_required,details,created_at"
+const columns = "id,offer_id,commercial_snapshot,garage_id,lead_id,vehicle_id,type,status,starts_at,ends_at,timezone,customer_name,customer_phone,customer_email,payment_required,details,created_at"
 
 export async function getAppointments(garageId: string) {
   const { data, error } = await (await createClient()).from("appointments").select(columns).eq("garage_id", garageId).order("starts_at")
@@ -66,8 +66,10 @@ export async function getPublicAvailability(garageSlug: string, type: string) {
   return (data ?? []) as { starts_at: string; ends_at: string; local_date: string; local_time: string }[]
 }
 
-export async function bookPublicAppointment(input: { readonly garageSlug: string; readonly vehicleSlug: string | null; readonly leadId: string; readonly type: string; readonly startsAt: string; readonly customerName: string; readonly phone: string | null; readonly email: string | null; readonly details: Readonly<Record<string, unknown>>; readonly fingerprint: string }) {
-  const { data, error } = await createPublicSupabaseClient().rpc("book_public_appointment", { p_garage_slug: input.garageSlug, p_vehicle_slug: input.vehicleSlug, p_lead_id: input.leadId, p_type: input.type, p_starts_at: input.startsAt, p_customer_name: input.customerName, p_phone: input.phone, p_email: input.email, p_details: input.details, p_fingerprint: input.fingerprint })
+export async function bookPublicAppointment(input: { readonly garageSlug: string; readonly vehicleSlug: string | null; readonly leadId: string; readonly type: string; readonly startsAt: string; readonly customerName: string; readonly phone: string | null; readonly email: string | null; readonly details: Readonly<Record<string, unknown>>; readonly fingerprint: string;readonly offerSlug?:string|null;readonly optionIds?:readonly string[] }) {
+  const rpc=input.offerSlug?"book_public_catalog_appointment":"book_public_appointment"
+  const catalog=input.offerSlug?{p_offer_slug:input.offerSlug,p_option_ids:input.optionIds??[]}:{}
+  const { data, error } = await createPublicSupabaseClient().rpc(rpc, { p_garage_slug: input.garageSlug, p_vehicle_slug: input.vehicleSlug, p_lead_id: input.leadId, p_type: input.type, p_starts_at: input.startsAt, p_customer_name: input.customerName, p_phone: input.phone, p_email: input.email, p_details: input.details, p_fingerprint: input.fingerprint,...catalog })
   if (error) return { outcome: "persistence_error" }
   const row = Array.isArray(data) ? data[0] as { appointment_id?: unknown; outcome?: unknown; status?: unknown } : null
   return { outcome: typeof row?.outcome === "string" ? row.outcome : "persistence_error", appointmentId: typeof row?.appointment_id === "string" ? row.appointment_id : null, status: typeof row?.status === "string" ? row.status : null }

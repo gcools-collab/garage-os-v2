@@ -36,7 +36,7 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
   }
   let appointmentStatus: "PENDING" | "CONFIRMED" | "AWAITING_PAYMENT" | undefined
   if (data.appointmentStartsAt) {
-    const booking = await bookPublicAppointment({ garageSlug: data.garageSlug, vehicleSlug: data.vehicleSlug, leadId: result.leadId, type: data.requestType, startsAt: data.appointmentStartsAt, customerName: `${data.firstName} ${data.lastName}`.trim(), phone: data.phone, email: data.email, details: data.payload, fingerprint })
+    const booking = await bookPublicAppointment({ offerSlug:data.offerSlug, garageSlug: data.garageSlug, vehicleSlug: data.vehicleSlug, leadId: result.leadId, type: data.requestType, startsAt: data.appointmentStartsAt, customerName: `${data.firstName} ${data.lastName}`.trim(), phone: data.phone, email: data.email, details: data.payload, fingerprint })
     if (booking.outcome !== "success") return { status: "unavailable", message: "Ce créneau n’est plus disponible. Votre demande a été conservée et le garage pourra vous recontacter." }
     if (booking.status === "PENDING" || booking.status === "CONFIRMED" || booking.status === "AWAITING_PAYMENT") appointmentStatus = booking.status
   }

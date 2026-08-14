@@ -1,0 +1,17 @@
+import type { PaymentSummary, ServiceOffer, ServiceOfferOption } from "../types/service-catalog"
+
+const pricingLabels = { FIXED: "Prix fixe", FROM: "À partir de", QUOTE: "Sur devis", VARIABLE: "Prix variable" } as const
+const paymentLabels = { NO_PAYMENT: "Aucun paiement", FULL_PAYMENT: "Paiement intégral", DEPOSIT: "Acompte", PAY_ON_SITE: "Paiement sur place" } as const
+const formatMoney = (amount: number | null, currency: string) => amount === null ? null : new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(amount / 100)
+
+export class ServiceOfferBuilder {
+  build(offer: ServiceOffer, options: readonly ServiceOfferOption[]) {
+    return { id: offer.id, name: offer.name, slug: offer.slug, description: offer.shortDescription, active: offer.isActive, public: offer.isPublic, durationLabel: offer.durationMinutes ? `${offer.durationMinutes} min` : null, pricingLabel: pricingLabels[offer.pricingType], priceLabel: offer.pricingType === "QUOTE" ? "Sur devis" : formatMoney(offer.amountCents, offer.currency), paymentLabel: paymentLabels[offer.paymentStrategy], options: options.map(option => ({ id: option.id, name: option.name, priceLabel: formatMoney(option.amountCents, offer.currency) })) }
+  }
+}
+export class ServiceCatalogBuilder { build(offers: readonly ServiceOffer[], options: readonly ServiceOfferOption[]) { return offers.map(offer => new ServiceOfferBuilder().build(offer, options.filter(option => option.offerId === offer.id))) } }
+export class PublicServiceCatalogBuilder { build(offers: readonly ServiceOffer[], options: readonly ServiceOfferOption[], enabledServices: ReadonlySet<string>) { return new ServiceCatalogBuilder().build(offers.filter(offer => offer.isActive && offer.isPublic && enabledServices.has(offer.serviceKey)), options.filter(option => option.isActive && option.isPublic)) } }
+export class ServiceOptionBuilder { build(options: readonly ServiceOfferOption[]) { return [...options].sort((a,b) => a.displayOrder-b.displayOrder) } }
+export const buildPaymentViewModel = (summary: PaymentSummary) => ({ strategyLabel: paymentLabels[summary.paymentStrategy], dueNowLabel: formatMoney(summary.amountDueNow, summary.currency), totalLabel: formatMoney(summary.totalAmount, summary.currency), remainingLabel: formatMoney(summary.remainingAmount, summary.currency) })
+
+export function buildCommercialSnapshotViewModel(value:Readonly<Record<string,unknown>>|null|undefined){if(!value)return null;const currency=typeof value.currency==="string"?value.currency:"EUR";const amount=(key:string)=>typeof value[key]==="number"?formatMoney(value[key] as number,currency):null;const strategy=String(value.payment_strategy??"NO_PAYMENT") as keyof typeof paymentLabels;const pricing=String(value.pricing_type??"VARIABLE") as keyof typeof pricingLabels;const options=Array.isArray(value.selected_options)?value.selected_options.map(item=>typeof item==="object"&&item!==null&&"name" in item?String(item.name):"").filter(Boolean):[];return{offerName:String(value.offer_name??"Prestation"),pricingLabel:pricingLabels[pricing]??"Tarification",optionsLabel:options.length?options.join(", "):"Aucune option",baseLabel:amount("base_amount_cents")??"À déterminer",totalLabel:amount("total_amount_cents")??"À déterminer",paymentLabel:paymentLabels[strategy]??"Aucun paiement",dueNowLabel:amount("amount_due_now_cents")??"À déterminer",remainingLabel:amount("remaining_amount_cents")??"À déterminer"}}
