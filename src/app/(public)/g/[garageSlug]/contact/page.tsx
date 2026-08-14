@@ -5,6 +5,7 @@ import { buildPublicRequestForm, buildPublicVehicleContext, getVehicleContextHea
 import { getPublicAvailability } from "@/features/scheduling/repositories/scheduling-repository"
 import { PublicBookingBuilder } from "@/features/scheduling/builders/scheduling-builders"
 import { buildPublicOfferChoices,getPublicServiceOffers } from "@/features/service-catalog"
+import { getPublicRegistrationProcedures } from "@/features/registration"
 
 type Props = { readonly params: Promise<{ readonly garageSlug: string }>; readonly searchParams: Promise<{ readonly project?: string | string[]; readonly vehicle?: string | string[] }> }
 async function load(params: Props["params"]) {
@@ -36,7 +37,10 @@ export default async function GarageContact({ params, searchParams }: Props) {
   const rawAvailability = available && !missingRequiredVehicle && schedulable ? await getPublicAvailability(contact.garage.slug,type) : []
   const availability = new PublicBookingBuilder().build(rawAvailability)
   const offerChoices=type&&["ENGINE_CLEANING","REGISTRATION"].includes(type)?buildPublicOfferChoices(await getPublicServiceOffers(contact.garage.slug,type)):[]
+  const registrationProcedures=type==="REGISTRATION"?await getPublicRegistrationProcedures(contact.garage.slug):[]
   const baseForm=type?buildPublicRequestForm(type,contextHeading):null
-  const form=baseForm&&offerChoices.length?{...baseForm,fields:[{name:"offerSlug",label:type==="REGISTRATION"?"Prestation et acompte":"Prestation",type:"select" as const,required:true,step:baseForm.steps[0].id,options:offerChoices.map(offer=>({value:offer.slug,label:[offer.name,offer.description,offer.priceLabel,offer.paymentLabel,offer.totalLabel==="À déterminer"?"Prix final à déterminer":null].filter(Boolean).join(" — ")}))},...baseForm.fields]}:baseForm
-  return <PublicContactPage contact={contact} missingVehicleRequest={Boolean(available && missingRequiredVehicle)} unavailableRequest={Boolean(type && !available)} request={available && !missingRequiredVehicle && form ? { form, vehicleSlug: vehicle?.slug ?? null, vehicleContext, availability, source: vehicle ? "VEHICLE_DETAIL" : type === "CONSIGNMENT" ? "CONSIGNMENT_PAGE" : type === "GENERAL_CONTACT" ? "CONTACT_CENTER" : "SERVICE_PAGE" } : null} />
+  const configuredForm=baseForm&&type==="REGISTRATION"?{...baseForm,fields:baseForm.fields.map(field=>field.name==="procedure"?{...field,options:registrationProcedures.map(procedure=>({value:procedure.procedure_type,label:procedure.title}))}:field)}:baseForm
+  const form=configuredForm&&offerChoices.length?{...configuredForm,fields:[{name:"offerSlug",label:type==="REGISTRATION"?"Prestation et acompte":"Prestation",type:"select" as const,required:true,step:configuredForm.steps[0].id,options:offerChoices.map(offer=>({value:offer.slug,label:[offer.name,offer.description,offer.priceLabel,offer.paymentLabel,offer.totalLabel==="À déterminer"?"Prix final à déterminer":null].filter(Boolean).join(" — ")}))},...configuredForm.fields]}:configuredForm
+  const registrationUnavailable=type==="REGISTRATION"&&registrationProcedures.length===0
+  return <PublicContactPage contact={contact} missingVehicleRequest={Boolean(available && missingRequiredVehicle)} unavailableRequest={Boolean(type && (!available||registrationUnavailable))} request={available && !registrationUnavailable && !missingRequiredVehicle && form ? { form, vehicleSlug: vehicle?.slug ?? null, vehicleContext, availability, source: vehicle ? "VEHICLE_DETAIL" : type === "CONSIGNMENT" ? "CONSIGNMENT_PAGE" : type === "GENERAL_CONTACT" ? "CONTACT_CENTER" : "SERVICE_PAGE" } : null} />
 }

@@ -74,3 +74,7 @@ export async function bookPublicAppointment(input: { readonly garageSlug: string
   const row = Array.isArray(data) ? data[0] as { appointment_id?: unknown; outcome?: unknown; status?: unknown } : null
   return { outcome: typeof row?.outcome === "string" ? row.outcome : "persistence_error", appointmentId: typeof row?.appointment_id === "string" ? row.appointment_id : null, status: typeof row?.status === "string" ? row.status : null }
 }
+
+export async function createPublicRegistrationCase(input:{readonly garageSlug:string;readonly appointmentId:string;readonly leadId:string;readonly fingerprint:string;readonly procedure:string;readonly registration:string|null;readonly brand:string|null;readonly model:string|null}){
+  const{data,error}=await createPublicSupabaseClient().rpc("create_public_registration_case",{p_garage_slug:input.garageSlug,p_appointment_id:input.appointmentId,p_lead_id:input.leadId,p_fingerprint:input.fingerprint,p_procedure:input.procedure,p_registration:input.registration,p_brand:input.brand,p_model:input.model});if(error)return null;const row=Array.isArray(data)?data[0] as{public_token?:unknown}:null;return typeof row?.public_token==="string"?row.public_token:null
+}

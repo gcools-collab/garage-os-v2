@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Search,
   Settings,
+  FolderOpen,
   Sparkles,
   Users,
 } from "lucide-react"
@@ -28,6 +29,7 @@ export const dashboardNavigation = [
   { name: "Acquisition", href: "/acquisition", icon: Search },
   { name: "Demandes clients", href: "/leads", icon: Users },
   { name: "Agenda", href: "/appointments", icon: CalendarDays },
+  { name: "Dossiers", href: "/registration", icon: FolderOpen },
   { name: "Analyse du marché", href: "/market", icon: Globe },
   { name: "Pilotage", href: "/analytics", icon: BarChart3 },
   { name: "Paramètres", href: "/settings", icon: Settings },

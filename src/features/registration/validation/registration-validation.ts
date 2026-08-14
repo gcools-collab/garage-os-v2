@@ -1,0 +1,7 @@
+import { z } from "zod"
+import { registrationCaseStatuses, registrationDocumentStatuses, registrationProcedureTypes } from "../types"
+export const registrationProcedureSchema = z.object({ type: z.enum(registrationProcedureTypes), title: z.string().trim().min(2).max(120), description: z.string().trim().max(1000).optional(), isActive: z.boolean(), isPublic: z.boolean(), displayOrder: z.number().int().min(0).max(1000) })
+export const registrationRequirementSchema = z.object({ key: z.string().trim().regex(/^[A-Z0-9_]{2,60}$/), label: z.string().trim().min(2).max(120), description: z.string().trim().max(500).optional(), isRequired: z.boolean(), displayOrder: z.number().int().min(0).max(1000) })
+export const registrationTransitionSchema = z.object({ caseId: z.string().uuid(), status: z.enum(registrationCaseStatuses) })
+export const registrationDocumentDecisionSchema = z.object({ documentId: z.string().uuid(), status: z.enum(registrationDocumentStatuses).extract(["ACCEPTED", "REJECTED"]), rejectionReason: z.string().trim().max(500).optional() }).superRefine((value, context) => { if (value.status === "REJECTED" && !value.rejectionReason) context.addIssue({ code: "custom", path: ["rejectionReason"], message: "Un motif est requis." }) })
+export const registrationFileSchema = z.object({ name: z.string().min(1).max(180), size: z.number().int().positive().max(10 * 1024 * 1024), type: z.enum(["application/pdf", "image/jpeg", "image/png", "image/webp"]) })

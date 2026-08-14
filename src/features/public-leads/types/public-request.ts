@@ -11,6 +11,7 @@ export type PublicRequestState = {
   readonly reference?: string
   readonly appointmentStatus?: "PENDING" | "CONFIRMED" | "AWAITING_PAYMENT"
   readonly paymentUrl?: string
+  readonly registrationUrl?: string
   readonly fieldErrors?: Readonly<Record<string, readonly string[]>>
 }
 export type PublicRequestField = {
