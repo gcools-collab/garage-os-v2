@@ -19,6 +19,7 @@ import {
   getCommercialInboxData,
 } from "@/features/commercial"
 import { CopilotDashboardCard } from "@/features/copilot"
+import { AppointmentDashboardSignal, buildAppointmentDashboardSummary, getAppointments } from "@/features/scheduling"
 
 export default async function DashboardPage() {
   const session = await getActiveGarageSession()
@@ -26,19 +27,22 @@ export default async function DashboardPage() {
   const destination = resolveGarageSessionRoute(session)
   if (destination !== "/dashboard") redirect(destination)
   if (!session.garageName) redirect("/select-garage")
+  if (!session.garageId) redirect("/select-garage")
+  const garageId = session.garageId
 
   const dashboard = buildGarageDashboard({
     context: { garageName: session.garageName },
   })
-  const [leadCounts, commercialData, intelligenceBrief] = await Promise.all([
+  const [leadCounts, commercialData, intelligenceBrief, appointments] = await Promise.all([
     getLeadDashboardCounts(session),
     getCommercialInboxData(session),
     refreshGarageRecommendations(session),
+    getAppointments(garageId),
   ])
   const leadSummary = buildLeadDashboardSummary(leadCounts)
   const commercialSignal = buildCommercialDashboardSignal(commercialData)
 
   const dailyBrief = buildGarageDailyBriefViewModel(intelligenceBrief, { status: "ACTIVE" })
 
-  return <div className="space-y-6"><DailyBriefCard brief={dailyBrief} /><CopilotDashboardCard /><CommercialDashboardSignal signal={commercialSignal} /><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
+  return <div className="space-y-6"><DailyBriefCard brief={dailyBrief} /><AppointmentDashboardSignal summary={buildAppointmentDashboardSummary(appointments)} /><CopilotDashboardCard /><CommercialDashboardSignal signal={commercialSignal} /><LeadDashboardSignal summary={leadSummary} /><GarageIntelligenceDashboard dashboard={dashboard} /></div>
 }

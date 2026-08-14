@@ -2,6 +2,7 @@
 
 import {
   BarChart3,
+  CalendarDays,
   BriefcaseBusiness,
   Bot,
   Car,
@@ -26,6 +27,7 @@ export const dashboardNavigation = [
   { name: "Stock", href: "/stock", icon: Car },
   { name: "Acquisition", href: "/acquisition", icon: Search },
   { name: "Demandes clients", href: "/leads", icon: Users },
+  { name: "Agenda", href: "/appointments", icon: CalendarDays },
   { name: "Analyse du marché", href: "/market", icon: Globe },
   { name: "Pilotage", href: "/analytics", icon: BarChart3 },
   { name: "Paramètres", href: "/settings", icon: Settings },

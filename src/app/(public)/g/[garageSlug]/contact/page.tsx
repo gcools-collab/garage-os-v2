@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { buildPublicContact, buildPublicSeo, getPublicSiteRecord, PublicContactPage } from "@/features/public-site"
 import { buildPublicRequestForm, buildPublicVehicleContext, getVehicleContextHeading, isPublicRequestAvailable, resolvePublicRequestType } from "@/features/public-leads"
+import { getPublicAvailability } from "@/features/scheduling/repositories/scheduling-repository"
+import { PublicBookingBuilder } from "@/features/scheduling/builders/scheduling-builders"
 
 type Props = { readonly params: Promise<{ readonly garageSlug: string }>; readonly searchParams: Promise<{ readonly project?: string | string[]; readonly vehicle?: string | string[] }> }
 async function load(params: Props["params"]) {
@@ -29,5 +31,8 @@ export default async function GarageContact({ params, searchParams }: Props) {
   const vehicleContext = vehicle ? buildPublicVehicleContext(vehicle) : null
   const contextHeading = type && vehicleContext ? getVehicleContextHeading(type, vehicleContext.title) : null
   const missingRequiredVehicle = type === "TEST_DRIVE" && !vehicle
-  return <PublicContactPage contact={contact} missingVehicleRequest={Boolean(available && missingRequiredVehicle)} unavailableRequest={Boolean(type && !available)} request={available && !missingRequiredVehicle ? { form: buildPublicRequestForm(type, contextHeading), vehicleSlug: vehicle?.slug ?? null, vehicleContext, source: vehicle ? "VEHICLE_DETAIL" : type === "CONSIGNMENT" ? "CONSIGNMENT_PAGE" : type === "GENERAL_CONTACT" ? "CONTACT_CENTER" : "SERVICE_PAGE" } : null} />
+  const schedulable = type && ["TEST_DRIVE","ENGINE_CLEANING","REGISTRATION","CONSIGNMENT","TRADE_IN"].includes(type)
+  const rawAvailability = available && !missingRequiredVehicle && schedulable ? await getPublicAvailability(contact.garage.slug,type) : []
+  const availability = new PublicBookingBuilder().build(rawAvailability)
+  return <PublicContactPage contact={contact} missingVehicleRequest={Boolean(available && missingRequiredVehicle)} unavailableRequest={Boolean(type && !available)} request={available && !missingRequiredVehicle ? { form: buildPublicRequestForm(type, contextHeading), vehicleSlug: vehicle?.slug ?? null, vehicleContext, availability, source: vehicle ? "VEHICLE_DETAIL" : type === "CONSIGNMENT" ? "CONSIGNMENT_PAGE" : type === "GENERAL_CONTACT" ? "CONTACT_CENTER" : "SERVICE_PAGE" } : null} />
 }

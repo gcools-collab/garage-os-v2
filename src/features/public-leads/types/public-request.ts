@@ -9,6 +9,7 @@ export type PublicRequestState = {
   readonly status: "idle" | "success" | "validation_error" | "unavailable" | "rate_limited" | "duplicate_submission" | "persistence_error"
   readonly message: string
   readonly reference?: string
+  readonly appointmentStatus?: "PENDING" | "CONFIRMED" | "AWAITING_PAYMENT"
   readonly fieldErrors?: Readonly<Record<string, readonly string[]>>
 }
 export type PublicRequestField = {

@@ -1,0 +1,9 @@
+import { redirect } from "next/navigation"
+import { addCalendarException, AppointmentSettingsForm, getSchedulingConfiguration } from "@/features/scheduling"
+import { getActiveGarageSession } from "@/features/tenant"
+
+export default async function AppointmentSettingsPage() {
+  const session = await getActiveGarageSession(); if (!session?.garageId) redirect("/login")
+  const configuration = await getSchedulingConfiguration(session.garageId); const canEdit = session.memberRole === "owner" || session.memberRole === "admin"
+  return <main className="mx-auto max-w-6xl space-y-7"><header><h1 className="text-3xl font-semibold">Rendez-vous en ligne</h1><p className="text-muted-foreground">Configurez les horaires réels et les règles de réservation du garage.</p></header><AppointmentSettingsForm configuration={configuration} canEdit={canEdit}/><section className="rounded-xl border p-5"><h2 className="text-xl font-semibold">Exceptions calendrier</h2><p className="mt-1 text-sm text-muted-foreground">Fermeture, indisponibilité ou ouverture exceptionnelle.</p>{canEdit ? <form action={addCalendarException} className="mt-4 grid gap-3 sm:grid-cols-4"><select name="kind" className="rounded-md border px-3 py-2"><option value="CLOSED">Fermeture</option><option value="UNAVAILABLE">Indisponibilité</option><option value="OPEN">Ouverture exceptionnelle</option></select><input name="startsAt" type="datetime-local" required className="rounded-md border px-3 py-2"/><input name="endsAt" type="datetime-local" required className="rounded-md border px-3 py-2"/><button className="rounded-md border px-4 py-2">Ajouter</button></form> : null}<ul className="mt-4 space-y-2">{configuration.exceptions.map(item => <li key={String(item.id)} className="rounded-lg bg-muted p-3 text-sm">{String(item.kind)} · {new Date(String(item.starts_at)).toLocaleString("fr-FR")} → {new Date(String(item.ends_at)).toLocaleString("fr-FR")}</li>)}</ul></section></main>
+}

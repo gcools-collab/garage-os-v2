@@ -12,6 +12,7 @@ const common = z.object({
   message: optional(2000), preferredDate: optional(10).refine((value) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value), "Date invalide."), preferredTime: optional(30),
   consentContact: z.literal(true, "Votre accord est nécessaire."), consentMarketing: z.boolean(),
   website: z.string().max(200), formStartedAt: z.number().int().positive(), publicPageUrl: z.string().max(500),
+  appointmentStartsAt: optional(40).refine((value) => value === null || !Number.isNaN(Date.parse(value)), "Créneau invalide."),
 }).superRefine((value, context) => {
   if (!value.phone && !value.email) context.addIssue({ code: "custom", path: ["phone"], message: "Renseignez un téléphone ou un e-mail." })
   if (value.preferredDate) {

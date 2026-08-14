@@ -1,0 +1,3 @@
+import Link from"next/link";import type{AppointmentCalendarBuilder}from"../builders/scheduling-builders"
+type Item=ReturnType<AppointmentCalendarBuilder["build"]>[number]
+export function AppointmentList({items}:{readonly items:readonly Item[]}){return items.length?<div className="grid gap-3">{items.map(item=><Link key={item.id} href={item.href} className="grid gap-1 rounded-xl border p-4 hover:bg-muted sm:grid-cols-[12rem_1fr_12rem]"><strong>{item.dateLabel}</strong><span>{item.customerName} · {item.typeLabel}</span><span>{item.statusLabel}</span></Link>)}</div>:<p className="rounded-xl border p-6 text-muted-foreground">Aucun rendez-vous.</p>}

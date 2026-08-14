@@ -10,6 +10,7 @@ export default function SettingsPage() {
       <div className="flex flex-wrap gap-3">
         <Button asChild><Link href="/settings/branding">Identité du garage</Link></Button>
         <Button variant="outline" asChild><Link href="/settings/services">Services publics</Link></Button>
+        <Button variant="outline" asChild><Link href="/settings/appointments">Rendez-vous en ligne</Link></Button>
       </div>
     </div>
   )
