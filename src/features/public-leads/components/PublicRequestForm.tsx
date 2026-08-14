@@ -1,0 +1,19 @@
+"use client"
+import { useActionState, useState } from "react"
+import { useFormStatus } from "react-dom"
+import type { PublicRequestFormViewModel, PublicRequestSource, PublicRequestState } from "../types"
+import { submitPublicCustomerRequest } from "../actions"
+
+const initial: PublicRequestState = { status: "idle", message: "" }
+const control = "min-h-11 w-full rounded-lg border border-[var(--live-border)] bg-[var(--live-background)] px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]"
+function Submit({ label }: { readonly label: string }) { const { pending } = useFormStatus(); return <button disabled={pending} className="min-h-12 rounded-lg bg-[var(--live-primary)] px-6 font-semibold text-[var(--live-primary-foreground)] disabled:opacity-60">{pending ? "Envoi en cours…" : label}</button> }
+export function PublicRequestForm({ form, garageSlug, vehicleSlug, source, publicPageUrl }: { readonly form: PublicRequestFormViewModel; readonly garageSlug: string; readonly vehicleSlug: string | null; readonly source: PublicRequestSource; readonly publicPageUrl: string }) {
+  const [startedAt] = useState(() => Date.now()); const [state, action] = useActionState(submitPublicCustomerRequest, initial)
+  if (state.status === "success") return <section aria-live="polite" className="rounded-2xl border border-[var(--live-border)] p-6"><h2 className="text-2xl font-semibold">Demande transmise</h2><p className="mt-3">{state.message}</p>{state.reference ? <p className="mt-3 font-medium">Référence {state.reference}</p> : null}</section>
+  return <section id="request-form" className="rounded-2xl border border-[var(--live-border)] p-6"><h2 className="text-2xl font-semibold">{form.title}</h2><p className="mt-2 text-[var(--live-muted-foreground)]">{form.description}</p><form action={action} className="mt-6 grid gap-5 sm:grid-cols-2">
+    <input type="hidden" name="garageSlug" value={garageSlug}/><input type="hidden" name="vehicleSlug" value={vehicleSlug ?? ""}/><input type="hidden" name="requestType" value={form.type}/><input type="hidden" name="source" value={source}/><input type="hidden" name="publicPageUrl" value={publicPageUrl}/><input type="hidden" name="formStartedAt" value={startedAt}/><label className="sr-only" aria-hidden>Site internet<input name="website" tabIndex={-1} autoComplete="off"/></label>
+    {form.fields.map((field) => <label key={field.name} className={`grid gap-2 text-sm font-medium ${field.type === "textarea" ? "sm:col-span-2" : ""}`}>{field.label}{field.type === "textarea" ? <textarea name={field.name} required={field.required} rows={4} className={`${control} py-3`} aria-describedby={`${field.name}-error`}/> : field.type === "select" ? <select name={field.name} required={field.required} className={control}><option value="">Sélectionner</option>{field.options?.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select> : <input name={field.name} type={field.type} required={field.required} className={control} aria-describedby={`${field.name}-error`}/>} {state.fieldErrors?.[field.name]?.length ? <span id={`${field.name}-error`} className="text-sm text-[var(--live-danger)]">{state.fieldErrors[field.name]?.join(" ")}</span> : null}</label>)}
+    <label className="flex gap-3 text-sm sm:col-span-2"><input type="checkbox" name="consentContact" required className="mt-1 size-4"/>J’accepte d’être contacté à propos de cette demande.</label><label className="flex gap-3 text-sm sm:col-span-2"><input type="checkbox" name="consentMarketing" className="mt-1 size-4"/>J’accepte de recevoir des offres commerciales.</label>
+    <p aria-live="assertive" className="min-h-5 text-sm text-[var(--live-danger)] sm:col-span-2">{state.status !== "idle" ? state.message : ""}</p><div className="sm:col-span-2"><Submit label={form.submitLabel}/></div>
+  </form></section>
+}

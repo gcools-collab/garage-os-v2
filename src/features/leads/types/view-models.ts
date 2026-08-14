@@ -28,6 +28,7 @@ export type LeadDetailViewModel = LeadListItemViewModel & {
   readonly stockHref: string | null
   readonly publicHref: string | null
   readonly priceLabel: string | null
+  readonly requestDetails: readonly { readonly label: string; readonly value: string }[]
   readonly availableStatuses: readonly {
     readonly value: LeadStatus
     readonly label: string
@@ -44,5 +45,9 @@ export type LeadDashboardSummaryViewModel = {
   readonly toContactCount: number
   readonly appointmentRequestCount: number
   readonly overdueCount: number
+  readonly newTodayCount: number
+  readonly testDriveCount: number
+  readonly tradeInCount: number
+  readonly serviceRequestCount: number
   readonly message: string | null
 }

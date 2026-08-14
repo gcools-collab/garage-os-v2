@@ -4,14 +4,15 @@ import type { VehicleCTASectionViewModel } from "../presentation"
 export class VehicleCTASectionBuilder {
   build(
     garage: GaragePublicViewModel,
-    vehicleTitle: string
+    vehicleTitle: string,
+    vehicleSlug?: string,
   ): VehicleCTASectionViewModel {
-    const contactHref = `${garage.homeHref}/contact?vehicle=${encodeURIComponent(vehicleTitle)}`
+    const contactHref = `${garage.homeHref}/contact?vehicle=${encodeURIComponent(vehicleSlug ?? vehicleTitle)}`
     return {
       title: "Ce véhicule vous intéresse ?",
       description: "Échangez directement avec notre équipe pour obtenir plus d’informations.",
-      primary: { label: "Nous contacter", href: contactHref },
-      secondary: { label: "Réserver un essai", href: `${contactHref}&project=test-drive` },
+      primary: { label: "Nous contacter", href: `${contactHref}&project=buy` },
+      secondary: { label: "Demander un essai", href: `${contactHref}&project=test-drive` },
       tertiary: { label: "Demander une reprise", href: `${contactHref}&project=trade-in` },
     }
   }

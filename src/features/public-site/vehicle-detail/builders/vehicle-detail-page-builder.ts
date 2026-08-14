@@ -62,7 +62,7 @@ export class VehicleDetailPageBuilder {
     const garage = buildGaragePublicViewModel(input.garage)
     const media = buildVehicleMedia(input.vehicle)
     const vehicleTitle = `${input.vehicle.make} ${input.vehicle.model}`
-    const cta = new VehicleCTASectionBuilder().build(garage, vehicleTitle)
+    const cta = new VehicleCTASectionBuilder().build(garage, vehicleTitle, input.vehicle.slug)
     return {
       garage,
       breadcrumbs: [

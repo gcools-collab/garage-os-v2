@@ -17,7 +17,7 @@ export function computeLeadPriority({
   const ageHours = (now.getTime() - Date.parse(createdAt)) / 3_600_000
   if (
     status === "NEW" &&
-    (type === "APPOINTMENT_REQUEST" || type === "TEST_DRIVE_REQUEST" || ageHours >= 24)
+    (["APPOINTMENT_REQUEST", "TEST_DRIVE_REQUEST", "TEST_DRIVE", "TRADE_IN"].includes(type) || ageHours >= 24)
   ) return "HIGH"
   return vehicleAvailable ? "NORMAL" : "LOW"
 }

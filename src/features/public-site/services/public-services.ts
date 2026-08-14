@@ -93,13 +93,14 @@ export function buildEnabledPublicServices(
     .map((configuration) => {
     const id = configuration.serviceKey
     const definition = definitions[id]
+    const project = id === "REGISTRATION" ? "registration" : id === "ENGINE_CLEANING" ? "engine-cleaning" : id.toLowerCase()
     const href = id === "VEHICLE_SALES"
       ? `${basePath}/stock`
       : id === "RENTAL"
         ? `${basePath}/location`
         : id === "CONSIGNMENT"
           ? `${basePath}/depot-vente`
-          : `${basePath}/contact?project=${id.toLowerCase()}`
+          : `${basePath}/contact?project=${project}`
     return {
       ...definition,
       title: configuration.publicTitle?.trim() || definition.title,

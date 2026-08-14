@@ -10,6 +10,10 @@ export function LeadDetail({ lead }: { readonly lead: LeadDetailViewModel }) {
     <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
       <div className="space-y-6">
         <Card>
+          <CardHeader><CardTitle>Demande client</CardTitle></CardHeader>
+          <CardContent>{lead.requestDetails.length ? <dl className="grid gap-3 sm:grid-cols-2">{lead.requestDetails.map((item) => <div key={item.label}><dt className="text-sm text-muted-foreground">{item.label}</dt><dd className="font-medium">{item.value}</dd></div>)}</dl> : <p className="text-muted-foreground">Aucune information complémentaire.</p>}</CardContent>
+        </Card>
+        <Card>
           <CardHeader><CardTitle>Demande</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap gap-2"><Badge>{lead.statusLabel}</Badge><Badge variant="outline">{lead.typeLabel}</Badge></div>

@@ -5,6 +5,9 @@ export const LEAD_TYPES = [
   "TEST_DRIVE_REQUEST",
   "VEHICLE_QUESTION",
   "PRICE_INQUIRY",
+  "VEHICLE_INQUIRY", "TEST_DRIVE", "TRADE_IN", "CONSIGNMENT",
+  "REGISTRATION", "ENGINE_CLEANING", "GENERAL_CONTACT",
+  "RENTAL", "WORKSHOP", "BODYWORK",
 ] as const
 export type LeadType = typeof LEAD_TYPES[number]
 
@@ -17,6 +20,8 @@ export type LeadStatus = typeof LEAD_STATUSES[number]
 export type LeadSource =
   | "LIVE_VEHICLE_PAGE" | "LIVE_HOMEPAGE" | "LIVE_CATALOG"
   | "PHONE_CTA" | "EMAIL_CTA" | "MANUAL"
+  | "PUBLIC_WEBSITE" | "VEHICLE_DETAIL" | "CONTACT_CENTER"
+  | "SERVICE_PAGE" | "CONSIGNMENT_PAGE"
 
 export type LeadPriority = "HIGH" | "NORMAL" | "LOW"
 
@@ -94,6 +99,7 @@ export type LeadRecord = {
   readonly next_action_at: string | null
   readonly loss_reason: string | null
   readonly loss_note: string | null
+  readonly metadata?: Readonly<Record<string, unknown>>
 }
 
 export type LeadEventRecord = {

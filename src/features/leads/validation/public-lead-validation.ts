@@ -90,7 +90,7 @@ export function validatePublicLead(input: PublicLeadInput, today = new Date()) {
 }
 
 export function validateLeadContactability(input: PublicLeadInput) {
-  const result = validatePublicLead(input)
+  const result = validatePublicLead({ ...input, preferredDate: "" }, new Date(0))
   return {
     valid: result.success,
     errors: result.success ? [] : result.error.issues.map((issue) => issue.message),

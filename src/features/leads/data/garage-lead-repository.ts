@@ -25,7 +25,7 @@ const LEAD_COLUMNS = [
   "vehicle_model_snapshot", "vehicle_year_snapshot", "created_at", "updated_at",
   "contacted_at", "closed_at", "archived_at",
   "assigned_user_id", "first_contacted_at", "last_contacted_at",
-  "next_action_at", "loss_reason", "loss_note",
+  "next_action_at", "loss_reason", "loss_note", "metadata",
 ].join(",")
 
 export async function getGarageLeads(

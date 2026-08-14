@@ -48,12 +48,13 @@ export function computeCommercialTaskPriority(input: {
   if (overdue) reasons.push("Action en retard")
   if (input.leadNeverContacted) reasons.push("Prospect jamais contacté")
   if (input.leadType === "APPOINTMENT_REQUEST") reasons.push("Rendez-vous à confirmer")
-  if (input.leadType === "TEST_DRIVE_REQUEST") reasons.push("Demande d’essai")
+  if (input.leadType === "TEST_DRIVE_REQUEST" || input.leadType === "TEST_DRIVE") reasons.push("Demande d’essai")
+  if (input.leadType === "TRADE_IN") reasons.push("Demande de reprise")
   if (!input.vehicleAvailable) reasons.push("Disponibilité du véhicule à vérifier")
   if (overdue && input.leadNeverContacted && ageHours >= 24) {
     return { priority: "URGENT", reasons }
   }
-  if (overdue || input.leadType === "APPOINTMENT_REQUEST" || input.leadType === "TEST_DRIVE_REQUEST") {
+  if (overdue || ["APPOINTMENT_REQUEST", "TEST_DRIVE_REQUEST", "TEST_DRIVE", "TRADE_IN", "CONSIGNMENT"].includes(input.leadType ?? "")) {
     return { priority: "HIGH", reasons }
   }
   if (!input.leadNeverContacted && input.dueAt === null) {
@@ -72,6 +73,16 @@ const initialTask: Readonly<Record<LeadType, {
   VEHICLE_QUESTION: { type: "SEND_EMAIL", title: "Répondre à la demande" },
   PRICE_INQUIRY: { type: "FOLLOW_UP", title: "Recontacter le prospect" },
   GENERAL_INQUIRY: { type: "UPDATE_LEAD", title: "Traiter la demande" },
+  VEHICLE_INQUIRY: { type: "CALL_PROSPECT", title: "Répondre à la demande d’achat" },
+  TEST_DRIVE: { type: "PREPARE_TEST_DRIVE", title: "Contacter le client pour convenir d’un essai" },
+  TRADE_IN: { type: "CALL_PROSPECT", title: "Qualifier la demande de reprise" },
+  CONSIGNMENT: { type: "CALL_PROSPECT", title: "Qualifier le véhicule en dépôt-vente" },
+  REGISTRATION: { type: "REQUEST_DOCUMENTS", title: "Préparer le dossier carte grise" },
+  ENGINE_CLEANING: { type: "CALL_PROSPECT", title: "Organiser le décalaminage" },
+  GENERAL_CONTACT: { type: "UPDATE_LEAD", title: "Traiter la demande client" },
+  RENTAL: { type: "CALL_PROSPECT", title: "Qualifier la demande de location" },
+  WORKSHOP: { type: "CALL_PROSPECT", title: "Qualifier la demande atelier" },
+  BODYWORK: { type: "CALL_PROSPECT", title: "Qualifier la demande carrosserie" },
 }
 
 export function computeInitialTaskDueAt(createdAt: string): string {
@@ -100,7 +111,7 @@ export function buildInitialCommercialTask(input: {
     type: definition.type,
     title: definition.title,
     dueAt: computeInitialTaskDueAt(input.createdAt),
-    priority: input.leadType === "APPOINTMENT_REQUEST" || input.leadType === "TEST_DRIVE_REQUEST"
+    priority: ["APPOINTMENT_REQUEST", "TEST_DRIVE_REQUEST", "TEST_DRIVE", "TRADE_IN"].includes(input.leadType)
       ? "HIGH" as const
       : "NORMAL" as const,
   }

@@ -80,11 +80,11 @@ test("la publication invalide toutes les routes publiques V1", () => {
   assert.match(revalidation, /basePath}\/vehicles/)
 })
 
-test("les parcours indisponibles sont explicitement désactivés", () => {
+test("le centre de contact utilise les formulaires spécialisés et un fallback explicite", () => {
   const contact = readFileSync(
     "src/features/public-site/components/PublicContactPage.tsx",
     "utf8",
   )
-  assert.match(contact, /fieldset disabled aria-disabled="true"/)
-  assert.match(contact, /Utilisez le téléphone ou l’e-mail/)
+  assert.match(contact, /PublicRequestForm/)
+  assert.match(contact, /Cette demande n’est pas disponible pour ce garage/)
 })
