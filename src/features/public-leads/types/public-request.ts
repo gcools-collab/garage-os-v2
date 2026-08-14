@@ -18,6 +18,16 @@ export type PublicRequestField = {
   readonly required: boolean
   readonly options?: readonly { readonly value: string; readonly label: string }[]
   readonly hint?: string
+  readonly step: string
+}
+export type PublicVehicleContextViewModel = {
+  readonly slug: string
+  readonly imageUrl: string | null
+  readonly imageAlt: string
+  readonly title: string
+  readonly subtitle: string | null
+  readonly metadata: string
+  readonly price: string
 }
 export type PublicRequestFormViewModel = {
   readonly type: PublicRequestType
@@ -25,5 +35,6 @@ export type PublicRequestFormViewModel = {
   readonly description: string
   readonly submitLabel: string
   readonly fields: readonly PublicRequestField[]
+  readonly steps: readonly { readonly id: string; readonly title: string }[]
+  readonly contextHeading: string | null
 }
-

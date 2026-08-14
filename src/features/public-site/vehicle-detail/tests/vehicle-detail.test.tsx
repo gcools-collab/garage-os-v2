@@ -124,9 +124,10 @@ test("les caractéristiques masquent les absences et n’exposent jamais le VIN"
 test("le CTA prépare les trois parcours commerciaux", () => {
   const cta = new VehicleCTASectionBuilder().build(
     buildGaragePublicViewModel(garage),
-    "BMW M3"
+    "BMW M3",
+    "bmw-m3-competition-2020",
   )
-  assert.match(cta.primary.href, /contact\?vehicle=BMW%20M3/)
+  assert.match(cta.primary.href, /contact\?vehicle=bmw-m3-competition-2020/)
   assert.match(cta.secondary?.href ?? "", /project=test-drive/)
   assert.match(cta.tertiary?.href ?? "", /project=trade-in/)
 })
