@@ -1,1 +1,13 @@
-begin;select plan(8);select has_table('public','appointments');select has_table('public','appointment_events');select has_table('public','garage_business_hours');select has_table('public','garage_calendar_exceptions');select has_table('public','appointment_type_settings');select has_function('public','get_public_appointment_availability',array['text','text','date','date']);select has_function('public','book_public_appointment',array['text','text','uuid','text','timestamp with time zone','text','text','text','jsonb','text']);select has_function('public','reschedule_appointment',array['uuid','timestamp with time zone']);select * from finish();rollback;
+begin;
+select plan(10);
+select has_table('public','appointments');
+select has_table('public','appointment_events');
+select has_table('public','garage_business_hours');
+select has_table('public','garage_calendar_exceptions');
+select has_table('public','appointment_type_settings');
+select has_function('public','get_public_appointment_availability',array['text','text','date','date','text']);
+select has_function('public','book_public_appointment',array['text','text','uuid','text','timestamp with time zone','text','text','text','jsonb','text','integer']);
+select has_function('public','book_public_catalog_appointment',array['text','text','uuid','text','timestamp with time zone','text','text','text','jsonb','text','text','uuid[]']);
+select has_function('public','reschedule_appointment',array['uuid','timestamp with time zone']);
+select * from finish();
+rollback;

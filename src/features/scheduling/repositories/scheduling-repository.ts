@@ -57,11 +57,21 @@ export async function saveSchedulingSettings(garageId: string, input: { readonly
   return !saved.error
 }
 
-export async function getPublicAvailability(garageSlug: string, type: string) {
+export async function getPublicAvailability(
+  garageSlug: string,
+  type: string,
+  offerSlug?: string | null,
+) {
   const from = new Date()
   const to = new Date(from.getTime() + 14 * 86400000)
   const iso = (value: Date) => value.toISOString().slice(0, 10)
-  const { data, error } = await createPublicSupabaseClient().rpc("get_public_appointment_availability", { p_garage_slug: garageSlug, p_type: type, p_from: iso(from), p_to: iso(to) })
+  const { data, error } = await createPublicSupabaseClient().rpc("get_public_appointment_availability", {
+    p_garage_slug: garageSlug,
+    p_type: type,
+    p_from: iso(from),
+    p_to: iso(to),
+    p_offer_slug: offerSlug ?? null,
+  })
   if (error) { console.error("Public availability failed", { operation: "get_public_appointment_availability", code: error.code }); return [] }
   return (data ?? []) as { starts_at: string; ends_at: string; local_date: string; local_time: string }[]
 }

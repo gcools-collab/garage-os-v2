@@ -85,7 +85,7 @@ test("registration reste disponible quand l'offre catalogue existe sans procédu
   )
 
   assert.match(source, /registrationUnavailable/)
-  assert.match(source, /offerChoices\.length === 0 &&\s*\n?\s*registrationProcedures\.length === 0/)
+  assert.match(source, /offerPresentations\.length === 0 &&\s*\n?\s*registrationProcedures\.length === 0/)
   assert.doesNotMatch(source, /registrationUnavailable=type==="REGISTRATION"&&registrationProcedures\.length===0/)
 })
 

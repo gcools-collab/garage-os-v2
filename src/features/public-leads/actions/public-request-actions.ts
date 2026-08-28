@@ -14,6 +14,7 @@ import { createAppointmentPayment } from "@/features/payments/actions/payment-ac
 const humanError = "Nous n’avons pas pu transmettre votre demande. Vérifiez vos informations puis réessayez."
 export async function submitPublicCustomerRequest(_state: PublicRequestState, formData: FormData): Promise<PublicRequestState> {
   const raw = Object.fromEntries([...formData.entries()].map(([key, value]) => [key, String(value)])) as Record<string, unknown>
+  raw.offerOptionIds = formData.getAll("offerOptionIds").map(String)
   raw.consentContact = formData.get("consentContact") === "on"
   raw.consentMarketing = formData.get("consentMarketing") === "on"
   raw.formStartedAt = Number(formData.get("formStartedAt"))
@@ -39,7 +40,21 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
   let paymentUrl: string | undefined
   let registrationUrl: string | undefined
   if (data.appointmentStartsAt) {
-    const booking = await bookPublicAppointment({ offerSlug:data.offerSlug, garageSlug: data.garageSlug, vehicleSlug: data.vehicleSlug, leadId: result.leadId, type: data.requestType, startsAt: data.appointmentStartsAt, customerName: `${data.firstName} ${data.lastName}`.trim(), phone: data.phone, email: data.email, details: data.payload, fingerprint })
+    const persistedOptionIds = (data.offerOptionIds ?? []).filter((id) => /^[0-9a-f-]{36}$/i.test(id))
+    const booking = await bookPublicAppointment({
+      offerSlug: data.offerSlug,
+      garageSlug: data.garageSlug,
+      vehicleSlug: data.vehicleSlug,
+      leadId: result.leadId,
+      type: data.requestType,
+      startsAt: data.appointmentStartsAt,
+      customerName: `${data.firstName} ${data.lastName}`.trim(),
+      phone: data.phone,
+      email: data.email,
+      details: data.payload,
+      fingerprint,
+      optionIds: persistedOptionIds,
+    })
     if (booking.outcome !== "success") return { status: "unavailable", message: "Ce créneau n’est plus disponible. Votre demande a été conservée et le garage pourra vous recontacter." }
     if (booking.status === "PENDING" || booking.status === "CONFIRMED" || booking.status === "AWAITING_PAYMENT") appointmentStatus = booking.status
     if (booking.status === "AWAITING_PAYMENT" && booking.appointmentId) { const payment = await createAppointmentPayment(booking.appointmentId, data.garageSlug); if (payment.ok) paymentUrl = payment.url }

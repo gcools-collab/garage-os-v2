@@ -16,7 +16,11 @@ import {
 } from "@/features/public-leads"
 import { getPublicAvailability } from "@/features/scheduling/repositories/scheduling-repository"
 import { PublicBookingBuilder } from "@/features/scheduling/builders/scheduling-builders"
-import { buildPublicOfferChoices, getPublicServiceOffers } from "@/features/service-catalog"
+import {
+  buildPublicOfferPresentations,
+  getPublicServiceOfferOptions,
+  getPublicServiceOffers,
+} from "@/features/service-catalog"
 import { getPublicRegistrationProcedures } from "@/features/registration"
 
 type Props = {
@@ -86,23 +90,44 @@ export default async function GarageContact({ params, searchParams }: Props) {
   const missingRequiredVehicle = type === "TEST_DRIVE" && !vehicle
   const schedulable = Boolean(type && schedulableTypes.has(type))
 
-  const [rawAvailability, offerRows, registrationProcedures] = await Promise.all([
-    available && !missingRequiredVehicle && schedulable && type
-      ? getPublicAvailability(contact.garage.slug, type)
-      : Promise.resolve([]),
+  const [offerRows, offerOptions, registrationProcedures] = await Promise.all([
     available && type && offerTypes.has(type)
       ? getPublicServiceOffers(contact.garage.slug, type)
+      : Promise.resolve([]),
+    available && type && offerTypes.has(type)
+      ? getPublicServiceOfferOptions(contact.garage.slug, type)
       : Promise.resolve([]),
     available && type === "REGISTRATION"
       ? getPublicRegistrationProcedures(contact.garage.slug)
       : Promise.resolve([]),
   ])
 
-  const availability = new PublicBookingBuilder().build(rawAvailability)
-  const offerChoices =
+  const offerPresentations =
     type && offerTypes.has(type)
-      ? buildPublicOfferChoices(offerRows)
+      ? buildPublicOfferPresentations(offerRows, offerOptions)
       : []
+
+  let availabilityByOfferSlug: Record<string, ReturnType<PublicBookingBuilder["build"]>> | undefined
+  let availability: ReturnType<PublicBookingBuilder["build"]> = []
+
+  if (available && !missingRequiredVehicle && schedulable && type) {
+    if (offerPresentations.length > 0) {
+      const entries = await Promise.all(
+        offerPresentations.map(async (offer) => [
+          offer.slug,
+          new PublicBookingBuilder().build(
+            await getPublicAvailability(contact.garage.slug, type, offer.slug),
+          ),
+        ] as const),
+      )
+      availabilityByOfferSlug = Object.fromEntries(entries)
+      availability = availabilityByOfferSlug[offerPresentations[0]?.slug ?? ""] ?? []
+    } else {
+      availability = new PublicBookingBuilder().build(
+        await getPublicAvailability(contact.garage.slug, type),
+      )
+    }
+  }
   const baseForm = type ? buildPublicRequestForm(type, contextHeading) : null
   const configuredForm =
     baseForm && type === "REGISTRATION" && registrationProcedures.length > 0
@@ -121,40 +146,10 @@ export default async function GarageContact({ params, searchParams }: Props) {
           ),
         }
       : baseForm
-  const form =
-    configuredForm && offerChoices.length
-      ? {
-          ...configuredForm,
-          fields: [
-            {
-              name: "offerSlug",
-              label:
-                type === "REGISTRATION" ? "Prestation et acompte" : "Prestation",
-              type: "select" as const,
-              required: true,
-              step: configuredForm.steps[0].id,
-              options: offerChoices.map((offer) => ({
-                value: offer.slug,
-                label: [
-                  offer.name,
-                  offer.description,
-                  offer.priceLabel,
-                  offer.paymentLabel,
-                  offer.totalLabel === "À déterminer"
-                    ? "Prix final à déterminer"
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" — "),
-              })),
-            },
-            ...configuredForm.fields,
-          ],
-        }
-      : configuredForm
+  const form = configuredForm
   const registrationUnavailable =
     type === "REGISTRATION" &&
-    offerChoices.length === 0 &&
+    offerPresentations.length === 0 &&
     registrationProcedures.length === 0
   const unavailableRequest = Boolean(
     type && (!available || registrationUnavailable)
@@ -173,6 +168,8 @@ export default async function GarageContact({ params, searchParams }: Props) {
               vehicleSlug: vehicle?.slug ?? null,
               vehicleContext,
               availability,
+              availabilityByOfferSlug,
+              offers: offerPresentations,
               source: vehicle
                 ? "VEHICLE_DETAIL"
                 : type === "CONSIGNMENT"

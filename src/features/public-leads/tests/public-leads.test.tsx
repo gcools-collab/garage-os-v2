@@ -15,7 +15,20 @@ test("les parcours suivent les services actifs", () => { assert.equal(isPublicRe
 test("les sept parcours V1 sont résolus", () => { for (const project of ["buy","test-drive","trade-in","consignment","registration","engine-cleaning","other"]) assert.ok(resolvePublicRequestType(project)) })
 test("achat et essai utilisent une identité véhicule serveur", () => { const sql=readFileSync("supabase/migrations/20260814000042_create_public_customer_requests.sql","utf8"); assert.match(sql,/p_request_type = 'TEST_DRIVE'/); assert.match(sql,/v\.garage_id = target_garage\.id/) })
 test("valide reprise et dépôt-vente", () => { const vehicle={brand:"Peugeot",model:"308",year:"2020",mileage:"80000",desiredPrice:"15000"}; assert.equal(validatePublicRequest(base("TRADE_IN",vehicle)).success,true); assert.equal(validatePublicRequest(base("CONSIGNMENT",vehicle)).success,true) })
-test("valide carte grise et décalaminage", () => { assert.equal(validatePublicRequest(base("REGISTRATION",{procedure:"CHANGE_OWNER"})).success,true); assert.equal(validatePublicRequest(base("ENGINE_CLEANING",{vehicle:"Peugeot 308",fuel:"Diesel",reason:"Perte de puissance"})).success,true) })
+test("valide carte grise et décalaminage", () => {
+  assert.equal(validatePublicRequest(base("REGISTRATION", { procedure: "CHANGE_OWNER" })).success, true)
+  assert.equal(validatePublicRequest(base("ENGINE_CLEANING", {
+    vehicle: "Peugeot 308",
+    email: "client@test.com",
+    phone: "0612345678",
+  })).success, true)
+  assert.equal(validatePublicRequest(base("ENGINE_CLEANING", {
+    vehicle: "Peugeot 308",
+    registration: "AA-123-BB",
+    fuel: "Diesel",
+    reason: "Perte de puissance",
+  })).success, false)
+})
 test("valide contact général", () => { assert.equal(validatePublicRequest(base("GENERAL_CONTACT",{subject:"Informations"})).success,true) })
 test("validation et anti-spam refusent les entrées incorrectes", () => { assert.equal(validatePublicRequest(base("GENERAL_CONTACT",{subject:"Informations",website:"spam"})).success,false); assert.equal(validatePublicRequest(base("GENERAL_CONTACT",{subject:"Informations",consentContact:false})).success,false) })
 test("la RPC refuse les accès invalides et limite les doublons",()=>{const sql=readFileSync("supabase/migrations/20260814000042_create_public_customer_requests.sql","utf8");for(const token of ["unavailable_garage","unavailable_vehicle","service_unavailable","duplicate_submission","rate_limited"])assert.match(sql,new RegExp(token));assert.match(sql,/g\.live_enabled/)})

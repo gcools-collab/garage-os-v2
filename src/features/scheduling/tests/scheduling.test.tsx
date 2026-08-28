@@ -27,6 +27,27 @@ test("la migration staff autorise création RDV et dossier sans rendez-vous", ()
   assert.match(migration, /is_historical = false/)
 })
 
+test("GO-0090.6B migration rend la planification offer-aware et exclut l'historique", () => {
+  const migration = readFileSync("supabase/migrations/20260828000058_offer_aware_scheduling.sql", "utf8")
+  assert.match(migration, /live_slug = 'sap'/)
+  assert.match(migration, /engine-cleaning-2l-plus/)
+  assert.match(migration, /duration_minutes = 90/)
+  assert.match(migration, /Traitement choc double machine/)
+  assert.match(migration, /p_duration_minutes integer default null/i)
+  assert.match(migration, /p_offer_slug text default null/i)
+  assert.match(migration, /duration_minutes', booking_duration/)
+  assert.match(migration, /options_duration_delta_minutes/)
+  assert.match(migration, /is_historical = false/)
+  assert.match(migration, /distinct_option_count/)
+  assert.doesNotMatch(migration, /drop table/i)
+  assert.doesNotMatch(migration, /363f2dc0-bfd3-48d6-a1cc-96e113e96094/)
+})
+
+test("la disponibilité publique accepte offerSlug côté repository", () => {
+  const source = readFileSync("src/features/scheduling/repositories/scheduling-repository.ts", "utf8")
+  assert.match(source, /p_offer_slug: offerSlug/)
+})
+
 test("les rendez-vous historiques ne proposent pas de lien opérationnel", () => {
   const row = {
     id: "legacy", garage_id: "g", lead_id: null, vehicle_id: null, customer_id: "cust-1",

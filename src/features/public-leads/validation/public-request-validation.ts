@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { PUBLIC_REQUEST_TYPES, type PublicRequestSource, type PublicRequestType } from "../types"
+import { serviceFormRequiresPhoneAndEmail } from "../config/service-form-config"
 
 const optional = (max: number) => z.string().trim().max(max).optional().transform((value) => value || null)
 const common = z.object({
@@ -14,8 +15,22 @@ const common = z.object({
   website: z.string().max(200), formStartedAt: z.number().int().positive(), publicPageUrl: z.string().max(500),
   appointmentStartsAt: optional(40).refine((value) => value === null || !Number.isNaN(Date.parse(value)), "Créneau invalide."),
   offerSlug: optional(160).refine((value) => value === null || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value), "Prestation invalide."),
+  offerOptionIds: z.preprocess(
+    (value) => {
+      if (Array.isArray(value)) return value.map(String).filter(Boolean)
+      if (typeof value === "string" && value.trim()) return [value.trim()]
+      return []
+    },
+    z.array(z.string()).default([]),
+  ),
 }).superRefine((value, context) => {
   if (!value.phone && !value.email) context.addIssue({ code: "custom", path: ["phone"], message: "Renseignez un téléphone ou un e-mail." })
+  if (serviceFormRequiresPhoneAndEmail(value.requestType) && !value.phone) {
+    context.addIssue({ code: "custom", path: ["phone"], message: "Le téléphone est obligatoire." })
+  }
+  if (serviceFormRequiresPhoneAndEmail(value.requestType) && !value.email) {
+    context.addIssue({ code: "custom", path: ["email"], message: "L'e-mail est obligatoire." })
+  }
   if (value.preferredDate) {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     if (new Date(`${value.preferredDate}T00:00:00`).getTime() < today.getTime()) context.addIssue({ code: "custom", path: ["preferredDate"], message: "Choisissez une date à venir." })
@@ -28,7 +43,10 @@ const detailSchemas: Readonly<Record<PublicRequestType, z.ZodType<Record<string,
   TRADE_IN: z.object({ brand: z.string().trim().min(1).max(80), model: z.string().trim().min(1).max(80), year: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1), mileage: z.coerce.number().int().min(0).max(2_000_000), registration: optional(30), fuel: optional(50), gearbox: optional(50), condition: optional(500), desiredPrice: z.coerce.number().min(0).max(10_000_000).optional() }),
   CONSIGNMENT: z.object({ brand: z.string().trim().min(1).max(80), model: z.string().trim().min(1).max(80), year: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 1), mileage: z.coerce.number().int().min(0).max(2_000_000), registration: optional(30), desiredPrice: z.coerce.number().min(0).max(10_000_000).optional() }),
   REGISTRATION: z.object({ procedure: z.enum(["CHANGE_OWNER", "CHANGE_OF_OWNER", "DUPLICATE", "ADDRESS_CHANGE", "IMPORT", "TEMPORARY_REGISTRATION", "REGISTRATION", "OTHER"]), registration: optional(30), brand: optional(80), model: optional(80) }),
-  ENGINE_CLEANING: z.object({ vehicle: z.string().trim().min(2).max(160), registration: optional(30), fuel: z.string().trim().min(1).max(50), engineSize: optional(50), mileage: z.coerce.number().int().min(0).max(2_000_000).optional(), reason: z.string().trim().min(2).max(1000) }),
+  ENGINE_CLEANING: z.object({
+    vehicle: z.string().trim().min(2).max(160),
+    reason: optional(1000),
+  }),
   GENERAL_CONTACT: z.object({ subject: z.string().trim().min(2).max(120), contactPreference: optional(30) }),
   RENTAL: z.object({ subject: optional(120) }), WORKSHOP: z.object({ subject: optional(120) }), BODYWORK: z.object({ subject: optional(120) }),
 }
