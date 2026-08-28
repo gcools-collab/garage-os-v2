@@ -35,11 +35,12 @@ test("un essai contextualisé affiche le véhicule sans champ véhicule inutile"
   assert.match(html, /Demander mon essai/)
 })
 
-test("contact et reprise conservent le contexte public du véhicule", () => {
+test("contact contextualise un véhicule unique sans charger tout le stock", () => {
   const page = readFileSync("src/app/(public)/g/[garageSlug]/contact/page.tsx", "utf8")
-  assert.match(page, /record\.vehicles\.find/)
+  assert.match(page, /getPublicContactVehicle/)
   assert.match(page, /type === "TRADE_IN"/)
   assert.match(page, /vehicle\?\.slug/)
+  assert.doesNotMatch(page, /record\.vehicles\.find/)
   assert.doesNotMatch(page, /garageId.*query|vehicleId.*query/)
 })
 

@@ -86,5 +86,6 @@ test("le centre de contact utilise les formulaires spécialisés et un fallback 
     "utf8",
   )
   assert.match(contact, /PublicRequestForm/)
+  assert.match(contact, /Changer de demande/)
   assert.match(contact, /Cette demande n’est pas disponible pour ce garage/)
 })

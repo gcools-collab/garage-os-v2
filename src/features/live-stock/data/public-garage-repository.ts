@@ -18,7 +18,8 @@ export async function resolvePublicGarageContext(garageSlug: string) {
     logPublicRouteDiagnostic({ route: "public-garage-repository", slug, garageId: null, liveSlug: null, activeGarageId: null, serviceCount: 0, repositoryResult: "NOT_FOUND", reason: "invalid_live_slug" })
     return null
   }
-  const { data, error } = await createPublicSupabaseClient()
+  const supabase = createPublicSupabaseClient()
+  const { data, error } = await supabase
     .from("public_live_garages")
     .select(PUBLIC_GARAGE_COLUMNS)
     .eq("live_slug", slug)
@@ -29,7 +30,7 @@ export async function resolvePublicGarageContext(garageSlug: string) {
     return null
   }
   const record = data as unknown as PublicGarageRecord
-  const { data: services, error: servicesError } = await createPublicSupabaseClient()
+  const { data: services, error: servicesError } = await supabase
     .from("public_live_garage_services")
     .select("service_key,public_title,public_description,public_cta_label,display_order")
     .eq("garage_slug", slug)
