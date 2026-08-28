@@ -6,6 +6,7 @@ import {
   type VehicleAssetGallery,
 } from "@/features/media"
 import type { LiveStockVehicle } from "@/features/live-stock"
+import { resolveVehicleImagePublicUrl } from "@/features/vehicles/vehicle-image-presentation"
 
 function fallbackAsset(vehicle: LiveStockVehicle): Asset {
   return {
@@ -36,24 +37,34 @@ export function buildVehicleMedia(vehicle: LiveStockVehicle): {
   readonly domain: VehicleAssetGallery
   readonly view: ReturnType<typeof buildAssetGalleryViewModel>
 } {
-  const assets = vehicle.photos.map((photo) => mapVehicleImageAsset({
-    id: photo.id,
-    garageId: vehicle.garageId,
-    vehicleId: vehicle.id,
-    storagePath: photo.path,
-    publicUrl: photo.url,
-    createdAt: vehicle.updatedAt,
-    isPrimary: photo.isCover,
-    position: photo.position,
-  })).map((asset, index) => ({
-    ...asset,
-    metadata: {
-      ...asset.metadata,
-      width: vehicle.photos[index].width ?? undefined,
-      height: vehicle.photos[index].height ?? undefined,
-      alt: vehicle.photos[index].alt,
-    },
-  }))
+  const assets = vehicle.photos.flatMap((photo, index) => {
+    const publicUrl = resolveVehicleImagePublicUrl({
+      url: photo.url,
+      storagePath: photo.path,
+      garageId: vehicle.garageId,
+      vehicleId: vehicle.id,
+    })
+    if (!publicUrl) return []
+    const asset = mapVehicleImageAsset({
+      id: photo.id,
+      garageId: vehicle.garageId,
+      vehicleId: vehicle.id,
+      storagePath: photo.path,
+      publicUrl,
+      createdAt: vehicle.updatedAt,
+      isPrimary: photo.isCover,
+      position: photo.position,
+    })
+    return [{
+      ...asset,
+      metadata: {
+        ...asset.metadata,
+        width: vehicle.photos[index].width ?? undefined,
+        height: vehicle.photos[index].height ?? undefined,
+        alt: vehicle.photos[index].alt,
+      },
+    }]
+  })
   const domain = new VehicleAssetGalleryBuilder().build({
     vehicleId: vehicle.id,
     assets,

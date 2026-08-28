@@ -29,3 +29,9 @@ export function resolveVehicleImagePublicUrl({
 
   return `${baseUrl}/storage/v1/object/public/${VEHICLE_IMAGE_BUCKET}/${encodedPath}`
 }
+
+export function isResolvableVehicleImageUrl(
+  url: string | null | undefined
+): url is string {
+  return Boolean(url?.trim())
+}

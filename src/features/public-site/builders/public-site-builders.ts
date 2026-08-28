@@ -1,4 +1,6 @@
 import type { LiveStockVehicle, PublicGarageContext } from "@/features/live-stock"
+import { isResolvableVehicleImageUrl } from "@/features/vehicles/vehicle-image-presentation"
+import { formatPublicVehicleDisplayName, formatVehicleMileage } from "@/features/vehicles/vehicle-presentation"
 import type {
   GaragePublicViewModel,
   PublicContactViewModel,
@@ -17,7 +19,6 @@ const money = new Intl.NumberFormat("fr-FR", {
   currency: "EUR",
   maximumFractionDigits: 0,
 })
-const integer = new Intl.NumberFormat("fr-FR")
 const PAGE_SIZE = 12
 
 function unique(values: readonly (string | null)[]) {
@@ -77,11 +78,22 @@ export function buildGaragePublicViewModel(
   }
 }
 
+function selectPrimaryVehiclePhoto(vehicle: LiveStockVehicle) {
+  const ordered = [
+    vehicle.photos.find((photo) => photo.isCover),
+    vehicle.photos[0],
+    ...vehicle.photos,
+  ].filter((photo, index, photos): photo is NonNullable<typeof photo> =>
+    photo !== undefined && photos.indexOf(photo) === index
+  )
+  return ordered.find((photo) => isResolvableVehicleImageUrl(photo.url)) ?? null
+}
+
 export function buildVehiclePublicCard(
   vehicle: LiveStockVehicle,
   garage: GaragePublicViewModel
 ): VehiclePublicCardViewModel {
-  const image = vehicle.photos.find((photo) => photo.isCover) ?? vehicle.photos[0] ?? null
+  const image = selectPrimaryVehiclePhoto(vehicle)
   const publicationDate = new Date(vehicle.publishedAt ?? vehicle.createdAt)
   const isNew = Number.isFinite(publicationDate.getTime())
     && Date.now() - publicationDate.getTime() <= 14 * 24 * 60 * 60 * 1000
@@ -91,19 +103,20 @@ export function buildVehiclePublicCard(
     vehicle.hasExterior360 ? "360°" : null,
     vehicle.hasInteriorTour ? "Visite virtuelle" : null,
   ].filter((badge): badge is string => badge !== null)
+  const displayName = formatPublicVehicleDisplayName(vehicle.make, vehicle.model)
   return {
     id: vehicle.id,
     slug: vehicle.slug,
     href: `${garage.homeHref}/vehicules/${vehicle.slug}`,
-    name: `${vehicle.make} ${vehicle.model}`,
+    name: displayName,
     version: vehicle.version,
-    image: image ? { url: image.url, alt: image.alt } : null,
+    image: image ? { url: image.url, alt: image.alt || displayName } : null,
     price: vehicle.priceCents === null ? "Prix sur demande" : money.format(vehicle.priceCents / 100),
     year: vehicle.year === null ? "Année non renseignée" : String(vehicle.year),
-    mileage: vehicle.mileageKm === null ? "Kilométrage non renseigné" : `${integer.format(vehicle.mileageKm)} km`,
+    mileage: formatVehicleMileage(vehicle.mileageKm),
     fuel: vehicle.fuelType ?? "Énergie non renseignée",
     gearbox: vehicle.transmission ?? "Boîte non renseignée",
-    bodyType: vehicle.bodyType ?? "Carrosserie non renseignée",
+    bodyType: vehicle.bodyType?.trim() || null,
     badges,
     futureCapabilities: ["360", "VIRTUAL_TOUR", "COMPARE", "FAVORITE"],
   }
@@ -115,8 +128,8 @@ export function buildPublicHomepage(
 ): PublicHomepageViewModel {
   const garage = buildGaragePublicViewModel(garageRecord)
   const cards = vehicles.map((vehicle) => buildVehiclePublicCard(vehicle, garage))
-  const heroVehicle = vehicles.find((vehicle) => vehicle.photos.length > 0) ?? vehicles[0]
-  const heroImage = heroVehicle?.photos.find((photo) => photo.isCover) ?? heroVehicle?.photos[0] ?? null
+  const heroVehicle = vehicles.find((vehicle) => selectPrimaryVehiclePhoto(vehicle) !== null) ?? null
+  const heroImage = heroVehicle ? selectPrimaryVehiclePhoto(heroVehicle) : null
   return {
     garage,
     hero: {

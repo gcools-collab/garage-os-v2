@@ -35,7 +35,7 @@ export interface VehiclePublicCardViewModel {
   readonly mileage: string
   readonly fuel: string
   readonly gearbox: string
-  readonly bodyType: string
+  readonly bodyType: string | null
   readonly badges: readonly string[]
   readonly futureCapabilities: readonly ("360" | "VIRTUAL_TOUR" | "COMPARE" | "FAVORITE")[]
 }

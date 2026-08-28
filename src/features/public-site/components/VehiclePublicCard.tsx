@@ -1,13 +1,15 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { VehiclePublicCardViewModel } from "../types"
+import { isResolvableVehicleImageUrl } from "@/features/vehicles/vehicle-image-presentation"
 import { getPublicVehicleImageSizes } from "../presentation/responsive"
 
 export function VehiclePublicCard({ vehicle }: { readonly vehicle: VehiclePublicCardViewModel }) {
+  const hasImage = vehicle.image && isResolvableVehicleImageUrl(vehicle.image.url)
   return (
     <article className="group overflow-hidden rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--live-muted)]">
-        {vehicle.image ? (
+        {hasImage ? (
           <Image
             src={vehicle.image.url}
             alt={vehicle.image.alt}

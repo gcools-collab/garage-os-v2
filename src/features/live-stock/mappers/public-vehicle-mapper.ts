@@ -1,3 +1,4 @@
+import { resolveVehicleImagePublicUrl } from "@/features/vehicles/vehicle-image-presentation"
 import type {
   LiveStockVehicle,
   LiveVehiclePhoto,
@@ -7,12 +8,6 @@ import type {
 
 function cents(value: number | null) {
   return value === null || !Number.isFinite(value) || value < 0 ? null : Math.round(value * 100)
-}
-
-function imageUrl(path: string) {
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (!base) return ""
-  return `${base}/storage/v1/object/public/vehicle-images/${path.split("/").map(encodeURIComponent).join("/")}`
 }
 
 export function mapPublicVehicleImages({
@@ -34,16 +29,25 @@ export function mapPublicVehicleImages({
       first.created_at.localeCompare(second.created_at) ||
       first.id.localeCompare(second.id)
     )
-    .map((image, position) => ({
-      id: image.id,
-      path: image.storage_path,
-      url: imageUrl(image.storage_path),
-      alt: `${vehicle.brand} ${vehicle.model} — photo ${position + 1}`,
-      position,
-      isCover: image.is_primary,
-      width: null,
-      height: null,
-    }))
+    .flatMap((image, position) => {
+      const url = resolveVehicleImagePublicUrl({
+        url: null,
+        storagePath: image.storage_path,
+        garageId: vehicle.garage_id,
+        vehicleId: vehicle.id,
+      })
+      if (!url) return []
+      return [{
+        id: image.id,
+        path: image.storage_path,
+        url,
+        alt: `${vehicle.brand} ${vehicle.model} — photo ${position + 1}`,
+        position,
+        isCover: image.is_primary,
+        width: null,
+        height: null,
+      } satisfies LiveVehiclePhoto]
+    })
 }
 
 export function mapPublicVehicle(

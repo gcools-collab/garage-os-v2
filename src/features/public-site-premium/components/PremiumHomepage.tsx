@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { PublicSiteLayout } from "@/features/public-site/components/PublicSiteLayout"
+import { isResolvableVehicleImageUrl } from "@/features/vehicles/vehicle-image-presentation"
 import type { PremiumHomepageViewModel } from "../presentation"
 import { PremiumCustomerActions } from "./PremiumCustomerActions"
 import { PremiumQuickSearch } from "./PremiumQuickSearch"
@@ -9,10 +10,11 @@ import { PremiumVehicleCard } from "./PremiumVehicleCard"
 
 const motion = { reveal: "premium-reveal", stagger: "premium-stagger" } as const
 export function PremiumHomepage({ homepage }: { readonly homepage: PremiumHomepageViewModel }) {
+  const heroImage = homepage.hero.image && isResolvableVehicleImageUrl(homepage.hero.image.url) ? homepage.hero.image : null
   return <PublicSiteLayout garage={homepage.garage}>
-    <main className="overflow-hidden pb-20 md:pb-0">
+    <main className="overflow-hidden pb-24 md:pb-10">
       <section className="relative isolate min-h-[520px] md:min-h-[580px] lg:min-h-[600px]">
-        {homepage.hero.image ? <Image src={homepage.hero.image.url} alt={homepage.hero.image.alt} fill priority sizes="100vw" className="-z-20 object-cover" /> : null}
+        {heroImage ? <Image src={heroImage.url} alt={heroImage.alt} fill priority sizes="100vw" className="-z-20 object-cover" /> : null}
         <div className="absolute inset-0 -z-10 bg-[var(--live-overlay)]" />
         <div className={`${motion.reveal} mx-auto flex min-h-[520px] max-w-7xl items-center px-5 py-20 md:min-h-[580px] md:px-8 lg:min-h-[600px]`}><div className="max-w-4xl text-[var(--live-hero-foreground)]"><p className="text-sm font-semibold uppercase tracking-[0.22em]">{homepage.hero.eyebrow}</p><h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl">{homepage.hero.title}</h1><p className="mt-6 max-w-2xl text-lg leading-8 opacity-90">{homepage.hero.description}</p><div className="mt-9">{homepage.hero.actions.map(action => <Link key={action.href} href={action.href} className="inline-flex rounded-xl bg-[var(--live-primary)] px-5 py-3 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{action.label}</Link>)}</div></div></div>
       </section>

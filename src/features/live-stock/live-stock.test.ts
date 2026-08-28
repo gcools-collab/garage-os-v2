@@ -149,26 +149,33 @@ test("la validation de publication expose les manques sans données internes", (
 })
 
 test("le mapper convertit le prix en centimes et rejette les photos d'un autre tenant", () => {
-  const record: PublicVehicleRecord = {
-    id: vehicle().id, garage_id: "garage-a", live_slug: vehicle().slug,
-    brand: "Peugeot", model: "308", version: "GT", year: 2022, mileage: 35000,
-    fuel: "Essence", gearbox: "Automatique", body_type: "Berline", power_din: 130,
-    fiscal_power: 7, doors: 5, seats: 5, color: "Bleu",
-    first_registration_date: "2022-04-01", selling_price: 24990,
-    description: "Description", status: "PUBLISHED", publication_status: "PUBLISHED",
-    published_at: "2026-07-20T10:00:00.000Z", created_at: "2026-07-10T10:00:00.000Z",
-    updated_at: "2026-07-20T10:00:00.000Z", co2_emissions: 120, crit_air: 1,
-    euro_standard: "Euro 6", owners_count: 1,
+  const previous = process.env.NEXT_PUBLIC_SUPABASE_URL
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co"
+  try {
+    const record: PublicVehicleRecord = {
+      id: vehicle().id, garage_id: "garage-a", live_slug: vehicle().slug,
+      brand: "Peugeot", model: "308", version: "GT", year: 2022, mileage: 35000,
+      fuel: "Essence", gearbox: "Automatique", body_type: "Berline", power_din: 130,
+      fiscal_power: 7, doors: 5, seats: 5, color: "Bleu",
+      first_registration_date: "2022-04-01", selling_price: 24990,
+      description: "Description", status: "PUBLISHED", publication_status: "PUBLISHED",
+      published_at: "2026-07-20T10:00:00.000Z", created_at: "2026-07-10T10:00:00.000Z",
+      updated_at: "2026-07-20T10:00:00.000Z", co2_emissions: 120, crit_air: 1,
+      euro_standard: "Euro 6", owners_count: 1,
+    }
+    const valid: PublicVehicleImageRecord = {
+      id: "valid", vehicle_id: record.id, garage_id: "garage-a",
+      storage_path: `garage-a/${record.id}/photo.webp`, is_primary: true,
+      display_order: 1,
+      created_at: "2026-07-20T10:00:00.000Z",
+    }
+    const foreign = { ...valid, id: "foreign", garage_id: "garage-b" }
+    assert.equal(mapPublicVehicleImages({ vehicle: record, images: [foreign, valid] }).length, 1)
+    assert.equal(mapPublicVehicle(record, [valid]).priceCents, 2_499_000)
+  } finally {
+    if (previous === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = previous
   }
-  const valid: PublicVehicleImageRecord = {
-    id: "valid", vehicle_id: record.id, garage_id: "garage-a",
-    storage_path: `garage-a/${record.id}/photo.webp`, is_primary: true,
-    display_order: 1,
-    created_at: "2026-07-20T10:00:00.000Z",
-  }
-  const foreign = { ...valid, id: "foreign", garage_id: "garage-b" }
-  assert.equal(mapPublicVehicleImages({ vehicle: record, images: [foreign, valid] }).length, 1)
-  assert.equal(mapPublicVehicle(record, [valid]).priceCents, 2_499_000)
 })
 
 test("homepage, catalogue, fiche et liens restent tenant-scoped", () => {

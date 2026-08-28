@@ -1,4 +1,5 @@
 import type { LiveStockVehicle } from "@/features/live-stock"
+import { formatVehicleMileage } from "@/features/vehicles/vehicle-presentation"
 import type { VehicleSpecificationViewModel } from "../presentation"
 
 const integer = new Intl.NumberFormat("fr-FR")
@@ -7,7 +8,7 @@ export class VehicleSpecificationBuilder {
   build(vehicle: LiveStockVehicle): readonly VehicleSpecificationViewModel[] {
     return [
       vehicle.year === null ? null : { label: "Année", value: String(vehicle.year) },
-      vehicle.mileageKm === null ? null : { label: "Kilométrage", value: `${integer.format(vehicle.mileageKm)} km` },
+      { label: "Kilométrage", value: formatVehicleMileage(vehicle.mileageKm) },
       vehicle.fuelType ? { label: "Énergie", value: vehicle.fuelType } : null,
       vehicle.transmission ? { label: "Boîte de vitesses", value: vehicle.transmission } : null,
       vehicle.powerHp === null ? null : { label: "Puissance DIN", value: `${integer.format(vehicle.powerHp)} ch` },

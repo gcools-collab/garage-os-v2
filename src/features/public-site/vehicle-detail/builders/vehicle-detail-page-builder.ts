@@ -1,4 +1,5 @@
 import type { LiveStockVehicle, PublicGarageContext } from "@/features/live-stock"
+import { formatPublicVehicleDisplayName } from "@/features/vehicles/vehicle-presentation"
 import { buildGaragePublicViewModel } from "../../builders"
 import type { VehicleDetailPageViewModel } from "../presentation"
 import { VehicleCTASectionBuilder } from "./vehicle-cta-section-builder"
@@ -63,7 +64,7 @@ export class VehicleDetailPageBuilder {
   }): VehicleDetailPageViewModel {
     const garage = buildGaragePublicViewModel(input.garage)
     const media = buildVehicleMedia(input.vehicle)
-    const vehicleTitle = `${input.vehicle.make} ${input.vehicle.model}`
+    const vehicleTitle = formatPublicVehicleDisplayName(input.vehicle.make, input.vehicle.model)
     const cta = new VehicleCTASectionBuilder().build(garage, vehicleTitle, input.vehicle.slug)
     return {
       garage,
