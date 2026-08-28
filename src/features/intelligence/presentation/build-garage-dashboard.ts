@@ -1,4 +1,3 @@
-import { garageIntelligenceFixture } from "../engine"
 import type { GarageIntelligenceData, GarageStockVehicle } from "../engine"
 import type {
   DashboardListItemViewModel,
@@ -35,10 +34,10 @@ function item(
 
 export function buildGarageDashboard(
   {
-    data = garageIntelligenceFixture,
+    data,
     context,
   }: {
-    readonly data?: GarageIntelligenceData
+    readonly data: GarageIntelligenceData
     readonly context: { readonly garageName: string }
   }
 ): GarageDashboardViewModel {

@@ -2,14 +2,13 @@ import { Car, Fuel, Gauge, Settings2 } from "lucide-react"
 
 import { StatusBadge, type VehicleStatus } from "../status-badge"
 import type { VehicleProfitability } from "../utils"
+import { formatVehicleMileage } from "../vehicle-presentation"
 
 const currency = new Intl.NumberFormat("fr-FR", {
   style: "currency",
   currency: "EUR",
   maximumFractionDigits: 0,
 })
-
-const number = new Intl.NumberFormat("fr-FR")
 
 type VehicleHeroProps = {
   brand: string
@@ -36,7 +35,7 @@ export function VehicleHero(props: VehicleHeroProps) {
     { icon: Gauge, value: props.year?.toString() ?? "Année inconnue" },
     {
       icon: Car,
-      value: props.mileage == null ? "Kilométrage inconnu" : `${number.format(props.mileage)} km`,
+      value: formatVehicleMileage(props.mileage),
     },
     { icon: Fuel, value: props.fuel ?? "Carburant non renseigné" },
     { icon: Settings2, value: props.gearbox ?? "Boîte non renseignée" },

@@ -11,6 +11,7 @@ export default function SettingsPage() {
         <Button asChild><Link href="/settings/branding">Identité du garage</Link></Button>
         <Button variant="outline" asChild><Link href="/settings/services">Services publics</Link></Button>
         <Button variant="outline" asChild><Link href="/settings/appointments">Rendez-vous en ligne</Link></Button>
+        <Button variant="outline" asChild><Link href="/settings/billing/e-invoicing">Facturation électronique</Link></Button>
       </div>
     </div>
   )

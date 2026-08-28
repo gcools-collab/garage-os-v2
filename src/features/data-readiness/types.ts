@@ -23,7 +23,7 @@ export type TenantResetReport = Readonly<{
   blockers: readonly string[];
 }>;
 
-export type ImportSource = "WORDPRESS";
+export type ImportSource = "WORDPRESS" | "WOOCOMMERCE" | "YITH" | "ELEMENTOR";
 export type ImportOutcome = "CREATED" | "UPDATED" | "SKIPPED" | "CONFLICT" | "FAILED";
 export type ImportStage = "IMPORT" | "PARSE" | "VALIDATE" | "PREVIEW" | "RESOLVE_CONFLICTS" | "COMMIT";
 
@@ -37,4 +37,3 @@ export type ImportCandidate<T> = ImportIdentity & Readonly<{
   payload: T;
   fingerprint: string;
 }>;
-

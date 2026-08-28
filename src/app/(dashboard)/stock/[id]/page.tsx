@@ -31,13 +31,16 @@ import type { VehicleImageCategory } from "@/features/vehicles/image-category"
 import type { VehicleStatus } from "@/features/vehicles/status-badge"
 import { calculateVehicleProfitability } from "@/features/vehicles/utils"
 import { VehicleForm } from "@/features/vehicles/vehicle-form"
-import { VehicleImageGallery } from "@/features/vehicles/vehicle-image-gallery"
-import { VehicleImageUpload } from "@/features/vehicles/vehicle-image-upload"
 import {
   VehicleDocumentsSection,
   type VehicleDocument,
 } from "@/features/vehicles/documents"
+import { buildMediaStudioSummary, MediaStudioPanel } from "@/features/media-studio"
+import { getInteriorTour } from "@/features/interior-tour/repositories"
+import { getVehicle360Sequence } from "@/features/vehicle-360/repositories"
 import { createClient } from "@/lib/supabase/server"
+import { getActiveGarageSession } from "@/features/tenant"
+import { resolveVehicleImagePublicUrl } from "@/features/vehicles/vehicle-image-presentation"
 import { buildDeterministicMediaQualityReport, buildMediaQualityViewModel, MediaQualityReportCard } from "@/features/media-quality"
 
 type VehiclePageProps = {
@@ -60,6 +63,7 @@ type VehicleImage = {
   url: string | null
   type: VehicleImageCategory
   is_primary: boolean
+  display_order: number
   created_at: string
 }
 
@@ -93,6 +97,9 @@ function formatDate(value: string | null | undefined) {
 
 export default async function VehiclePage({ params }: VehiclePageProps) {
   const { id } = await params
+  const session = await getActiveGarageSession()
+  if (!session?.garageId) notFound()
+  const garageId = session.garageId
   const supabase = await createClient()
   const {
     data: { user },
@@ -111,12 +118,30 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
       vehicle_market_analyses (*)
     `)
     .eq("id", id)
-    .single()
-  if (error || !vehicle) notFound()
+    .eq("garage_id", garageId)
+    .maybeSingle()
+  if (error) {
+    console.error("Unable to read tenant vehicle detail", {
+      garageId,
+      vehicleId: id,
+      code: error.code,
+      message: error.message,
+    })
+    throw new Error("Impossible de charger la fiche véhicule.")
+  }
+  if (!vehicle) notFound()
 
   const vehicleCosts = (vehicle.vehicle_costs ?? []) as VehicleCost[]
   const vehicleEvents = (vehicle.vehicle_events ?? []) as VehicleTimelineEvent[]
-  const vehicleImages = (vehicle.vehicle_images ?? []) as VehicleImage[]
+  const vehicleImages = ((vehicle.vehicle_images ?? []) as VehicleImage[]).map((image) => ({
+    ...image,
+    url: resolveVehicleImagePublicUrl({
+      url: image.url,
+      storagePath: image.storage_path,
+      garageId,
+      vehicleId: vehicle.id,
+    }),
+  }))
   const vehicleDocuments = (vehicle.vehicle_documents ?? []) as VehicleDocument[]
   const marketplaceLinks = (vehicle.marketplace_links ?? []) as VehicleMarketplaceLink[]
   const marketHistory = ((vehicle.vehicle_market_analyses ?? []) as MarketAnalysisRow[])
@@ -132,10 +157,25 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
       priceDifferencePercent: nullableNumber(row.price_difference_percent), positioning: row.positioning,
     }))
   const sortedImages = [...vehicleImages].sort((first, second) => {
-    if (first.is_primary === second.is_primary) {
-      return first.created_at.localeCompare(second.created_at)
+    if (first.is_primary !== second.is_primary) {
+      return first.is_primary ? -1 : 1
     }
-    return first.is_primary ? -1 : 1
+    if (first.display_order !== second.display_order) {
+      return first.display_order - second.display_order
+    }
+    return first.created_at.localeCompare(second.created_at)
+  })
+  const vehicleName = `${vehicle.brand} ${vehicle.model}`
+  const [sequence360, interiorTour] = await Promise.all([
+    getVehicle360Sequence(id),
+    getInteriorTour(id),
+  ])
+  const mediaStudio = buildMediaStudioSummary({
+    vehicleId: id,
+    vehicleName,
+    images: sortedImages,
+    sequence: sequence360,
+    tour: interiorTour,
   })
   const sortedEvents = [...vehicleEvents].sort((first, second) =>
     second.created_at.localeCompare(first.created_at)
@@ -265,42 +305,21 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
 
       <VehicleMarketplacePresence links={marketplaceLinks} />
 
+      <MediaStudioPanel summary={mediaStudio} images={sortedImages} />
+
       <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="text-xl font-semibold">Visite extérieure 360°</h2><p className="mt-1 text-sm text-muted-foreground">Créez et publiez une rotation immersive à partir d’une séquence de photos.</p></div>
-          <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/360`}>Gérer la visite 360°</Link></Button>
-        </div>
-      </section>
-      <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="text-xl font-semibold">Visite intérieure 360°</h2><p className="mt-1 text-sm text-muted-foreground">Importez des panoramas et reliez les scènes de l’habitacle.</p></div>
-          <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/interior-tour`}>Gérer la visite intérieure</Link></Button>
-        </div>
-      </section>
-      <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="text-xl font-semibold">Génération IA</h2><p className="mt-1 text-sm text-muted-foreground">Préparez les déclinaisons de l’annonce à partir des faits vérifiés.</p></div>
-          <Button asChild variant="outline"><Link href={`/stock/${vehicle.id}/listings`}>Générer les annonces</Link></Button>
+          <div>
+            <h2 className="text-xl font-semibold">Textes d&apos;annonce</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Préparez les déclinaisons à partir des faits vérifiés du véhicule.</p>
+          </div>
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href={`/stock/${vehicle.id}/listings`}>Générer les annonces</Link>
+          </Button>
         </div>
       </section>
 
       <VehicleDocumentsSection vehicleId={vehicle.id} documents={vehicleDocuments} />
-
-      <section id="vehicle-photos" className="scroll-mt-6 rounded-xl border bg-white p-5 shadow-xs sm:p-6">
-        <div className="mb-6 flex flex-col gap-5 border-b pb-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Galerie photos</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {vehicleImages.length} photo{vehicleImages.length > 1 ? "s" : ""} · définissez la vue principale ou supprimez une image.
-            </p>
-          </div>
-          <VehicleImageUpload vehicleId={vehicle.id} />
-        </div>
-        <VehicleImageGallery
-          images={sortedImages}
-          vehicleName={`${vehicle.brand} ${vehicle.model}`}
-        />
-      </section>
 
       <MediaQualityReportCard report={mediaQuality} />
 

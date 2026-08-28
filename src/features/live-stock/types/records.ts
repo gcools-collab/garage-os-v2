@@ -59,5 +59,6 @@ export type PublicVehicleImageRecord = {
   readonly garage_id: string
   readonly storage_path: string
   readonly is_primary: boolean
+  readonly display_order: number
   readonly created_at: string
 }

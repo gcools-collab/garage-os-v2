@@ -17,7 +17,7 @@ export type GarageLeadPage = {
 }
 
 const LEAD_COLUMNS = [
-  "id", "garage_id", "vehicle_id", "source", "type", "status", "customer_name",
+  "id", "garage_id", "vehicle_id", "customer_id", "source", "type", "status", "customer_name",
   "customer_phone", "customer_email", "preferred_date", "preferred_time",
   "message", "public_page_url", "public_vehicle_slug", "public_garage_slug",
   "consent_contact", "consent_marketing", "vehicle_title_snapshot",

@@ -125,33 +125,31 @@ function primaryImage(vehicle: DashboardVehicleRow) {
 export class DashboardService {
   constructor(private readonly supabase: DashboardSupabaseClient) {}
 
-  async getDashboard(now = new Date()): Promise<DashboardData | null> {
+  async getDashboard(
+    garageId: string,
+    garageName: string,
+    now = new Date()
+  ): Promise<DashboardData | null> {
     const {
       data: { user },
     } = await this.supabase.auth.getUser()
     if (!user) return null
 
-    const { data: memberships, error: membershipError } = await this.supabase
+    const { data: membership, error: membershipError } = await this.supabase
       .from("garage_members")
       .select("garage_id")
       .eq("user_id", user.id)
+      .eq("garage_id", garageId)
+      .maybeSingle()
     if (membershipError) {
-      console.error("Unable to read dashboard garage memberships", {
+      console.error("Unable to read dashboard garage membership", {
         code: membershipError.code,
         message: membershipError.message,
       })
-      throw new Error("Impossible de déterminer les garages accessibles.")
+      throw new Error("Impossible de déterminer le garage actif.")
     }
-
-    const garageIds = [
-      ...new Set(
-        (memberships ?? []).flatMap((membership) =>
-          membership.garage_id ? [membership.garage_id] : []
-        )
-      ),
-    ]
-    if (garageIds.length === 0) {
-      throw new Error("Aucun garage n'est associé à cet utilisateur.")
+    if (!membership?.garage_id) {
+      throw new Error("Le garage actif n'est pas accessible pour cet utilisateur.")
     }
 
     const weekStart = startOfCurrentWeek(now)
@@ -159,8 +157,8 @@ export class DashboardService {
         this.supabase
           .from("garages")
           .select("name")
-          .in("id", garageIds)
-          .order("created_at", { ascending: true }),
+          .eq("id", garageId)
+          .maybeSingle(),
         this.supabase
           .from("vehicles")
           .select(`
@@ -172,12 +170,12 @@ export class DashboardService {
             vehicle_images (url, is_primary, created_at),
             vehicle_costs (amount)
           `)
-          .in("garage_id", garageIds)
+          .eq("garage_id", garageId)
           .order("created_at", { ascending: false }),
         this.supabase
           .from("marketplace_links")
           .select("imported_at, vehicles!inner(garage_id)")
-          .in("vehicles.garage_id", garageIds)
+          .eq("vehicles.garage_id", garageId)
           .gte("imported_at", weekStart.toISOString()),
       ])
 
@@ -188,7 +186,7 @@ export class DashboardService {
     ] as const) {
       if (error) {
         console.error(`Unable to read dashboard ${query}`, {
-          garageIds,
+          garageId,
           code: error.code,
           message: error.message,
         })
@@ -196,13 +194,9 @@ export class DashboardService {
       }
     }
 
-    const garages = garageResult.data ?? []
-    if (garages.length !== garageIds.length) {
-      console.error("Garage memberships and readable garages are inconsistent", {
-        membershipGarageIds: garageIds,
-        readableGarageIdsCount: garages.length,
-      })
-      throw new Error("Les memberships et les garages accessibles sont incohérents.")
+    const garage = garageResult.data
+    if (!garage) {
+      throw new Error("Le garage actif est introuvable.")
     }
     const vehicles = (vehicleResult.data ?? []) as DashboardVehicleRow[]
     const imports = (importResult.data ?? []) as Array<{ imported_at: string }>
@@ -271,10 +265,7 @@ export class DashboardService {
     const completeness = vehicles.map(vehicleCompleteness)
 
     return {
-      garageName:
-        garages.length === 1
-          ? garages[0].name
-          : `${garages.length} garages accessibles`,
+      garageName: garage.name ?? garageName,
       summary: {
         vehicleCount: vehicles.length,
         displayedValue,

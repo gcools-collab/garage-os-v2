@@ -15,6 +15,10 @@ import {
 import { StockService } from "@/features/vehicles/stock/stock-service"
 import { StockSummaryTabs } from "@/features/vehicles/stock/stock-summary-tabs"
 import { createClient } from "@/lib/supabase/server"
+import {
+  getActiveGarageSession,
+  resolveGarageSessionRoute,
+} from "@/features/tenant"
 
 type StockPageProps = {
   searchParams: Promise<RawStockSearchParams>
@@ -22,8 +26,13 @@ type StockPageProps = {
 
 export default async function StockPage({ searchParams }: StockPageProps) {
   const query = parseStockQuery(await searchParams)
+  const session = await getActiveGarageSession()
+  const sessionRoute = resolveGarageSessionRoute(session)
+  if (sessionRoute !== "/dashboard" || !session?.garageId) redirect(sessionRoute)
+  const garageId = session.garageId
+
   const supabase = await createClient()
-  const data = await new StockService(supabase).getStock(query)
+  const data = await new StockService(supabase, garageId).getStock(query)
   if (!data) redirect("/auth/recover")
 
   return (
@@ -32,7 +41,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Stock véhicules</h1>
           <p className="mt-2 text-muted-foreground">
-            Retrouvez, filtrez et pilotez les véhicules de vos garages.
+            Retrouvez, filtrez et pilotez les véhicules de votre garage actif.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">

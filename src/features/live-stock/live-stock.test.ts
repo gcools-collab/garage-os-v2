@@ -163,6 +163,7 @@ test("le mapper convertit le prix en centimes et rejette les photos d'un autre t
   const valid: PublicVehicleImageRecord = {
     id: "valid", vehicle_id: record.id, garage_id: "garage-a",
     storage_path: `garage-a/${record.id}/photo.webp`, is_primary: true,
+    display_order: 1,
     created_at: "2026-07-20T10:00:00.000Z",
   }
   const foreign = { ...valid, id: "foreign", garage_id: "garage-b" }

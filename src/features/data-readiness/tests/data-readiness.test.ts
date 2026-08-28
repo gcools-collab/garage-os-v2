@@ -29,13 +29,22 @@ test("the reset manifest has an explicit FK-safe order", () => {
 test("dry-run is tenant scoped and reports protected live payments", async () => {
   const observedGarageIds = new Set<string>();
   const report = await buildTenantResetDryRun({
-    async countTable(_table, garageId) { observedGarageIds.add(garageId); return 2; },
+    async countTable(table, garageId) { observedGarageIds.add(garageId); return ["payments", "customers", "customer_vehicles", "legacy_import_records", "historical_payments", "legacy_media_references"].includes(table) ? 0 : 2; },
     async countStorage(_bucket, prefix) { assert.equal(prefix, `${garageA}/`); return 1; },
     async countLivePayments(garageId) { observedGarageIds.add(garageId); return 1; },
   }, garageA);
   assert.deepEqual([...observedGarageIds], [garageA]);
   assert.equal(report.mode, "DRY_RUN");
   assert.equal(report.blockers.length, 1);
+});
+
+test("customer data classified REVIEW blocks reset execution", async () => {
+  const report = await buildTenantResetDryRun({
+    async countTable(table) { return table === "customers" ? 3 : 0; },
+    async countStorage() { return 0; },
+    async countLivePayments() { return 0; },
+  }, garageA);
+  assert.deepEqual(report.blockers, ["3 ligne(s) protégée(s) dans customers : validation humaine obligatoire."]);
 });
 
 test("WordPress import is idempotent, update-aware and tenant safe", () => {
@@ -51,4 +60,3 @@ test("WordPress import is idempotent, update-aware and tenant safe", () => {
 test("unknown import sources are rejected", () => {
   assert.throws(() => createImportCandidate({ garageId: garageA, source: "CSV" as "WORDPRESS", externalId: "1" }, {}));
 });
-

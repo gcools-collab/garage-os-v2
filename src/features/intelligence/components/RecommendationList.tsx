@@ -15,15 +15,21 @@ export function RecommendationList({
         <CardDescription>Des recommandations déterministes, préparées à partir des données du garage.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ul className="grid gap-4 md:grid-cols-3">
-          {recommendations.map((recommendation) => (
-            <li key={recommendation.id} className="rounded-xl bg-muted/60 p-4">
-              <Lightbulb className="size-5 text-blue-700" aria-hidden="true" />
-              <p className="mt-3 font-medium">{recommendation.title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{recommendation.description}</p>
-            </li>
-          ))}
-        </ul>
+        {recommendations.length === 0 ? (
+          <p className="rounded-lg bg-muted/40 p-4 text-sm text-muted-foreground">
+            Aucune recommandation supplémentaire pour le moment.
+          </p>
+        ) : (
+          <ul className="grid gap-4 md:grid-cols-3">
+            {recommendations.map((recommendation) => (
+              <li key={recommendation.id} className="rounded-xl bg-muted/60 p-4">
+                <Lightbulb className="size-5 text-blue-700" aria-hidden="true" />
+                <p className="mt-3 font-medium">{recommendation.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{recommendation.description}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardContent>
     </Card>
   )

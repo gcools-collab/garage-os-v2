@@ -38,7 +38,9 @@ export function VehicleMarketplacePresence({ links }: { links: VehicleMarketplac
     <section className="rounded-xl border bg-white p-5 shadow-xs sm:p-6">
       <div className="border-b pb-5">
         <h2 className="text-xl font-semibold">Présence en ligne</h2>
-        <p className="mt-1 text-sm text-muted-foreground">État des annonces marketplace, indépendant du statut métier du véhicule.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Dernières données enregistrées pour les liens marketplace. Aucune synchronisation automatique.
+        </p>
       </div>
       {links.length === 0 ? (
         <div className="mt-5 flex min-h-28 items-center justify-center rounded-xl border border-dashed bg-muted/30 p-6 text-sm text-muted-foreground">Aucune annonce marketplace liée.</div>

@@ -2,7 +2,7 @@ import { createPublicSupabaseClient } from "@/features/live-stock/data/public-su
 import { createClient } from "@/lib/supabase/server"
 import type { AppointmentRecord, AppointmentTypeSetting } from "../types/scheduling"
 
-const columns = "id,offer_id,commercial_snapshot,garage_id,lead_id,vehicle_id,type,status,starts_at,ends_at,timezone,customer_name,customer_phone,customer_email,payment_required,details,created_at"
+const columns = "id,offer_id,commercial_snapshot,garage_id,lead_id,vehicle_id,customer_id,type,status,starts_at,ends_at,timezone,customer_name,customer_phone,customer_email,is_historical,payment_required,details,created_at"
 
 export async function getAppointments(garageId: string) {
   const { data, error } = await (await createClient()).from("appointments").select(columns).eq("garage_id", garageId).order("starts_at")

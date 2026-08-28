@@ -11,6 +11,7 @@ import type {
   StockStatusCounts,
   StockVehicle,
 } from "./stock-types"
+import { resolveVehicleImagePublicUrl } from "../vehicle-image-presentation"
 
 type StockSupabaseClient = Awaited<ReturnType<typeof createClient>>
 type StockVehicleRow = Omit<StockVehicle, "completeness">
@@ -127,36 +128,16 @@ function applyRelationalFilters(vehicles: StockVehicle[], query: StockQuery) {
 }
 
 export class StockService {
-  constructor(private readonly supabase: StockSupabaseClient) {}
+  constructor(
+    private readonly supabase: StockSupabaseClient,
+    private readonly garageId: string
+  ) {}
 
   async getStock(query: StockQuery): Promise<StockPageData | null> {
     const {
       data: { user },
     } = await this.supabase.auth.getUser()
     if (!user) return null
-
-    const { data: memberships, error: membershipError } = await this.supabase
-      .from("garage_members")
-      .select("garage_id")
-      .eq("user_id", user.id)
-    if (membershipError) {
-      console.error("Unable to read stock garage memberships", {
-        code: membershipError.code,
-        message: membershipError.message,
-      })
-      throw new Error("Impossible de déterminer les garages accessibles.")
-    }
-
-    const garageIds = [
-      ...new Set(
-        (memberships ?? []).flatMap((membership) =>
-          membership.garage_id ? [membership.garage_id] : []
-        )
-      ),
-    ]
-    if (garageIds.length === 0) {
-      throw new Error("Aucun garage n'est associé à cet utilisateur.")
-    }
 
     let vehicleQuery = this.supabase
       .from("vehicles")
@@ -167,10 +148,10 @@ export class StockService {
         doors, seats, first_registration_date, body_type, upholstery,
         crit_air, created_at,
         vehicle_costs (amount),
-        vehicle_images (url, is_primary, created_at),
+        vehicle_images (url, storage_path, is_primary, display_order, created_at),
         marketplace_links (provider, status, published_at)
       `)
-      .in("garage_id", garageIds)
+      .eq("garage_id", this.garageId)
 
     if (query.status) vehicleQuery = vehicleQuery.eq("status", query.status)
     if (query.missingPurchasePrice) {
@@ -199,7 +180,7 @@ export class StockService {
       let countQuery = this.supabase
         .from("vehicles")
         .select("id", { count: "exact", head: true })
-        .in("garage_id", garageIds)
+        .eq("garage_id", this.garageId)
       if (status) countQuery = countQuery.eq("status", status)
       return countQuery
     }
@@ -216,7 +197,7 @@ export class StockService {
 
     if (vehicleResult.error) {
       console.error("Unable to read filtered vehicle stock", {
-        garageIds,
+        garageId: this.garageId,
         code: vehicleResult.error.code,
         message: vehicleResult.error.message,
       })
@@ -226,7 +207,7 @@ export class StockService {
     const countError = countResults.find((result) => result.error)?.error
     if (countError) {
       console.error("Unable to read stock status counts", {
-        garageIds,
+        garageId: this.garageId,
         code: countError.code,
         message: countError.message,
       })
@@ -234,6 +215,18 @@ export class StockService {
     }
 
     const vehiclesWithCompleteness = ((vehicleResult.data ?? []) as unknown as StockVehicleRow[])
+      .map((vehicle) => ({
+        ...vehicle,
+        vehicle_images: (vehicle.vehicle_images ?? []).map((image) => ({
+          ...image,
+          url: resolveVehicleImagePublicUrl({
+            url: image.url,
+            storagePath: image.storage_path,
+            garageId: this.garageId,
+            vehicleId: vehicle.id,
+          }),
+        })),
+      }))
       .map((vehicle) => ({ ...vehicle, completeness: completeness(vehicle) }))
     const filtered = applyRelationalFilters(vehiclesWithCompleteness, query)
     const sorted = sortVehicles(filtered, query.sort)

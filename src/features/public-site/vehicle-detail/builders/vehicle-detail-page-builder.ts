@@ -58,6 +58,8 @@ export class VehicleDetailPageBuilder {
   build(input: {
     readonly garage: PublicGarageContext
     readonly vehicle: LiveStockVehicle
+    readonly hasExterior360?: boolean
+    readonly hasInteriorTour?: boolean
   }): VehicleDetailPageViewModel {
     const garage = buildGaragePublicViewModel(input.garage)
     const media = buildVehicleMedia(input.vehicle)
@@ -76,7 +78,7 @@ export class VehicleDetailPageBuilder {
         navigation: "CONTRACT",
         fullscreen: "CONTRACT",
         zoom: "CONTRACT",
-        threeSixty: "PLACEHOLDER",
+        threeSixty: input.hasExterior360 ? "CONTRACT" : "PLACEHOLDER",
         video: "PLACEHOLDER",
       },
       commercialSummary: commercialSummary(input.vehicle),

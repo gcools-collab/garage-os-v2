@@ -55,7 +55,7 @@ export interface VehicleDetailPageViewModel {
     readonly navigation: "CONTRACT"
     readonly fullscreen: "CONTRACT"
     readonly zoom: "CONTRACT"
-    readonly threeSixty: "PLACEHOLDER"
+    readonly threeSixty: "CONTRACT" | "PLACEHOLDER"
     readonly video: "PLACEHOLDER"
   }
   readonly commercialSummary: readonly string[]

@@ -217,3 +217,12 @@ test("les contrats futurs restent présents mais désactivés", () => {
   assert.equal(detail.galleryCapabilities.navigation, "CONTRACT")
   assert.equal(detail.galleryCapabilities.fullscreen, "CONTRACT")
 })
+
+test("le contrat 360° passe en CONTRACT quand une visite extérieure est publiée", () => {
+  const detail = new VehicleDetailPageBuilder().build({
+    garage,
+    vehicle: vehicle(),
+    hasExterior360: true,
+  })
+  assert.equal(detail.galleryCapabilities.threeSixty, "CONTRACT")
+})

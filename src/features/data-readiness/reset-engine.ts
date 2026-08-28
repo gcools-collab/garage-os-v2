@@ -22,9 +22,15 @@ export async function buildTenantResetDryRun(inspector: TenantResetInspector, ga
   const storage: ResetCount[] = [];
   for (const bucket of RESET_STORAGE_BUCKETS) storage.push({ resource: bucket.name, count: await inspector.countStorage(bucket.name, bucket.prefix(garageId)) });
   const livePayments = await inspector.countLivePayments(garageId);
+  const protectedData = tables
+    .filter((table) => table.disposition === "REVIEW")
+    .flatMap((table) => {
+      const count = database.find((item) => item.resource === table.name)?.count ?? 0;
+      return count > 0 ? [`${count} ligne(s) protégée(s) dans ${table.name} : validation humaine obligatoire.`] : [];
+    });
   return {
     garageId, mode: "DRY_RUN", database, storage,
-    blockers: livePayments > 0 ? [`${livePayments} paiement(s) live détecté(s) : exécution automatique interdite.`] : [],
+    blockers: [...protectedData, ...(livePayments > 0 ? [`${livePayments} paiement(s) live détecté(s) : exécution automatique interdite.`] : [])],
   };
 }
 
@@ -34,4 +40,3 @@ export function assertResetExecutionAllowed(report: TenantResetReport, confirmat
   if (confirmation !== `RESET:${report.garageId}`) throw new Error("Explicit tenant reset confirmation is missing.");
   if (report.blockers.length > 0) throw new Error("Tenant reset is blocked by protected data.");
 }
-

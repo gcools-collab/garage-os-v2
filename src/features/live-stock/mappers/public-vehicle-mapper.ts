@@ -30,6 +30,7 @@ export function mapPublicVehicleImages({
     )
     .sort((first, second) =>
       Number(second.is_primary) - Number(first.is_primary) ||
+      (first.display_order ?? 0) - (second.display_order ?? 0) ||
       first.created_at.localeCompare(second.created_at) ||
       first.id.localeCompare(second.id)
     )

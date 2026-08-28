@@ -100,6 +100,7 @@ export type LeadRecord = {
   readonly loss_reason: string | null
   readonly loss_note: string | null
   readonly metadata?: Readonly<Record<string, unknown>>
+  readonly customer_id?: string | null
 }
 
 export type LeadEventRecord = {

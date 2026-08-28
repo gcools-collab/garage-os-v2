@@ -1,4 +1,42 @@
-export type PayPlugConfig=Readonly<{enabled:boolean;mode:"test"|"live";secretKey:string;apiUrl:string;apiVersion:string}>
-export function getPayPlugConfig(env:NodeJS.ProcessEnv=process.env):PayPlugConfig{const mode=env.PAYPLUG_MODE==="live"?"live":"test";const secretKey=env.PAYPLUG_SECRET_KEY??"";return{enabled:env.PAYPLUG_ENABLED==="true",mode,secretKey,apiUrl:env.PAYPLUG_API_URL??"https://api.payplug.com",apiVersion:env.PAYPLUG_API_VERSION??"2019-08-06"}}
-export function validatePayPlugConfig(config:PayPlugConfig){if(!config.enabled)throw new Error("PAYPLUG_DISABLED");if(!config.secretKey)throw new Error("PAYPLUG_SECRET_MISSING");if(!config.secretKey.startsWith(config.mode==="live"?"sk_live_":"sk_test_"))throw new Error("PAYPLUG_MODE_KEY_MISMATCH");if(!config.apiUrl.startsWith("https://"))throw new Error("PAYPLUG_HTTPS_REQUIRED")}
-export class PayPlugClient{constructor(private readonly config=getPayPlugConfig(),private readonly request:typeof fetch=fetch){validatePayPlugConfig(config)}async call(path:string,init:RequestInit={}){const response=await this.request(`${this.config.apiUrl}${path}`,{...init,headers:{Authorization:`Bearer ${this.config.secretKey}`,"PayPlug-Version":this.config.apiVersion,"Content-Type":"application/json",...init.headers},signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error(`PAYPLUG_HTTP_${response.status}`);return await response.json() as unknown}}
+export type PayPlugConfig = Readonly<{
+  enabled: boolean
+  mode: "test"
+  secretKey: string
+  apiUrl: string
+  apiVersion: string
+}>
+
+export function getPayPlugConfig(env: Readonly<Record<string, string | undefined>> = process.env): PayPlugConfig {
+  const requestedMode = env.PAYPLUG_MODE?.trim()
+  if (requestedMode !== "test") throw new Error(requestedMode === "live" ? "PAYPLUG_LIVE_DISABLED" : "PAYPLUG_MODE_REQUIRED")
+  return {
+    enabled: env.PAYPLUG_ENABLED === "true",
+    mode: "test",
+    secretKey: env.PAYPLUG_TEST_KEY ?? "",
+    apiUrl: env.PAYPLUG_API_URL ?? "https://api.payplug.com",
+    apiVersion: env.PAYPLUG_API_VERSION ?? "2019-08-06",
+  }
+}
+
+export function validatePayPlugConfig(config: PayPlugConfig): void {
+  if (!config.enabled) throw new Error("PAYPLUG_DISABLED")
+  if (!config.secretKey) throw new Error("PAYPLUG_TEST_KEY_MISSING")
+  if (!config.secretKey.startsWith("sk_test_")) throw new Error("PAYPLUG_TEST_KEY_INVALID")
+  if (!config.apiUrl.startsWith("https://")) throw new Error("PAYPLUG_HTTPS_REQUIRED")
+}
+
+export class PayPlugClient {
+  constructor(private readonly config = getPayPlugConfig(), private readonly request: typeof fetch = fetch) {
+    validatePayPlugConfig(config)
+  }
+
+  async call(path: string, init: RequestInit = {}): Promise<unknown> {
+    const response = await this.request(`${this.config.apiUrl}${path}`, {
+      ...init,
+      headers: { Authorization: `Bearer ${this.config.secretKey}`, "PayPlug-Version": this.config.apiVersion, "Content-Type": "application/json", ...init.headers },
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok) throw new Error(`PAYPLUG_HTTP_${response.status}`)
+    return response.json() as Promise<unknown>
+  }
+}

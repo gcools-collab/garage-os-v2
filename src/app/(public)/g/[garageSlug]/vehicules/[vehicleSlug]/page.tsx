@@ -24,15 +24,30 @@ const loadDetail = cache(async (garageSlug: string, vehicleSlug: string) => {
   const record = await getPublicSiteRecord(garageSlug)
   if (!record) return null
   const vehicle = record.vehicles.find((candidate) => candidate.slug === vehicleSlug)
-  return vehicle
-    ? new VehicleDetailPageBuilder().build({ garage: record.garage, vehicle })
-    : null
+  if (!vehicle) return null
+  const [sequence, interior] = await Promise.all([
+    getPublicVehicle360Sequence(record.garage.garageId, vehicle.id),
+    getPublicInteriorTour(record.garage.garageId, vehicle.id),
+  ])
+  return {
+    detail: new VehicleDetailPageBuilder().build({
+      garage: record.garage,
+      vehicle,
+      hasExterior360: Boolean(sequence),
+      hasInteriorTour: Boolean(interior),
+    }),
+    vehicle,
+    record,
+    sequence,
+    interior,
+  }
 })
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { garageSlug, vehicleSlug } = await params
-  const detail = await loadDetail(garageSlug, vehicleSlug)
-  if (!detail) return { title: "Véhicule introuvable", robots: { index: false } }
+  const payload = await loadDetail(garageSlug, vehicleSlug)
+  if (!payload) return { title: "Véhicule introuvable", robots: { index: false } }
+  const detail = payload.detail
   return {
     title: detail.seo.title,
     description: detail.seo.description,
@@ -58,18 +73,11 @@ function jsonLd(value: Readonly<Record<string, unknown>>) {
 
 export default async function PremiumVehicleRoute({ params }: Props) {
   const { garageSlug, vehicleSlug } = await params
-  const detail = await loadDetail(garageSlug, vehicleSlug)
-  if (!detail) notFound()
-  const record = await getPublicSiteRecord(garageSlug)
-  const vehicle = record?.vehicles.find((candidate) => candidate.slug === vehicleSlug)
-  const sequence = vehicle && record
-    ? await getPublicVehicle360Sequence(record.garage.garageId, vehicle.id)
-    : null
+  const payload = await loadDetail(garageSlug, vehicleSlug)
+  if (!payload) notFound()
+  const { detail, vehicle, sequence, interior } = payload
   const vehicle360 = sequence && vehicle
     ? new Vehicle360ViewerBuilder().build(sequence, `${vehicle.make} ${vehicle.model}`)
-    : null
-  const interior = vehicle && record
-    ? await getPublicInteriorTour(record.garage.garageId, vehicle.id)
     : null
   const interiorTour = interior && vehicle
     ? new InteriorTourViewerBuilder().build(interior, `${vehicle.make} ${vehicle.model}`)

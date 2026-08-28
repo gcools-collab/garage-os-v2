@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
 import test from "node:test"
 import { calculateRegistrationProgress, canTransitionRegistrationCase } from "../engines/registration-case-engine"
 import { registrationFileSchema } from "../validation/registration-validation"
@@ -6,4 +7,20 @@ const requirement = (status: "MISSING" | "UPLOADED" | "UNDER_REVIEW" | "ACCEPTED
 test("le lifecycle refuse les transitions arbitraires", () => { assert.equal(canTransitionRegistrationCase("NEW", "WAITING_FOR_DOCUMENTS"), true); assert.equal(canTransitionRegistrationCase("NEW", "COMPLETED"), false) })
 test("la progression distingue transmission et vérification", () => { const value = calculateRegistrationProgress([requirement("ACCEPTED"), requirement("UPLOADED"), requirement("MISSING"), requirement("MISSING", false)]); assert.equal(value.transmittedPercent, 67); assert.equal(value.acceptedPercent, 33); assert.equal(value.isComplete, false) })
 test("un dossier sans pièce obligatoire est complet", () => assert.equal(calculateRegistrationProgress([requirement("MISSING", false)]).isComplete, true))
-test("les fichiers sont bornés par MIME et taille", () => { assert.equal(registrationFileSchema.safeParse({ name: "piece.pdf", size: 1024, type: "application/pdf" }).success, true); assert.equal(registrationFileSchema.safeParse({ name: "virus.exe", size: 1024, type: "application/octet-stream" }).success, false); assert.equal(registrationFileSchema.safeParse({ name: "big.pdf", size: 11 * 1024 * 1024, type: "application/pdf" }).success, false) })
+test("les fichiers sont bornés par MIME et taille", () => {
+  assert.equal(registrationFileSchema.safeParse({ name: "piece.pdf", size: 1024, type: "application/pdf" }).success, true)
+  assert.equal(registrationFileSchema.safeParse({ name: "virus.exe", size: 1024, type: "application/octet-stream" }).success, false)
+})
+test("la migration staff permet un dossier carte grise sans rendez-vous", () => {
+  const migration = readFileSync("supabase/migrations/20260827000052_staff_appointment_registration.sql", "utf8")
+  assert.match(migration, /create_staff_registration_case/)
+  assert.match(migration, /p_appointment_id uuid default null/)
+  assert.match(migration, /registration_case_requirements/)
+})
+
+test("l'action staff de dossier vérifie le tenant et redirige", () => {
+  const source = readFileSync("src/features/registration/actions/registration-actions.ts", "utf8")
+  assert.match(source, /create_staff_registration_case/)
+  assert.match(source, /session\.garageId/)
+  assert.match(source, /redirect\(`\/registration\//)
+})

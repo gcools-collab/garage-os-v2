@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 
 import {
   buildGarageDailyBriefViewModel,
-  buildGarageDashboard,
+  buildGarageDashboardFromBrief,
   DailyBriefCard,
   GarageIntelligenceDashboard,
   refreshGarageRecommendations,
@@ -30,15 +30,16 @@ export default async function DashboardPage() {
   if (!session.garageId) redirect("/select-garage")
   const garageId = session.garageId
 
-  const dashboard = buildGarageDashboard({
-    context: { garageName: session.garageName },
-  })
   const [leadCounts, commercialData, intelligenceBrief, appointments] = await Promise.all([
     getLeadDashboardCounts(session),
     getCommercialInboxData(session),
     refreshGarageRecommendations(session),
     getAppointments(garageId),
   ])
+  const dashboard = buildGarageDashboardFromBrief(intelligenceBrief, {
+    garageName: session.garageName,
+    userFirstName: session.userDisplayName?.split(/\s+/)[0] ?? "",
+  })
   const leadSummary = buildLeadDashboardSummary(leadCounts)
   const commercialSignal = buildCommercialDashboardSignal(commercialData)
 

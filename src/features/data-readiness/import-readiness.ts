@@ -4,7 +4,7 @@ import type { ImportCandidate, ImportIdentity, ImportOutcome } from "./types";
 
 const MAX_PAYLOAD_BYTES = 256_000;
 export const importIdentitySchema = z.object({
-  garageId: z.uuid(), source: z.literal("WORDPRESS"), externalId: z.string().trim().min(1).max(200),
+  garageId: z.uuid(), source: z.enum(["WORDPRESS", "WOOCOMMERCE", "YITH", "ELEMENTOR"]), externalId: z.string().trim().min(1).max(200),
 });
 
 export function createImportCandidate<T>(identity: ImportIdentity, payload: T): ImportCandidate<T> {
@@ -20,4 +20,3 @@ export function classifyImportCandidate<T>(candidate: ImportCandidate<T>, existi
   if (sameExternal.garageId !== candidate.garageId) return "CONFLICT";
   return sameExternal.fingerprint === candidate.fingerprint ? "SKIPPED" : "UPDATED";
 }
-

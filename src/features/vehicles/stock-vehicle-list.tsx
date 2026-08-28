@@ -7,21 +7,23 @@ import { VehicleDeleteButton } from "./vehicle-delete-button"
 import { calculateVehicleProfitability } from "./utils"
 import type { StockVehicle } from "./stock/stock-types"
 import { marketplaceLinkStatusLabels } from "./marketplace-status"
+import { formatVehicleMileage } from "./vehicle-presentation"
 
 const currency = new Intl.NumberFormat("fr-FR", {
   style: "currency",
   currency: "EUR",
   maximumFractionDigits: 0,
 })
-const number = new Intl.NumberFormat("fr-FR")
-
 function primaryImage(vehicle: StockVehicle) {
   const images = vehicle.vehicle_images ?? []
   return (
     images.find((image) => image.is_primary)?.url ??
-    [...images].sort((left, right) =>
-      left.created_at.localeCompare(right.created_at)
-    )[0]?.url ??
+    [...images].sort((left, right) => {
+      if (left.display_order !== right.display_order) {
+        return left.display_order - right.display_order
+      }
+      return left.created_at.localeCompare(right.created_at)
+    })[0]?.url ??
     null
   )
 }
@@ -43,7 +45,7 @@ function onlineSummary(vehicle: StockVehicle) {
       (Date.now() - new Date(activeLink.published_at).getTime()) / 86_400_000
     )
   )
-  return `${provider} · ${status} · ${days} jour${days > 1 ? "s" : ""}`
+  return `Lien enregistré · ${provider} · ${status} · ${days} jour${days > 1 ? "s" : ""}`
 }
 
 export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
@@ -60,27 +62,34 @@ export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
         return (
           <article
             key={vehicle.id}
-            className="grid overflow-hidden rounded-xl border bg-white shadow-xs md:grid-cols-[160px_minmax(0,1fr)_auto]"
+            className="group relative grid overflow-hidden rounded-xl border bg-white shadow-xs transition-shadow hover:shadow-sm md:grid-cols-[160px_minmax(0,1fr)_auto]"
           >
+            <Link
+              href={`/stock/${vehicle.id}`}
+              aria-label={`Voir la fiche de ${name}`}
+              className="absolute inset-0 z-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <span className="sr-only">Voir la fiche de {name}</span>
+            </Link>
             {image ? (
               <div
                 role="img"
                 aria-label={name}
-                className="aspect-[16/9] bg-muted bg-cover bg-center md:aspect-auto md:min-h-36"
+                className="pointer-events-none relative z-10 aspect-[16/9] bg-muted bg-cover bg-center md:aspect-auto md:min-h-36"
                 style={{ backgroundImage: `url(${JSON.stringify(image)})` }}
               />
             ) : (
-              <div className="flex aspect-[16/9] items-center justify-center bg-muted md:aspect-auto md:min-h-36">
+              <div className="pointer-events-none relative z-10 flex aspect-[16/9] items-center justify-center bg-muted md:aspect-auto md:min-h-36">
                 <Car className="size-10 text-muted-foreground/50" aria-hidden="true" />
               </div>
             )}
 
-            <div className="min-w-0 space-y-4 p-4 md:p-5">
+            <div className="pointer-events-none relative z-10 min-w-0 space-y-4 p-4 md:p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold">{name}</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {vehicle.year ?? "Année inconnue"} · {number.format(vehicle.mileage ?? 0)} km
+                    {vehicle.year ?? "Année inconnue"} · {formatVehicleMileage(vehicle.mileage)}
                   </p>
                 </div>
                 <StatusBadge status={vehicle.status} />
@@ -136,7 +145,7 @@ export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
               </dl>
             </div>
 
-            <div className="flex flex-wrap items-center gap-1 border-t p-3 md:w-36 md:flex-col md:items-stretch md:justify-center md:border-l md:border-t-0">
+            <div className="relative z-20 flex flex-wrap items-center gap-1 border-t bg-white p-3 md:w-36 md:flex-col md:items-stretch md:justify-center md:border-l md:border-t-0">
               <Button asChild variant="ghost" size="sm" className="justify-start">
                 <Link href={`/stock/${vehicle.id}`}>
                   <Eye className="size-4" aria-hidden="true" />
