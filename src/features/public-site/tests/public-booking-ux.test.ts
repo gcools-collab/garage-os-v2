@@ -57,9 +57,12 @@ const offers = buildPublicOfferPresentations([
 ])
 
 test("decarbonization form removes plate, energy, mileage, displacement and desired date", () => {
-  const fieldNames = buildPublicRequestForm("ENGINE_CLEANING").fields.map((field) => field.name)
+  const form = buildPublicRequestForm("ENGINE_CLEANING")
+  const fieldNames = form.fields.map((field) => field.name)
   assert.deepEqual(fieldNames, ["vehicle", "reason", "firstName", "lastName", "phone", "email"])
-  assert.equal(buildPublicRequestForm("ENGINE_CLEANING").fields.find((field) => field.name === "reason")?.required, false)
+  assert.equal(form.fields.find((field) => field.name === "reason")?.required, false)
+  assert.equal(form.steps.find((step) => step.id === "vehicle")?.title, "Votre véhicule")
+  assert.equal(form.fields.find((field) => field.name === "reason")?.label, "Précision pour le garage (facultatif)")
 })
 
 test("decarbonization requires vehicle, identity, phone and email", () => {

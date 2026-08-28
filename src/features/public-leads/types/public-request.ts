@@ -21,6 +21,7 @@ export type PublicRequestField = {
   readonly required: boolean
   readonly options?: readonly { readonly value: string; readonly label: string }[]
   readonly hint?: string
+  readonly placeholder?: string
   readonly step: string
 }
 export type PublicVehicleContextViewModel = {

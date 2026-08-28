@@ -11,10 +11,12 @@ export function PublicOfferSelector({
   offers,
   name = "offerSlug",
   onOfferChange,
+  onOptionChange,
 }: {
   readonly offers: readonly PublicOfferPresentation[]
   readonly name?: string
   readonly onOfferChange?: (slug: string) => void
+  readonly onOptionChange?: (optionIds: readonly string[]) => void
 }) {
   const [selectedSlug, setSelectedSlug] = useState(offers[0]?.slug ?? "")
   const [selectedOptions, setSelectedOptions] = useState<readonly string[]>([])
@@ -43,6 +45,7 @@ export function PublicOfferSelector({
             setSelectedSlug(event.target.value)
             setSelectedOptions([])
             onOfferChange?.(event.target.value)
+            onOptionChange?.([])
           }}
           className="min-h-11 w-full rounded-lg border border-[var(--live-border)] bg-[var(--live-background)] px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]"
         >
@@ -69,7 +72,9 @@ export function PublicOfferSelector({
             value={shockOption.id}
             checked={selectedOptions.includes(shockOption.id)}
             onChange={(event) => {
-              setSelectedOptions(event.target.checked ? [shockOption.id] : [])
+              const next = event.target.checked ? [shockOption.id] : []
+              setSelectedOptions(next)
+              onOptionChange?.(next)
             }}
             className="mt-1 size-4"
           />

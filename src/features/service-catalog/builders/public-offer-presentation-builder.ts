@@ -10,11 +10,11 @@ const money = (value: number | null, currency: string) =>
 
 function formatDuration(minutes: number | null): string | null {
   if (minutes === null) return null
-  if (minutes % 60 === 0 && minutes >= 60) {
-    const hours = minutes / 60
-    return hours === 1 ? "1h" : `${hours}h`
-  }
-  return `${minutes} min`
+  if (minutes < 60) return `${minutes} min`
+  const wholeHours = Math.floor(minutes / 60)
+  const remainder = minutes % 60
+  if (remainder === 0) return wholeHours === 1 ? "1h" : `${wholeHours}h`
+  return wholeHours === 0 ? `${remainder} min` : `${wholeHours}h${String(remainder).padStart(2, "0")}`
 }
 
 export type PublicOfferOptionPresentation = Readonly<{

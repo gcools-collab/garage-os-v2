@@ -10,7 +10,7 @@ const engineCleaning: ServiceFormFieldRule = {
   include: ["vehicle", "reason", "firstName", "lastName", "phone", "email"],
   overrides: {
     vehicle: { label: "Marque et modèle", required: true },
-    reason: { label: "Symptôme ou raison", required: false },
+    reason: { label: "Précision pour le garage (facultatif)", required: false, placeholder: "Ex. perte de puissance, entretien préventif…" },
     phone: { required: true },
     email: { required: true },
   },

@@ -170,6 +170,7 @@ export default async function GarageContact({ params, searchParams }: Props) {
               availability,
               availabilityByOfferSlug,
               offers: offerPresentations,
+              compactFormHeading: selectedProject === "engine-cleaning",
               source: vehicle
                 ? "VEHICLE_DETAIL"
                 : type === "CONSIGNMENT"

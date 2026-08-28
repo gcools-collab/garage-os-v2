@@ -15,6 +15,10 @@ const projectLabels: Readonly<Record<string, string>> = {
   other: "Demande libre",
 }
 
+const projectSubtitles: Readonly<Partial<Record<string, string>>> = {
+  "engine-cleaning": "Choisissez votre prestation et votre créneau.",
+}
+
 export function PublicContactPage({
   contact,
   request,
@@ -32,6 +36,7 @@ export function PublicContactPage({
     readonly availability: readonly AvailabilitySlot[]
     readonly availabilityByOfferSlug?: Readonly<Record<string, readonly AvailabilitySlot[]>>
     readonly offers?: readonly PublicOfferPresentation[]
+    readonly compactFormHeading?: boolean
   } | null
   readonly unavailableRequest?: boolean
   readonly missingVehicleRequest?: boolean
@@ -51,6 +56,9 @@ export function PublicContactPage({
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--live-primary)]">Demande sélectionnée</p>
               <h1 className="mt-2 text-3xl font-semibold">{selectedLabel}</h1>
+              {selectedProject && projectSubtitles[selectedProject] ? (
+                <p className="mt-2 text-[var(--live-muted-foreground)]">{projectSubtitles[selectedProject]}</p>
+              ) : null}
             </div>
             <a href={changeRequestHref} className="text-sm font-medium underline underline-offset-4">Changer de demande</a>
           </div>
@@ -101,6 +109,7 @@ export function PublicContactPage({
             availability={request.availability}
             availabilityByOfferSlug={request.availabilityByOfferSlug}
             offers={request.offers ?? []}
+            compactFormHeading={request.compactFormHeading}
           />
         </div>
       ) : missingVehicleRequest && showProjectSelector ? (
