@@ -23,7 +23,7 @@ export function MarketVehicleDetails({ insight }: { insight: MarketVehicleInsigh
             <p className="font-medium">{row.title}</p><p>{row.price} · {row.year} · {row.mileage}</p><p className="text-muted-foreground">{row.location} · {row.source} · {row.sellerType}</p>
             {row.href && <a href={row.href} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 underline">Voir l’annonce <ExternalLink aria-hidden="true" className="size-3" /></a>}
           </article>)}
-        </div> : <p className="mt-2 text-sm text-muted-foreground">Aucun comparable retenu.</p>}
+        </div> : <p className="mt-2 text-sm text-muted-foreground">Les annonces comparables individuelles ne sont pas conservées. Relancez une analyse depuis la fiche véhicule pour obtenir le détail des annonces.</p>}
       </div>
     </details>
   )

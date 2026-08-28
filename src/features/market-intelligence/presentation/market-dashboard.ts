@@ -1,5 +1,12 @@
 import type { Vehicle } from "@/features/public"
 import { analyzeVehicleMarket } from "../engine"
+import { prepareOpportunities, prepareWarnings } from "../engine/market-opportunity"
+import { calculatePricePosition } from "../engine/market-price"
+import {
+  calculateCompetitiveness,
+  calculateConfidence,
+  calculateMarketHealth,
+} from "../engine/market-score"
 import type {
   MarketAnalysis,
   MarketConfidence,
@@ -9,6 +16,10 @@ import type {
   MarketVehicle,
   MarketWarning,
 } from "../engine"
+import type {
+  GarageMarketDashboardRecord,
+  PersistedMarketAnalysis,
+} from "../types/market-dashboard-record"
 
 export type PresentationTone = "positive" | "warning" | "danger" | "neutral"
 export type MarketPresentationStatus = { key: string; label: string; tone: PresentationTone }
@@ -169,5 +180,277 @@ export function buildMarketDashboard({ vehicles, listings }: { vehicles: readonl
       actionLabel: rank < 3 ? "Vérifier le prix" : "Voir l’analyse", href: item.href,
     })),
     vehicles: insights, emptyState: null,
+  }
+}
+
+function mapPersistedPosition(
+  positioning: PersistedMarketAnalysis["positioning"]
+): MarketPricePosition {
+  if (positioning === "BELOW_MARKET") return "UNDER_MARKET"
+  if (positioning === "IN_MARKET") return "MARKET"
+  if (positioning === "ABOVE_MARKET") return "OVER_MARKET"
+  return "UNKNOWN"
+}
+
+function insightFromPersisted(
+  vehicle: GarageMarketDashboardRecord["vehicles"][number],
+  analysis: PersistedMarketAnalysis
+): MarketVehicleInsight {
+  const price = vehicle.sellingPrice ?? analysis.currentVehiclePrice
+  const medianPrice = analysis.medianPrice
+  const pricePosition =
+    analysis.positioning != null
+      ? mapPersistedPosition(analysis.positioning)
+      : calculatePricePosition(price, medianPrice)
+  const confidence = calculateConfidence(analysis.comparableCount)
+  const marketHealth = calculateMarketHealth(analysis.comparableCount, pricePosition)
+  const gap =
+    price != null && medianPrice != null ? price - medianPrice : analysis.priceDifference
+  const gapPercent =
+    gap != null && medianPrice
+      ? gap / medianPrice * 100
+      : analysis.priceDifferencePercent
+  const healthTone: PresentationTone =
+    marketHealth === "HOT" ? "positive" : marketHealth === "SLOW" ? "warning" : "neutral"
+  const analyzedAtLabel = new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(analysis.analyzedAt))
+
+  return {
+    vehicleId: vehicle.id,
+    vehicleLabel: [vehicle.brand, vehicle.model, vehicle.trim].filter(Boolean).join(" "),
+    vehicleImage: vehicle.primaryImageUrl,
+    currentPrice: formatMarketCurrency(price) ?? "Non renseigné",
+    marketPrice: formatMarketCurrency(medianPrice),
+    recommendedPrice: formatMarketCurrency(medianPrice),
+    recommendationNote:
+      medianPrice == null
+        ? null
+        : `Analyse enregistrée le ${analyzedAtLabel} (${analysis.provider}).`,
+    priceGap:
+      gap == null
+        ? null
+        : `${gap >= 0 ? "+" : "−"}${formatMarketCurrency(Math.abs(gap))}`,
+    priceGapPercent:
+      gapPercent == null
+        ? null
+        : `${gapPercent >= 0 ? "+" : "−"}${Math.abs(Math.round(gapPercent))} %`,
+    position: positionStatus[pricePosition],
+    confidence: confidenceStatus[confidence],
+    marketHealth: {
+      key: marketHealth,
+      label:
+        marketHealth === "HOT"
+          ? "Marché dynamique"
+          : marketHealth === "SLOW"
+            ? "Marché lent"
+            : marketHealth === "NORMAL"
+              ? "Marché normal"
+              : "Données insuffisantes",
+      tone: healthTone,
+    },
+    competitiveness: scorePresentation(calculateCompetitiveness(price, medianPrice)),
+    comparableCount: analysis.comparableCount,
+    warnings: prepareWarnings(analysis.comparableCount, pricePosition).map((key) => ({
+      key,
+      text: warningTexts[key],
+    })),
+    opportunities: prepareOpportunities(pricePosition, marketHealth).map((key) => ({
+      key,
+      text: opportunityTexts[key],
+    })),
+    href: `/stock/${vehicle.id}`,
+    detail: {
+      statistics: [
+        ["Prix garage", formatMarketCurrency(price)],
+        ["Prix médian", formatMarketCurrency(medianPrice)],
+        ["Prix moyen", formatMarketCurrency(analysis.averagePrice)],
+        ["Minimum", formatMarketCurrency(analysis.minimumPrice)],
+        ["Maximum", formatMarketCurrency(analysis.maximumPrice)],
+        ["Prix recommandé", formatMarketCurrency(medianPrice)],
+      ].map(([label, value]) => ({ label: label ?? "", value: value ?? "Non renseigné" })),
+      comparables: [],
+    },
+  }
+}
+
+export function buildMarketDashboardFromPersisted(
+  record: GarageMarketDashboardRecord
+): MarketDashboardViewModel {
+  const header = {
+    title: "Intelligence marché",
+    description:
+      "Analyse du positionnement tarifaire de votre stock à partir des analyses enregistrées.",
+    helper: "",
+  }
+
+  if (!record.vehicles.length) {
+    return {
+      header: {
+        ...header,
+        helper: "0 véhicule analysé",
+      },
+      summary: [],
+      priorityActions: [],
+      vehicles: [],
+      emptyState: {
+        title: "Aucun véhicule à analyser",
+        description:
+          "Ajoutez des véhicules au stock pour commencer l’analyse du marché.",
+      },
+    }
+  }
+
+  const analyzed = record.vehicles.flatMap((vehicle) =>
+    vehicle.analysis ? [{ vehicle, analysis: vehicle.analysis }] : []
+  )
+
+  if (!analyzed.length) {
+    return {
+      header: {
+        ...header,
+        helper: `${record.vehicles.length} véhicule${record.vehicles.length > 1 ? "s" : ""} sans analyse enregistrée`,
+      },
+      summary: [],
+      priorityActions: [],
+      vehicles: [],
+      emptyState: {
+        title: "Aucune analyse marché enregistrée",
+        description:
+          "Lancez une analyse depuis la fiche véhicule dans le stock pour alimenter cette page.",
+      },
+    }
+  }
+
+  const insights = analyzed
+    .map(({ vehicle, analysis }) => insightFromPersisted(vehicle, analysis))
+    .sort((left, right) => {
+      const positionOrder = { OVER_MARKET: 0, UNDER_MARKET: 1, MARKET: 2, UNKNOWN: 3 }
+      return (
+        positionOrder[left.position.key as MarketPricePosition] -
+          positionOrder[right.position.key as MarketPricePosition] ||
+        right.comparableCount - left.comparableCount ||
+        left.vehicleLabel.localeCompare(right.vehicleLabel) ||
+        left.vehicleId.localeCompare(right.vehicleId)
+      )
+    })
+
+  const priorities = insights
+    .map((item) => {
+      const high = item.warnings.some((warning) => warning.key === "PRICE_TOO_HIGH")
+      const low = item.warnings.some((warning) => warning.key === "PRICE_TOO_LOW")
+      return {
+        item,
+        rank:
+          high && item.confidence.key === "HIGH"
+            ? 0
+            : high
+              ? 1
+              : low
+                ? 2
+                : item.comparableCount === 0
+                  ? 3
+                  : 5,
+      }
+    })
+    .filter(({ rank }) => rank < 5)
+    .sort(
+      (left, right) =>
+        left.rank - right.rank ||
+        left.item.vehicleLabel.localeCompare(right.item.vehicleLabel)
+    )
+    .slice(0, 5)
+
+  const garagePrices = analyzed.flatMap(({ vehicle, analysis }) => {
+    const price = vehicle.sellingPrice ?? analysis.currentVehiclePrice
+    return price == null ? [] : [price]
+  })
+  const marketPrices = analyzed.flatMap(({ analysis }) =>
+    analysis.medianPrice == null ? [] : [analysis.medianPrice]
+  )
+  const count = (key: MarketPricePosition) =>
+    insights.filter((item) => item.position.key === key).length
+
+  return {
+    header: {
+      ...header,
+      helper: `${insights.length} véhicule${insights.length > 1 ? "s" : ""} analysé${insights.length > 1 ? "s" : ""}`,
+    },
+    summary: [
+      {
+        id: "analyzed",
+        label: "Véhicules analysés",
+        value: String(insights.length),
+        tone: "neutral",
+      },
+      {
+        id: "over",
+        label: "Au-dessus du marché",
+        value: String(count("OVER_MARKET")),
+        tone: "danger",
+      },
+      {
+        id: "market",
+        label: "Bien positionnés",
+        value: String(count("MARKET")),
+        tone: "positive",
+      },
+      {
+        id: "under",
+        label: "Sous le marché",
+        value: String(count("UNDER_MARKET")),
+        tone: "warning",
+      },
+      {
+        id: "confidence",
+        label: "Confiance élevée",
+        value: String(
+          insights.filter((item) => item.confidence.key === "HIGH").length
+        ),
+        tone: "positive",
+      },
+      {
+        id: "priorities",
+        label: "Actions prioritaires",
+        value: String(priorities.length),
+        tone: "warning",
+      },
+      {
+        id: "garage-price",
+        label: "Prix moyen garage",
+        value:
+          formatMarketCurrency(
+            garagePrices.length
+              ? garagePrices.reduce((sum, price) => sum + price, 0) /
+                  garagePrices.length
+              : null
+          ) ?? "Non disponible",
+        tone: "neutral",
+      },
+      {
+        id: "market-price",
+        label: "Prix moyen marché",
+        value:
+          formatMarketCurrency(
+            marketPrices.length
+              ? marketPrices.reduce((sum, price) => sum + price, 0) /
+                  marketPrices.length
+              : null
+          ) ?? "Non disponible",
+        tone: "neutral",
+      },
+    ],
+    priorityActions: priorities.map(({ item, rank }) => ({
+      vehicleId: item.vehicleId,
+      vehicleLabel: item.vehicleLabel,
+      severity: rank === 0 ? "danger" : rank < 3 ? "warning" : "neutral",
+      title: item.warnings[0]?.text ?? "Positionnement cohérent",
+      description: `${item.currentPrice} — marché ${item.marketPrice ?? "non disponible"}`,
+      actionLabel: rank < 3 ? "Vérifier le prix" : "Voir l’analyse",
+      href: item.href,
+    })),
+    vehicles: insights,
+    emptyState: null,
   }
 }
