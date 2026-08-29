@@ -1,6 +1,35 @@
 import type { NextConfig } from "next";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+type ImageRemotePattern = {
+  readonly protocol: "http" | "https"
+  readonly hostname: string
+  readonly pathname?: string
+}
+
+function supabaseStoragePatterns(): ImageRemotePattern[] {
+  const patterns: ImageRemotePattern[] = [
+    { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+    { protocol: "https", hostname: "*.supabase.in", pathname: "/storage/v1/object/public/**" },
+  ]
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+  if (!supabaseUrl) return patterns
+
+  try {
+    const parsed = new URL(supabaseUrl)
+    const protocol = parsed.protocol.replace(":", "")
+    if (protocol !== "http" && protocol !== "https") return patterns
+    patterns.unshift({
+      protocol,
+      hostname: parsed.hostname,
+      pathname: "/storage/v1/object/public/**",
+    })
+  } catch {
+    return patterns
+  }
+
+  return patterns
+}
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -9,9 +38,7 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    remotePatterns: supabaseUrl
-      ? [{ protocol: new URL(supabaseUrl).protocol.replace(":", "") as "http" | "https", hostname: new URL(supabaseUrl).hostname }]
-      : [],
+    remotePatterns: supabaseStoragePatterns(),
   },
 };
 

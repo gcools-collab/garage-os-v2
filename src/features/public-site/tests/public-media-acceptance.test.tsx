@@ -204,6 +204,14 @@ test("sticky CTA keeps destinations and accessible labels with professional icon
   assert.match(html, /lucide-message-circle/)
 })
 
+test("Next Image always allows Supabase storage hosts on Vercel", () => {
+  const source = readFileSync("next.config.ts", "utf8")
+  assert.match(source, /hostname: "\*\.supabase\.co"/)
+  assert.match(source, /pathname: "\/storage\/v1\/object\/public\/\*\*"/)
+  assert.match(source, /NEXT_PUBLIC_SUPABASE_URL/)
+  assert.doesNotMatch(source, /remotePatterns: supabaseUrl\s*\?/)
+})
+
 test("public site source does not fall back to demo vehicle fixtures", () => {
   const repository = readFileSync("src/features/live-stock/data/public-vehicle-repository.ts", "utf8")
   const mapper = readFileSync("src/features/live-stock/mappers/public-vehicle-mapper.ts", "utf8")

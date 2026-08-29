@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
 
-import { resolveVehicleImagePublicUrl } from "../vehicle-image-presentation"
+import { isResolvableVehicleImageUrl, resolveVehicleImagePublicUrl } from "../vehicle-image-presentation"
 import { formatVehicleMileage } from "../vehicle-presentation"
 
 const GARAGE_ID = "363f2dc0-bfd3-48d6-a1cc-96e113e96094"
@@ -42,6 +42,51 @@ test("keeps a persisted URL and rejects a cross-tenant storage path", () => {
     }),
     null,
   )
+})
+
+test("reconstructs storage URL when the persisted URL is not usable by Next Image", () => {
+  const storagePath = `${GARAGE_ID}/${VEHICLE_ID}/cover.webp`
+  const reconstructed = `https://example.supabase.co/storage/v1/object/public/vehicle-images/${GARAGE_ID}/${VEHICLE_ID}/cover.webp`
+  assert.equal(
+    resolveVehicleImagePublicUrl({
+      url: "/local-media/cover.webp",
+      storagePath,
+      garageId: GARAGE_ID,
+      vehicleId: VEHICLE_ID,
+      supabaseUrl: "https://example.supabase.co",
+    }),
+    reconstructed,
+  )
+  assert.equal(
+    resolveVehicleImagePublicUrl({
+      url: "http://localhost:3000/cover.webp",
+      storagePath,
+      garageId: GARAGE_ID,
+      vehicleId: VEHICLE_ID,
+      supabaseUrl: "https://example.supabase.co",
+    }),
+    reconstructed,
+  )
+  assert.equal(
+    resolveVehicleImagePublicUrl({
+      url: "/photo.jpg",
+      storagePath: "invalid",
+      garageId: GARAGE_ID,
+      vehicleId: VEHICLE_ID,
+      supabaseUrl: "https://example.supabase.co",
+    }),
+    "/photo.jpg",
+  )
+})
+
+test("only public http(s) or root-relative paths are resolvable for Next Image", () => {
+  assert.equal(isResolvableVehicleImageUrl("https://example.supabase.co/storage/v1/object/public/vehicle-images/a.webp"), true)
+  assert.equal(isResolvableVehicleImageUrl("http://cdn.example/a.webp"), true)
+  assert.equal(isResolvableVehicleImageUrl("/relative.webp"), true)
+  assert.equal(isResolvableVehicleImageUrl("http://localhost/a.webp"), false)
+  assert.equal(isResolvableVehicleImageUrl("//cdn.example/a.webp"), false)
+  assert.equal(isResolvableVehicleImageUrl("   "), false)
+  assert.equal(isResolvableVehicleImageUrl(null), false)
 })
 
 test("renders an unknown mileage truthfully", () => {

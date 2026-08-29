@@ -187,16 +187,23 @@ test("VehicleSEOBuilder prépare canonical et tous les JSON-LD", () => {
 })
 
 test("la page respecte l’ordre commercial et rend le CTA mobile sticky", () => {
-  const html = renderToStaticMarkup(
-    <PremiumVehicleDetailPage detail={new VehicleDetailPageBuilder().build({
-      garage,
-      vehicle: vehicle(),
-    })} />
-  )
-  assert.ok(html.indexOf("Galerie immersive") < html.indexOf("L’essentiel"))
-  assert.ok(html.indexOf("L’essentiel") < html.indexOf("Caractéristiques"))
-  assert.match(html, /fixed inset-x-0 bottom-0/)
-  assert.equal((html.match(/<h1/g) ?? []).length, 1)
+  const previous = process.env.NEXT_PUBLIC_SUPABASE_URL
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL
+  try {
+    const html = renderToStaticMarkup(
+      <PremiumVehicleDetailPage detail={new VehicleDetailPageBuilder().build({
+        garage,
+        vehicle: vehicle(),
+      })} />
+    )
+    assert.ok(html.indexOf("Galerie immersive") < html.indexOf("L’essentiel"))
+    assert.ok(html.indexOf("L’essentiel") < html.indexOf("Caractéristiques"))
+    assert.match(html, /fixed inset-x-0 bottom-0/)
+    assert.equal((html.match(/<h1/g) ?? []).length, 1)
+  } finally {
+    if (previous === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = previous
+  }
 })
 
 test("les helpers responsive couvrent mobile et desktop", () => {
