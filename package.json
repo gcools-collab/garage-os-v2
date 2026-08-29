@@ -45,7 +45,7 @@
     "test:public-premium": "tsx --test src/features/public-site-premium/tests/*.test.tsx",
     "test:interior-tour": "tsx --test src/features/interior-tour/tests/*.test.tsx",
     "test:vehicle-listings": "tsx --test src/features/vehicle-listings/tests/*.test.tsx",
-    "test:v1-readiness": "tsx --test src/features/v1-readiness/tests/*.test.ts",
+    "test:v1-readiness": "tsx --test src/features/v1-readiness/tests/*.test.ts src/components/layout/dashboard-navigation.test.ts",
     "test:data-readiness": "tsx --test src/features/data-readiness/tests/*.test.ts",
     "test:legacy-import": "tsx --test src/features/legacy-import/tests/*.test.ts",
     "test:media-studio": "tsx --test src/features/media-studio/tests/*.test.ts",

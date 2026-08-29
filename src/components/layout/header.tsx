@@ -15,6 +15,8 @@ import { logout } from "@/features/auth/actions"
 import type { GarageBrandingShellViewModel } from "@/features/branding"
 import { NotificationCenter, type NotificationCenterViewModel } from "@/features/notifications"
 
+import { DashboardMobileNav, DashboardSectionTitle } from "./dashboard-mobile-nav"
+
 type DashboardUserViewModel = {
   readonly displayName: string | null
   readonly email: string | null
@@ -41,7 +43,10 @@ export function Header({
   const role = roleLabels[user.role] ?? user.role
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-4 sm:px-8">
-      <h2 className="font-semibold">Tableau de bord</h2>
+      <div className="flex min-w-0 items-center gap-2">
+        <DashboardMobileNav />
+        <h2 className="min-w-0 truncate font-semibold"><DashboardSectionTitle /></h2>
+      </div>
       <div className="flex min-w-0 items-center gap-2">
         <NotificationCenter center={notifications} />
         <DropdownMenu>

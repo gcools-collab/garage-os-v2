@@ -33,9 +33,10 @@ test("les routes critiques de démonstration existent", () => {
 })
 
 test("la navigation principale n'expose aucune route morte connue", () => {
+  const navigation = readFileSync("src/components/layout/dashboard-navigation.ts", "utf8")
   const sidebar = readFileSync("src/components/layout/sidebar.tsx", "utf8")
-  assert.doesNotMatch(sidebar, /href: "\/(alerts|diffusion)"/)
-  assert.doesNotMatch(sidebar, /Buying Assistant|Market Intelligence/)
+  assert.doesNotMatch(navigation, /href: "\/(alerts|diffusion)"/)
+  assert.doesNotMatch(navigation, /Buying Assistant|Market Intelligence/)
   assert.match(sidebar, /aria-current/)
 })
 

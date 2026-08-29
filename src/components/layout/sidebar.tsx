@@ -1,46 +1,17 @@
 "use client"
 
-import {
-  BarChart3,
-  CalendarDays,
-  BriefcaseBusiness,
-  Bot,
-  Car,
-  ContactRound,
-  Globe,
-  LayoutDashboard,
-  Search,
-  Settings,
-  FolderOpen,
-  Receipt,
-  Sparkles,
-  Users,
-} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { GarageBrandingShellViewModel } from "@/features/branding"
 
-export const dashboardNavigation = [
-  { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Priorités du jour", href: "/intelligence", icon: Sparkles },
-  { name: "Copilote", href: "/copilot", icon: Bot },
-  { name: "Boîte commerciale", href: "/commercial", icon: BriefcaseBusiness },
-  { name: "Stock", href: "/stock", icon: Car },
-  { name: "Acquisition", href: "/acquisition", icon: Search },
-  { name: "Demandes clients", href: "/leads", icon: Users },
-  { name: "Clients", href: "/customers", icon: ContactRound },
-  { name: "Agenda", href: "/appointments", icon: CalendarDays },
-  { name: "Facturation", href: "/billing", icon: Receipt },
-  { name: "Dossiers", href: "/registration", icon: FolderOpen },
-  { name: "Analyse du marché", href: "/market", icon: Globe },
-  { name: "Pilotage", href: "/analytics", icon: BarChart3 },
-  { name: "Paramètres", href: "/settings", icon: Settings },
-] as const
+import { dashboardNavigation, isDashboardNavItemActive } from "./dashboard-navigation"
+
+export { dashboardNavigation } from "./dashboard-navigation"
 
 export function Sidebar({ branding }: { readonly branding: GarageBrandingShellViewModel }) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
 
   return (
     <aside className="hidden min-h-screen w-72 flex-col bg-zinc-950 p-6 text-white md:flex">
@@ -58,7 +29,7 @@ export function Sidebar({ branding }: { readonly branding: GarageBrandingShellVi
       <nav className="space-y-2" aria-label="Navigation principale">
         {dashboardNavigation.map((item) => {
           const Icon = item.icon
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
+          const active = isDashboardNavItemActive(pathname, item.href)
           return (
             <Link
               key={item.href}
