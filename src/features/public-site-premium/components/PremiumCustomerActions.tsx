@@ -32,8 +32,21 @@ function ActionPanel({
 export function PremiumCustomerActions({ homepage }: { readonly homepage: PremiumHomepageViewModel }) {
   return <nav aria-label="Actions rapides" className="pointer-events-none fixed inset-x-4 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-end md:inset-x-auto md:right-5 md:bottom-5">
     <div className="pointer-events-auto flex w-full max-w-md gap-1.5 rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface-elevated)]/95 p-1.5 shadow-[0_8px_28px_var(--live-shadow-color)] backdrop-blur md:w-auto md:max-w-none">
-      {homepage.appointmentActions.length ? <ActionPanel id="customer-appointment" label="Prendre rendez-vous" icon={CalendarDays} actions={homepage.appointmentActions}><p className="mt-2 text-sm text-[var(--live-muted-foreground)]">Choisissez un parcours disponible pour ce garage.</p></ActionPanel> : null}
-      <ActionPanel id="customer-contact" label="Nous contacter" icon={MessageCircle} actions={homepage.contactActions}><div className="mt-2 space-y-1 text-sm text-[var(--live-muted-foreground)]">{homepage.contact.phone ? <p>{homepage.contact.phone.label}</p> : null}{homepage.contact.email ? <p>{homepage.contact.email.label}</p> : null}{homepage.contact.address ? <p>{homepage.contact.address}</p> : null}</div></ActionPanel>
+      <ActionPanel
+        id="customer-appointment"
+        label="Prendre rendez-vous"
+        icon={CalendarDays}
+        actions={homepage.appointmentActions.length ? homepage.appointmentActions : [{ label: "Prendre rendez-vous", href: `${homepage.garage.homeHref}/contact` }]}
+      >
+        <p className="mt-2 text-sm text-[var(--live-muted-foreground)]">Choisissez un parcours disponible pour ce garage.</p>
+      </ActionPanel>
+      <ActionPanel id="customer-contact" label="Nous contacter" icon={MessageCircle} actions={homepage.contactActions}>
+        <div className="mt-2 space-y-1 text-sm text-[var(--live-muted-foreground)]">
+          {homepage.contact.phone ? <a className="block hover:underline" href={homepage.contact.phone.href}>{homepage.contact.phone.label}</a> : null}
+          {homepage.contact.email ? <a className="block hover:underline" href={homepage.contact.email.href}>{homepage.contact.email.label}</a> : null}
+          {homepage.contact.address ? <p>{homepage.contact.address}</p> : null}
+        </div>
+      </ActionPanel>
     </div>
   </nav>
 }

@@ -22,6 +22,11 @@ const money = new Intl.NumberFormat("fr-FR", {
 })
 const PAGE_SIZE = 12
 
+function publicTelephoneHref(phone: string | null) {
+  const digits = phone?.replace(/[^\d+]/g, "") ?? ""
+  return digits ? `tel:${digits}` : null
+}
+
 function unique(values: readonly (string | null)[]) {
   return [...new Set(values.filter((value): value is string => Boolean(value?.trim())))]
     .sort((left, right) => left.localeCompare(right, "fr"))
@@ -56,7 +61,10 @@ export function buildGaragePublicViewModel(
     name: garage.displayName,
     logoUrl: garage.branding.logoUrl,
     description: garage.branding.shortDescription ?? `Découvrez les véhicules de ${garage.displayName}.`,
-    phone: garage.branding.phone,
+    phone: garage.branding.phone?.trim()
+      ? (garage.branding.formattedPhone?.trim() || garage.branding.phone)
+      : null,
+    phoneHref: publicTelephoneHref(garage.branding.phone),
     email: garage.branding.email,
     address: garage.branding.formattedAddress,
     socialLinks: [
@@ -139,8 +147,8 @@ export function buildPublicHomepage(
       description: garage.description,
       image: heroImage ? { url: heroImage.url, alt: heroImage.alt } : null,
       primaryAction: { label: "Découvrir nos véhicules", href: `${garage.homeHref}/stock` },
-      secondaryAction: garage.phone
-        ? { label: "Appeler le garage", href: `tel:${garage.phone.replace(/\s/g, "")}` }
+      secondaryAction: garage.phoneHref
+        ? { label: "Appeler le garage", href: garage.phoneHref }
         : null,
     },
     sections: [
@@ -244,7 +252,7 @@ export function buildPublicContact(
     garage,
     title: "Contactez-nous",
     description: `L’équipe ${garage.name} vous accompagne dans votre projet automobile.`,
-    phoneHref: garage.phone ? `tel:${garage.phone.replace(/\s/g, "")}` : null,
+    phoneHref: garage.phoneHref,
     emailHref: garage.email ? `mailto:${garage.email}` : null,
     mapLabel: garage.address ?? "Localisation du garage",
     journeys: [

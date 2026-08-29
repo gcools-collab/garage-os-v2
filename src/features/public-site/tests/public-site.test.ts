@@ -65,6 +65,8 @@ test("le builder garage prépare branding, navigation et coordonnées", () => {
   assert.equal(view.address, "10 rue de Paris, 59590 Raismes")
   assert.equal(view.navigation[0].href, "/g/garage-martin/stock")
   assert.equal(view.socialLinks.length, 1)
+  assert.equal(view.phone, "03 27 00 00 00")
+  assert.equal(view.phoneHref, "tel:0327000000")
 })
 
 test("la homepage prépare toutes les sections sans entité brute", () => {

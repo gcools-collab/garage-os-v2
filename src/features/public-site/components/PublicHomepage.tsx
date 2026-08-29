@@ -1,7 +1,7 @@
-import Image from "next/image"
 import Link from "next/link"
 import type { PublicHomepageViewModel } from "../types"
 import { isResolvableVehicleImageUrl } from "@/features/vehicles/vehicle-image-presentation"
+import { PublicMediaImage } from "./PublicMediaImage"
 import { PublicSiteLayout } from "./PublicSiteLayout"
 import { VehiclePublicCard } from "./VehiclePublicCard"
 
@@ -33,7 +33,7 @@ export function PublicHomepage({ homepage }: { readonly homepage: PublicHomepage
   return (
     <PublicSiteLayout garage={homepage.garage}>
       <section className="relative isolate min-h-[70vh] overflow-hidden">
-        {heroImage ? <Image src={heroImage.url} alt={heroImage.alt} fill priority sizes="100vw" className="-z-20 object-cover" /> : null}
+        {heroImage ? <PublicMediaImage src={heroImage.url} alt={heroImage.alt} priority sizes="100vw" className="-z-20 object-cover" /> : null}
         <div className="absolute inset-0 -z-10 bg-[var(--live-background)]/75" />
         <div className="mx-auto flex min-h-[70vh] max-w-7xl items-center px-5 py-20 md:px-8">
           <div className="max-w-3xl">

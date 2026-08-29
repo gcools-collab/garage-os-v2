@@ -13,6 +13,7 @@ export interface GaragePublicViewModel {
   readonly logoUrl: string | null
   readonly description: string
   readonly phone: string | null
+  readonly phoneHref: string | null
   readonly email: string | null
   readonly address: string | null
   readonly socialLinks: readonly PublicNavigationItemViewModel[]

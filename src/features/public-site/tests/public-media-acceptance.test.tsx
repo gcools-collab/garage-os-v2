@@ -190,6 +190,32 @@ test("MG MGB display casing and unknown mileage stay truthful", () => {
   assert.equal(formatVehicleMileage(mapped.mileageKm), "Kilométrage non renseigné")
 })
 
+test("header and floating dock expose the garage phone and two distinct actions", () => {
+  const premium = new PremiumHomepageBuilder().build(buildPublicHomepage(garage, []))
+  const html = renderToStaticMarkup(<PremiumHomepage homepage={premium} />)
+  assert.match(html, /href="tel:0327000000"/)
+  assert.match(html, /03 27 00 00 00/)
+  assert.match(html, /Prendre rendez-vous/)
+  assert.match(html, /Nous contacter/)
+  const emptyServices = { ...garage, serviceConfigurations: [] }
+  const sparse = new PremiumHomepageBuilder().build(buildPublicHomepage(emptyServices, []))
+  assert.equal(sparse.appointmentActions.length, 0)
+  const floating = renderToStaticMarkup(<PremiumCustomerActions homepage={sparse} />)
+  assert.match(floating, /Prendre rendez-vous/)
+  assert.match(floating, /Nous contacter/)
+  assert.match(floating, /href="tel:0327000000"/)
+})
+
+test("Next Image allows Supabase storage hosts and bypasses the Vercel optimizer for remote media", () => {
+  const config = readFileSync("next.config.ts", "utf8")
+  const media = readFileSync("src/features/public-site/components/PublicMediaImage.tsx", "utf8")
+  assert.match(config, /hostname: "\*\.supabase\.co"/)
+  assert.match(config, /pathname: "\/storage\/v1\/object\/public\/\*\*"/)
+  assert.match(media, /unoptimized=\{remote\}/)
+  assert.match(media, /onError/)
+  assert.match(media, /Photo à venir/)
+})
+
 test("sticky CTA keeps destinations and accessible labels with professional icons", () => {
   const premium = new PremiumHomepageBuilder().build(buildPublicHomepage(garage, [liveVehicle()]))
   const html = renderToStaticMarkup(<PremiumCustomerActions homepage={premium} />)

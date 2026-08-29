@@ -1,5 +1,5 @@
-import Image from "next/image"
 import Link from "next/link"
+import { PublicMediaImage } from "@/features/public-site/components/PublicMediaImage"
 import type { VehiclePublicCardViewModel } from "@/features/public-site/types"
 import { isResolvableVehicleImageUrl } from "@/features/vehicles/vehicle-image-presentation"
 
@@ -7,7 +7,7 @@ export function PremiumVehicleCard({ vehicle, featured = false }: { readonly veh
   const hasImage = vehicle.image && isResolvableVehicleImageUrl(vehicle.image.url)
   return <article className={`premium-card group overflow-hidden rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface-elevated)] ${featured ? "grid lg:grid-cols-[1.25fr_0.75fr]" : "flex h-full flex-col"}`}>
     <Link href={vehicle.href} aria-label={`Voir ${vehicle.name}`} className={`relative block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)] ${featured ? "aspect-[4/3] lg:min-h-[18rem]" : "aspect-[4/3]"}`}>
-      {hasImage ? <Image src={vehicle.image.url} alt={vehicle.image.alt} fill sizes={featured ? "(max-width: 1024px) 100vw, 65vw" : "(max-width: 768px) 100vw, 33vw"} className="object-cover" priority={featured} /> : <div className="grid size-full place-items-center bg-[var(--live-surface-muted)] px-4 text-center text-sm text-[var(--live-muted-foreground)]">Photo à venir</div>}
+      {hasImage ? <PublicMediaImage src={vehicle.image.url} alt={vehicle.image.alt} sizes={featured ? "(max-width: 1024px) 100vw, 65vw" : "(max-width: 768px) 100vw, 33vw"} className="object-cover" priority={featured} /> : <div className="grid size-full place-items-center bg-[var(--live-surface-muted)] px-4 text-center text-sm text-[var(--live-muted-foreground)]">Photo à venir</div>}
       {vehicle.badges.length ? <div className="absolute left-4 top-4 flex flex-wrap gap-2">{vehicle.badges.map((badge) => <span key={badge} className="rounded-full bg-[var(--live-background)]/90 px-3 py-1 text-xs font-semibold text-[var(--live-foreground)] backdrop-blur">{badge}</span>)}</div> : null}
     </Link>
     <div className={`flex flex-1 flex-col ${featured ? "justify-center p-7 md:p-10" : "p-5"}`}>

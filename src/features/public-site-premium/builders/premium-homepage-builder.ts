@@ -7,7 +7,7 @@ export class PremiumHomepageBuilder {
     const home = homepage.garage.homeHref
     const stock = `${home}/stock`
     const contact = `${home}/contact`
-    const phoneHref = homepage.garage.phone ? `tel:${homepage.garage.phone.replace(/\s/g, "")}` : null
+    const phoneHref = homepage.garage.phoneHref
     const years = homepage.quickSearch.years
     const serviceIds = new Set(homepage.garage.services.map((service) => service.id))
     const appointmentActions = [

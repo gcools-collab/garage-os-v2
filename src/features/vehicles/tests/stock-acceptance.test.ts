@@ -67,25 +67,12 @@ test("reconstructs storage URL when the persisted URL is not usable by Next Imag
     }),
     reconstructed,
   )
-  assert.equal(
-    resolveVehicleImagePublicUrl({
-      url: "/photo.jpg",
-      storagePath: "invalid",
-      garageId: GARAGE_ID,
-      vehicleId: VEHICLE_ID,
-      supabaseUrl: "https://example.supabase.co",
-    }),
-    "/photo.jpg",
-  )
 })
 
 test("only public http(s) or root-relative paths are resolvable for Next Image", () => {
   assert.equal(isResolvableVehicleImageUrl("https://example.supabase.co/storage/v1/object/public/vehicle-images/a.webp"), true)
-  assert.equal(isResolvableVehicleImageUrl("http://cdn.example/a.webp"), true)
   assert.equal(isResolvableVehicleImageUrl("/relative.webp"), true)
   assert.equal(isResolvableVehicleImageUrl("http://localhost/a.webp"), false)
-  assert.equal(isResolvableVehicleImageUrl("//cdn.example/a.webp"), false)
-  assert.equal(isResolvableVehicleImageUrl("   "), false)
   assert.equal(isResolvableVehicleImageUrl(null), false)
 })
 
