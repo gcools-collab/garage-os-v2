@@ -16,7 +16,7 @@ export class PremiumHomepageBuilder {
       serviceIds.has("REGISTRATION") ? { label: "Carte grise", href: `${contact}?project=registration` } : null,
     ].filter((action): action is NonNullable<typeof action> => action !== null)
     const contactActions = [
-      phoneHref ? { label: "Appeler", href: phoneHref } : null,
+      phoneHref ? { label: "Appeler le garage", href: phoneHref } : null,
       homepage.garage.email ? { label: "Envoyer un e-mail", href: `mailto:${homepage.garage.email}` } : null,
       homepage.garage.address ? { label: "Itinéraire", href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(homepage.garage.address)}` } : null,
       { label: "Formulaire de contact", href: contact },

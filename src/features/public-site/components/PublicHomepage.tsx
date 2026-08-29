@@ -40,7 +40,7 @@ export function PublicHomepage({ homepage }: { readonly homepage: PublicHomepage
             <p className="font-medium">{hero.eyebrow}</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">{hero.title}</h1>
             <p className="mt-6 max-w-2xl text-lg">{hero.description}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="relative z-10 mt-8 flex flex-wrap gap-3">
               <Link href={hero.primaryAction.href} className="rounded-lg bg-[var(--live-primary)] px-5 py-3 font-medium text-[var(--live-primary-foreground)]">{hero.primaryAction.label}</Link>
               {hero.secondaryAction ? <a href={hero.secondaryAction.href} className="rounded-lg border border-[var(--live-border)] px-5 py-3 font-medium">{hero.secondaryAction.label}</a> : null}
             </div>

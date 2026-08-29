@@ -194,16 +194,33 @@ test("header and floating dock expose the garage phone and two distinct actions"
   const premium = new PremiumHomepageBuilder().build(buildPublicHomepage(garage, []))
   const html = renderToStaticMarkup(<PremiumHomepage homepage={premium} />)
   assert.match(html, /href="tel:0327000000"/)
-  assert.match(html, /03 27 00 00 00/)
+  assert.match(html, /Appeler le garage/)
+  assert.match(html, /href="\/g\/sap\/stock"/)
+  assert.match(html, /Découvrir nos véhicules/)
   assert.match(html, /Prendre rendez-vous/)
   assert.match(html, /Nous contacter/)
+  assert.equal(premium.hero.actions[0]?.href, "/g/sap/stock")
+  assert.equal(premium.contactActions[0]?.label, "Appeler le garage")
+  assert.equal(premium.contactActions[0]?.href, "tel:0327000000")
   const emptyServices = { ...garage, serviceConfigurations: [] }
   const sparse = new PremiumHomepageBuilder().build(buildPublicHomepage(emptyServices, []))
   assert.equal(sparse.appointmentActions.length, 0)
   const floating = renderToStaticMarkup(<PremiumCustomerActions homepage={sparse} />)
   assert.match(floating, /Prendre rendez-vous/)
   assert.match(floating, /Nous contacter/)
+  assert.match(floating, /Appeler le garage/)
   assert.match(floating, /href="tel:0327000000"/)
+})
+
+test("header uses the garage logo when a resolvable logo URL exists", () => {
+  const branded = {
+    ...garage,
+    branding: { ...garage.branding, logoUrl: "/sap-logo.png" },
+  }
+  const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(branded, []))} />)
+  assert.match(html, /sap-logo\.png/)
+  assert.match(html, /alt="Service Auto aux Particuliers"/)
+  assert.doesNotMatch(html, />Service Auto aux Particuliers<\/span>/)
 })
 
 test("Next Image allows Supabase storage hosts and bypasses the Vercel optimizer for remote media", () => {

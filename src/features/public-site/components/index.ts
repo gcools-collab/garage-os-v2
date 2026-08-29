@@ -1,4 +1,5 @@
 export { PublicMediaImage } from "./PublicMediaImage"
+export { PublicSiteBrand } from "./PublicSiteBrand"
 export { PublicContactPage } from "./PublicContactPage"
 export { PublicHomepage } from "./PublicHomepage"
 export { PublicLegalPage } from "./PublicLegalPage"

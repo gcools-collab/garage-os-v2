@@ -3,6 +3,14 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 import type { PremiumHomepageViewModel } from "../presentation"
 
+function ActionLink({ href, label }: { readonly href: string; readonly label: string }) {
+  const className = "rounded-xl border border-[var(--live-border)] px-4 py-2.5 text-sm font-medium hover:bg-[var(--live-surface-muted)] focus-visible:outline-2 focus-visible:outline-[var(--live-focus-ring)]"
+  const external = /^(tel:|mailto:|https?:)/i.test(href)
+  return external
+    ? <a href={href} className={className}>{label}</a>
+    : <Link href={href} className={className}>{label}</Link>
+}
+
 function ActionPanel({
   id,
   label,
@@ -24,7 +32,7 @@ function ActionPanel({
     <div className="absolute bottom-full right-0 mb-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface-elevated)] p-4 shadow-[0_12px_36px_var(--live-shadow-color)]">
       <p className="flex items-center gap-2 font-semibold"><Icon className="size-4 shrink-0 opacity-80" aria-hidden="true" strokeWidth={1.75} />{label}</p>
       {children}
-      <nav aria-label={label} className="mt-3 grid gap-2">{actions.map((action) => <Link key={action.href} href={action.href} className="rounded-xl border border-[var(--live-border)] px-4 py-2.5 text-sm font-medium hover:bg-[var(--live-surface-muted)] focus-visible:outline-2 focus-visible:outline-[var(--live-focus-ring)]">{action.label}</Link>)}</nav>
+      <nav aria-label={label} className="mt-3 grid gap-2">{actions.map((action) => <ActionLink key={action.href} href={action.href} label={action.label} />)}</nav>
     </div>
   </details>
 }

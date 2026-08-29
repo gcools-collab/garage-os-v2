@@ -10,7 +10,7 @@ export function PublicStockPage({ stock }: { readonly stock: PublicStockViewMode
   return (
     <PublicSiteLayout garage={stock.garage}>
       <header className="mx-auto max-w-7xl px-5 pb-10 pt-16 md:px-8"><h1 className="text-4xl font-semibold">{stock.title}</h1><p className="mt-3 text-[var(--live-muted-foreground)]">{stock.description}</p></header>
-      <div className="mx-auto grid max-w-7xl gap-8 px-5 pb-20 lg:grid-cols-[16rem_1fr] md:px-8">
+      <div className="mx-auto grid max-w-7xl gap-8 px-5 pb-32 lg:grid-cols-[16rem_1fr] md:px-8 md:pb-28">
         <form action={stock.filters.action} className="grid content-start gap-4 rounded-2xl border border-[var(--live-border)] p-5">
           {filter("brand", "Marque", stock.filters.brands)}
           {filter("model", "Modèle", stock.filters.models)}

@@ -67,6 +67,7 @@ test("le builder garage prépare branding, navigation et coordonnées", () => {
   assert.equal(view.socialLinks.length, 1)
   assert.equal(view.phone, "03 27 00 00 00")
   assert.equal(view.phoneHref, "tel:0327000000")
+  assert.equal(view.logoUrl, "https://images.example/logo.png")
 })
 
 test("la homepage prépare toutes les sections sans entité brute", () => {

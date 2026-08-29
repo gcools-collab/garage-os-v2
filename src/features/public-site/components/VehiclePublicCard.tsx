@@ -34,7 +34,7 @@ export function VehiclePublicCard({ vehicle }: { readonly vehicle: VehiclePublic
         </dl>
         <Link
           href={vehicle.href}
-          className="mt-auto inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--live-primary)] px-4 font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[var(--live-primary)] px-4 text-center font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           Voir le véhicule
         </Link>

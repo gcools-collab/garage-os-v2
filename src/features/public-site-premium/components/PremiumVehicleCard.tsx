@@ -16,7 +16,7 @@ export function PremiumVehicleCard({ vehicle, featured = false }: { readonly veh
       {vehicle.version ? <p className="mt-1 text-sm text-[var(--live-muted-foreground)]">{vehicle.version}</p> : null}
       <p className={`${featured ? "mt-6 text-3xl" : "mt-4 text-2xl"} font-semibold tabular-nums text-[var(--live-primary)]`}>{vehicle.price}</p>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-[var(--live-muted-foreground)]"><div><dt className="sr-only">Année</dt><dd>{vehicle.year}</dd></div><div><dt className="sr-only">Kilométrage</dt><dd>{vehicle.mileage}</dd></div><div><dt className="sr-only">Énergie</dt><dd>{vehicle.fuel}</dd></div><div><dt className="sr-only">Boîte</dt><dd>{vehicle.gearbox}</dd></div></dl>
-      <Link href={vehicle.href} className="mt-auto pt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--live-primary)] px-5 font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">Découvrir ce véhicule</Link>
+      <Link href={vehicle.href} className="mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[var(--live-primary)] px-5 text-center font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">Découvrir ce véhicule</Link>
     </div>
   </article>
 }
