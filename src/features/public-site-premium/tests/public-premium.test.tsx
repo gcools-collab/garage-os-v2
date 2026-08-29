@@ -46,6 +46,20 @@ test("customer actions only expose enabled appointment workflows",()=>{const con
 
 test("empty stock and missing coordinates stay honest",()=>{const sparse={...garage(),branding:{...garage().branding,phone:null,email:null,formattedAddress:null}};const premium=new PremiumHomepageBuilder().build(buildPublicHomepage(sparse,[]));const html=renderToStaticMarkup(<PremiumHomepage homepage={premium}/>);assert.doesNotMatch(html,/Nos véhicules disponibles|Voir tous nos véhicules/);assert.deepEqual(premium.contactActions.map(action=>action.label),["Formulaire de contact"])})
 
+test("reviews section stays honest and links to Google without inventing a rating", () => {
+  const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1")]))} />)
+  assert.match(html, /Aucun avis public vérifié pour le moment/)
+  assert.match(html, /Voir nos avis sur Google/)
+  assert.doesNotMatch(html, /[1-5][,.]?[0-9]?\s*\/\s*5|[1-5]\s*étoiles?|★★★/)
+})
+
+test("hero exposes a direct phone CTA and trust indicators without inventing figures", () => {
+  const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1")]))} />)
+  assert.match(html, /href="tel:0327000000"/)
+  assert.match(html, /Sélection exigeante/)
+  assert.match(html, /Relation de confiance/)
+})
+
 test("premium vehicle cards use responsive Next images and accessible links", () => {
   const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1")]))} />)
   assert.match(html, /sizes="\(max-width: 768px\) 100vw, 33vw"/)

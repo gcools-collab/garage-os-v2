@@ -1,7 +1,7 @@
 import type { GaragePublicViewModel, PublicNavigationItemViewModel, VehiclePublicCardViewModel } from "@/features/public-site/types"
 
 export interface PremiumSectionHeadingViewModel { readonly eyebrow: string; readonly title: string; readonly description: string }
-export interface PremiumFeatureViewModel { readonly id: string; readonly title: string; readonly description: string; readonly icon: "SHIELD" | "HANDSHAKE" | "SPARKLES" | "CAR" | "WALLET" | "MAP"; readonly action?: PublicNavigationItemViewModel }
+export interface PremiumFeatureViewModel { readonly id: string; readonly title: string; readonly description: string; readonly icon: "SHIELD" | "HANDSHAKE" | "SPARKLES" | "CAR" | "KEY" | "FILE" | "ENGINE" | "TOOLS" | "MAP"; readonly action?: PublicNavigationItemViewModel }
 export interface PremiumHomepageViewModel {
   readonly garage: GaragePublicViewModel
   readonly hero: {

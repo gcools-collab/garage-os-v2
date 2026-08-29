@@ -7,7 +7,7 @@ import { getPublicVehicleImageSizes } from "../presentation/responsive"
 export function VehiclePublicCard({ vehicle }: { readonly vehicle: VehiclePublicCardViewModel }) {
   const hasImage = vehicle.image && isResolvableVehicleImageUrl(vehicle.image.url)
   return (
-    <article className="group overflow-hidden rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--live-muted)]">
         {hasImage ? (
           <Image
@@ -21,7 +21,7 @@ export function VehiclePublicCard({ vehicle }: { readonly vehicle: VehiclePublic
           <div className="flex size-full items-center justify-center text-sm text-[var(--live-muted-foreground)]">Photo à venir</div>
         )}
       </div>
-      <div className="space-y-4 p-5">
+      <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
           <p className="text-sm text-[var(--live-muted-foreground)]">{vehicle.version}</p>
           <h3 className="text-xl font-semibold">{vehicle.name}</h3>
@@ -35,7 +35,7 @@ export function VehiclePublicCard({ vehicle }: { readonly vehicle: VehiclePublic
         </dl>
         <Link
           href={vehicle.href}
-          className="inline-flex min-h-11 items-center rounded-lg bg-[var(--live-primary)] px-4 font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="mt-auto inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--live-primary)] px-4 font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           Voir le véhicule
         </Link>

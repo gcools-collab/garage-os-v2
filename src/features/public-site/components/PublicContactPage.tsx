@@ -12,6 +12,7 @@ const projectLabels: Readonly<Record<string, string>> = {
   "trade-in": "Reprise véhicule",
   consignment: "Dépôt-vente",
   buy: "Achat véhicule",
+  rental: "Location",
   other: "Demande libre",
 }
 
@@ -65,7 +66,7 @@ export function PublicContactPage({
           {contact.garage.address ? (
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--live-muted-foreground)]">
               <span>{contact.garage.name} — {contact.garage.address}</span>
-              {mapHref ? <a href={mapHref} className="font-medium underline underline-offset-4">Voir la carte</a> : null}
+              {mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">Itinéraire</a> : null}
             </div>
           ) : null}
         </header>
@@ -73,6 +74,13 @@ export function PublicContactPage({
         <div className="mx-auto max-w-4xl px-5 pt-10 md:px-8">
           <h1 className="text-4xl font-semibold">{contact.title}</h1>
           <p className="mt-4 text-[var(--live-muted-foreground)]">{contact.description}</p>
+          {contact.phoneHref || contact.garage.address ? (
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+              {contact.phoneHref ? <a href={contact.phoneHref} className="font-semibold hover:underline">{contact.garage.phone}</a> : null}
+              {contact.garage.address ? <span className="text-[var(--live-muted-foreground)]">{contact.garage.address}</span> : null}
+              {mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">Itinéraire</a> : null}
+            </div>
+          ) : null}
         </div>
       )}
 

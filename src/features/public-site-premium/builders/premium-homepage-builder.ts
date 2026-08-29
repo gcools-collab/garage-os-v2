@@ -39,7 +39,7 @@ export class PremiumHomepageBuilder {
         id: service.id,
         title: service.title,
         description: service.description,
-        icon: service.icon === "SHIELD" ? "SHIELD" as const : service.icon === "FILE" ? "WALLET" as const : "CAR" as const,
+        icon: service.icon,
         action: { label: service.actionLabel, href: service.href },
       })) },
       whyUs: { heading: heading("Notre engagement", `Pourquoi choisir ${homepage.garage.name}`, "Une expérience automobile transparente, exigeante et humaine."), items: [

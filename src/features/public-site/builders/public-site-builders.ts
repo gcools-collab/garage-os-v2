@@ -5,6 +5,7 @@ import type {
   GaragePublicViewModel,
   PublicContactViewModel,
   PublicHomepageViewModel,
+  PublicNavigationItemViewModel,
   PublicProgramPageViewModel,
   PublicSeoViewModel,
   PublicServicesPageViewModel,
@@ -285,20 +286,44 @@ export function buildPublicProgram(
   const garage = buildGaragePublicViewModel(garageRecord)
   const service = garage.services.find((item) => item.id === kind)
   if (!service) return null
+  const phoneHref = garage.phone ? `tel:${garage.phone.replace(/\s/g, "")}` : null
+  const mapHref = garage.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(garage.address)}` : null
+  const contact = { phoneHref, phoneLabel: garage.phone, address: garage.address, mapHref }
+  const callAction: PublicNavigationItemViewModel | null = phoneHref ? { label: "Appeler le garage", href: phoneHref } : null
   return kind === "RENTAL" ? {
     garage,
     eyebrow: "Location",
     title: "Une solution de mobilité adaptée à votre besoin",
     description: "Contactez notre équipe pour connaître les véhicules et conditions actuellement disponibles.",
     benefits: ["Un accompagnement direct", "Des disponibilités confirmées par le garage", "Une demande sans engagement"],
-    action: { label: "Nous contacter", href: `${garage.homeHref}/contact?project=rental` },
+    details: [
+      { label: "Durée de location", value: "De 1 jour à plusieurs mois, jusqu’à 12 mois selon les disponibilités." },
+      { label: "Réservation", value: "Une demande de devis en ligne, confirmée directement par le garage." },
+      { label: "Documents à prévoir", value: "Permis de conduire valide, pièce d’identité et justificatif de domicile récent." },
+      { label: "Conditions", value: "Dépôt de garantie et moyen de paiement à votre nom demandés au retrait du véhicule." },
+    ],
+    steps: [],
+    reassurance: [],
+    contact,
+    action: { label: "Demander un devis", href: `${garage.homeHref}/contact?project=rental` },
+    secondaryAction: callAction,
   } : {
     garage,
     eyebrow: "Dépôt-vente",
     title: "Confiez-nous la vente de votre véhicule",
     description: "Notre équipe vous accompagne dans la présentation et la commercialisation de votre véhicule.",
     benefits: ["Présentation professionnelle", "Gestion des contacts", "Accompagnement jusqu’à la vente"],
+    details: [],
+    steps: [
+      { title: "Estimation de votre véhicule", description: "Nous étudions les caractéristiques et l’état de votre véhicule pour vous proposer une mise en vente adaptée." },
+      { title: "Contrat de dépôt-vente", description: "Un contrat clair précise les conditions de présentation et de commercialisation, sans engagement caché." },
+      { title: "Mise en avant du véhicule", description: "Votre véhicule est présenté et promu auprès des acheteurs potentiels par notre équipe." },
+      { title: "Vente et versement", description: "Une fois la vente conclue, le montant convenu vous est reversé selon les modalités du contrat." },
+    ],
+    reassurance: ["Aucune vente sans votre accord préalable", "Interlocuteur dédié pour le suivi de votre dossier", "Présentation professionnelle de votre véhicule"],
+    contact,
     action: { label: "Déposer mon véhicule", href: `${garage.homeHref}/contact?project=consignment` },
+    secondaryAction: callAction,
   }
 }
 

@@ -117,7 +117,7 @@ export function buildPublicLiveEngine({
         {
           id: "catalog",
           enabled: true,
-          navigation: { id: "catalog", label: "Nos véhicules", href: `${basePath}/vehicles` },
+          navigation: { id: "catalog", label: "Nos véhicules", href: `${basePath}/stock` },
           order: 1,
         },
         { id: "services", enabled: false, navigation: null, order: 2 },
@@ -135,7 +135,7 @@ export function buildPublicLiveEngine({
           ? `${vehicles.length} véhicule${vehicles.length > 1 ? "s" : ""} disponible${vehicles.length > 1 ? "s" : ""}`
           : "Notre stock arrive bientôt",
         description: garage.branding.shortDescription ?? "Découvrez les véhicules disponibles dans notre garage.",
-        primaryAction: { id: "catalog", label: "Voir le catalogue", href: `${basePath}/vehicles` },
+        primaryAction: { id: "catalog", label: "Voir le catalogue", href: `${basePath}/stock` },
         trustItems: [],
       },
     },

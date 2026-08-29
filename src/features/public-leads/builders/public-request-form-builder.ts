@@ -42,5 +42,5 @@ export function buildPublicRequestForm(type: PublicRequestType, contextHeading: 
     fields: applyServiceFormConfig(type, base.fields),
   }
 }
-const projects: Readonly<Record<string, PublicRequestType>> = { buy: "VEHICLE_INQUIRY", "test-drive": "TEST_DRIVE", "trade-in": "TRADE_IN", consignment: "CONSIGNMENT", registration: "REGISTRATION", "engine-cleaning": "ENGINE_CLEANING", other: "GENERAL_CONTACT" }
+const projects: Readonly<Record<string, PublicRequestType>> = { buy: "VEHICLE_INQUIRY", "test-drive": "TEST_DRIVE", "trade-in": "TRADE_IN", consignment: "CONSIGNMENT", registration: "REGISTRATION", "engine-cleaning": "ENGINE_CLEANING", rental: "RENTAL", other: "GENERAL_CONTACT" }
 export function resolvePublicRequestType(project: string | string[] | undefined) { return typeof project === "string" ? projects[project] ?? null : null }

@@ -134,13 +134,35 @@ export interface PublicServicesPageViewModel {
   readonly services: readonly PublicServiceViewModel[]
 }
 
+export interface PublicProgramDetailViewModel {
+  readonly label: string
+  readonly value: string
+}
+
+export interface PublicProgramStepViewModel {
+  readonly title: string
+  readonly description: string
+}
+
+export interface PublicProgramContactViewModel {
+  readonly phoneHref: string | null
+  readonly phoneLabel: string | null
+  readonly address: string | null
+  readonly mapHref: string | null
+}
+
 export interface PublicProgramPageViewModel {
   readonly garage: GaragePublicViewModel
   readonly eyebrow: string
   readonly title: string
   readonly description: string
   readonly benefits: readonly string[]
+  readonly details: readonly PublicProgramDetailViewModel[]
+  readonly steps: readonly PublicProgramStepViewModel[]
+  readonly reassurance: readonly string[]
+  readonly contact: PublicProgramContactViewModel
   readonly action: PublicNavigationItemViewModel
+  readonly secondaryAction: PublicNavigationItemViewModel | null
 }
 
 export interface PublicSeoViewModel {

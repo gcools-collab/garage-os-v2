@@ -3,10 +3,12 @@ import { existsSync } from "node:fs"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
+import { readFileSync } from "node:fs"
 import type { PublicGarageContext } from "@/features/live-stock"
 import { getLiveThemeDefinition } from "@/features/theme"
+import { resolvePublicRequestType } from "@/features/public-leads"
 import { buildGaragePublicViewModel, buildPublicContact, buildPublicProgram, buildPublicServices } from "../builders"
-import { PublicProgramPage, PublicServicesPage } from "../components"
+import { PublicContactPage, PublicProgramPage, PublicServicesPage, PublicSiteLayout } from "../components"
 import { buildGarageServiceSettingsViewModel, resolveEnabledPublicServiceIds } from "../services"
 
 const enabled = ["VEHICLE_SALES", "CONSIGNMENT", "RENTAL", "ENGINE_CLEANING", "REGISTRATION"] as const
@@ -74,5 +76,65 @@ test("le centre de contact prépare les sept parcours attendus", () => {
 test("les routes du parcours public V2 existent", () => {
   for (const route of ["services", "location", "depot-vente"]) {
     assert.equal(existsSync(`src/app/(public)/g/[garageSlug]/${route}/page.tsx`), true)
+  }
+})
+
+test("la location expose durée, documents, conditions, téléphone et itinéraire", () => {
+  const rental = buildPublicProgram(garage, "RENTAL")
+  assert.ok(rental)
+  const labels = rental.details.map((detail) => detail.label).join(" ")
+  assert.match(labels, /Durée de location/)
+  assert.match(labels, /Documents à prévoir/)
+  assert.match(labels, /Conditions/)
+  assert.match(rental.details.map((detail) => detail.value).join(" "), /1 jour.*12 mois/)
+  assert.equal(rental.contact.phoneHref, "tel:0327000000")
+  assert.ok(rental.contact.mapHref?.includes("google.com/maps"))
+  const html = renderToStaticMarkup(<PublicProgramPage page={rental} />)
+  assert.match(html, /Demander un devis/)
+  assert.match(html, /Itinéraire/)
+  assert.match(html, /Informations pratiques/)
+})
+
+test("le dépôt-vente expose ses étapes et sa réassurance", () => {
+  const consignment = buildPublicProgram(garage, "CONSIGNMENT")
+  assert.ok(consignment)
+  assert.equal(consignment.steps.length, 4)
+  assert.ok(consignment.reassurance.length > 0)
+  const html = renderToStaticMarkup(<PublicProgramPage page={consignment} />)
+  assert.match(html, /Comment ça marche/)
+  assert.match(html, /Estimation de votre véhicule/)
+  assert.match(html, /Nos engagements/)
+  assert.match(html, /Déposer mon véhicule/)
+})
+
+test("le parcours location est résolu et ouvre un vrai formulaire (plus de demande vide)", () => {
+  assert.equal(resolvePublicRequestType("rental"), "RENTAL")
+  const contact = buildPublicContact(garage)
+  const html = renderToStaticMarkup(
+    <PublicContactPage
+      contact={contact}
+      selectedProject="rental"
+      request={{ form: { type: "RENTAL", contextHeading: null, title: "Demande de location", description: "Le garage vous informera des possibilités disponibles.", submitLabel: "Être recontacté", steps: [{ id: "contact", title: "Vos coordonnées" }], fields: [] }, vehicleSlug: null, vehicleContext: null, source: "SERVICE_PAGE", availability: [] }}
+    />
+  )
+  assert.match(html, /Location/)
+  assert.doesNotMatch(html, /Cette demande n.est pas disponible/)
+})
+
+test("l'en-tête public expose un accès téléphone et rendez-vous, y compris sur mobile", () => {
+  const services = buildPublicServices(garage)
+  const html = renderToStaticMarkup(<PublicSiteLayout garage={services.garage}><p>contenu</p></PublicSiteLayout>)
+  assert.match(html, /href="tel:0327000000"/)
+  assert.match(html, /Rendez-vous/)
+})
+
+test("les cartes véhicule alignent leur CTA en bas de carte quelle que soit la description", () => {
+  for (const file of [
+    "src/features/public-site/components/VehiclePublicCard.tsx",
+    "src/features/public-site-premium/components/PremiumVehicleCard.tsx",
+  ]) {
+    const source = readFileSync(file, "utf8")
+    assert.match(source, /flex h-full flex-col/)
+    assert.match(source, /mt-auto/)
   }
 })
