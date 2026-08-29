@@ -1,14 +1,11 @@
-"use server"
-
-import { redirect } from "next/navigation"
 import { PayPlugProvider } from "../providers/payplug/payplug-provider"
 import { createPaymentAdminClient } from "../repositories/payment-repository"
 import { getPayPlugConfig, validatePayPlugConfig } from "../providers/payplug/payplug-client"
 
 type PaymentFailureReason = "already_paid" | "configuration" | "disabled" | "invalid_snapshot" | "missing_hosted_url" | "persistence" | "provider" | "public_https_required" | "unavailable"
-type PaymentCreationResult = Readonly<{ ok: true; url: string }> | Readonly<{ ok: false; reason: PaymentFailureReason }>
+export type PaymentCreationResult = Readonly<{ ok: true; url: string }> | Readonly<{ ok: false; reason: PaymentFailureReason }>
 
-export async function createAppointmentPayment(appointmentId: string, garageSlug: string): Promise<PaymentCreationResult> {
+export async function startAppointmentPayment(appointmentId: string, garageSlug: string): Promise<PaymentCreationResult> {
   let config
   try {
     config = getPayPlugConfig()
@@ -73,9 +70,4 @@ export async function createAppointmentPayment(appointmentId: string, garageSlug
     console.error("PayPlug payment creation failed", { provider: "PAYPLUG", operation: "create_test_payment", errorType: providerError instanceof Error ? providerError.name : "UnknownError" })
     return { ok: false, reason: "provider" }
   }
-}
-
-export async function redirectToAppointmentPayment(formData: FormData): Promise<void> {
-  const result = await createAppointmentPayment(String(formData.get("appointmentId") ?? ""), String(formData.get("garageSlug") ?? ""))
-  if (result.ok) redirect(result.url)
 }

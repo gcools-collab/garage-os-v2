@@ -86,7 +86,7 @@ test("le dashboard utilise seulement les paiements opérationnels reçus", () =>
 })
 
 test("la création est tenant-scopée, exclut l’historique et utilise le snapshot serveur", () => {
-  const source = readFileSync("src/features/payments/actions/payment-actions.ts", "utf8")
+  const source = readFileSync("src/features/payments/services/payment-creation-service.ts", "utf8")
   assert.match(source, /\.eq\("garage_id", garage\.id\)/)
   assert.match(source, /\.eq\("is_historical", false\)/)
   assert.match(source, /snapshot\?\.amount_due_now_cents/)
@@ -130,4 +130,18 @@ test("migration 57 restricts verified reconciliation to service_role", () => {
   const applyBlock = sql.slice(0, sql.indexOf("alter function public.create_billing_document_draft"))
   assert.match(applyBlock, /revoke execute on function public\.apply_verified_payment[\s\S]*from public, anon, authenticated/i)
   assert.match(applyBlock, /grant execute on function public\.apply_verified_payment[\s\S]*to service_role/i)
+})
+
+test("le moteur de paiement n'est pas une Server Action pilotable par le navigateur", () => {
+  const service = readFileSync("src/features/payments/services/payment-creation-service.ts", "utf8")
+  const exports = readFileSync("src/features/payments/index.ts", "utf8")
+  assert.doesNotMatch(service, /["']use server["']/)
+  assert.doesNotMatch(exports, /payment-creation-service|payment-actions/)
+  assert.throws(() => readFileSync("src/features/payments/actions/payment-actions.ts", "utf8"), /ENOENT/)
+})
+
+test("la réservation publique ne paie que le rendez-vous renvoyé par la réservation serveur", () => {
+  const action = readFileSync("src/features/public-leads/actions/public-request-actions.ts", "utf8")
+  assert.match(action, /startAppointmentPayment\(booking\.appointmentId, data\.garageSlug\)/)
+  assert.doesNotMatch(action, /formData\.get\("appointmentId"\)/)
 })

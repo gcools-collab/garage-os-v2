@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { createAppointmentPayment } from "@/features/payments/actions/payment-actions"
+import { startAppointmentPayment } from "@/features/payments/services/payment-creation-service"
 import { getPublicRegistrationPortal, uploadPublicRegistrationDocument } from "../storage"
 
 export type PublicRegistrationUploadState = Readonly<{ status: "idle" | "success" | "error"; message: string }>
@@ -28,11 +28,11 @@ export async function resumePublicRegistrationPayment(
 ): Promise<PublicPaymentResumeState> {
   const garageSlug = String(formData.get("garageSlug") ?? "").trim().toLowerCase()
   const token = String(formData.get("token") ?? "")
-  let result: Awaited<ReturnType<typeof createAppointmentPayment>>
+  let result: Awaited<ReturnType<typeof startAppointmentPayment>>
   try {
     const portal = await getPublicRegistrationPortal(garageSlug, token)
     if (!portal?.paymentResume || !portal.appointment?.id) return { status: "error", message: "Ce paiement n'est plus disponible." }
-    result = await createAppointmentPayment(String(portal.appointment.id), garageSlug)
+    result = await startAppointmentPayment(String(portal.appointment.id), garageSlug)
   } catch (error) {
     console.error("Public payment resume failed", { operation: "resume_public_registration_payment", errorType: error instanceof Error ? error.name : "UnknownError" })
     return { status: "error", message: "Le paiement n'a pas pu démarrer. Vous pouvez réessayer sans recréer votre demande." }

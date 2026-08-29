@@ -9,7 +9,7 @@ import { createPublicCustomerRequest } from "../repositories"
 import type { PublicRequestState } from "../types"
 import { validatePublicRequest } from "../validation"
 import { bookPublicAppointment, createPublicRegistrationCase } from "@/features/scheduling/repositories/scheduling-repository"
-import { createAppointmentPayment } from "@/features/payments/actions/payment-actions"
+import { startAppointmentPayment } from "@/features/payments/services/payment-creation-service"
 
 const humanError = "Nous n’avons pas pu transmettre votre demande. Vérifiez vos informations puis réessayez."
 export async function submitPublicCustomerRequest(_state: PublicRequestState, formData: FormData): Promise<PublicRequestState> {
@@ -57,7 +57,7 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
     })
     if (booking.outcome !== "success") return { status: "unavailable", message: "Ce créneau n’est plus disponible. Votre demande a été conservée et le garage pourra vous recontacter." }
     if (booking.status === "PENDING" || booking.status === "CONFIRMED" || booking.status === "AWAITING_PAYMENT") appointmentStatus = booking.status
-    if (booking.status === "AWAITING_PAYMENT" && booking.appointmentId) { const payment = await createAppointmentPayment(booking.appointmentId, data.garageSlug); if (payment.ok) paymentUrl = payment.url }
+    if (booking.status === "AWAITING_PAYMENT" && booking.appointmentId) { const payment = await startAppointmentPayment(booking.appointmentId, data.garageSlug); if (payment.ok) paymentUrl = payment.url }
     if (data.requestType === "REGISTRATION" && booking.appointmentId) { const token = await createPublicRegistrationCase({ garageSlug: data.garageSlug, appointmentId: booking.appointmentId, leadId: result.leadId, fingerprint, procedure: String(data.payload.procedure ?? "OTHER"), registration: typeof data.payload.registration === "string" ? data.payload.registration : null, brand: typeof data.payload.brand === "string" ? data.payload.brand : null, model: typeof data.payload.model === "string" ? data.payload.model : null }); if (token) registrationUrl = `/g/${data.garageSlug}/registration/${token}` }
   }
   revalidatePath("/leads"); revalidatePath("/commercial"); revalidatePath("/dashboard"); revalidatePath("/notifications")
