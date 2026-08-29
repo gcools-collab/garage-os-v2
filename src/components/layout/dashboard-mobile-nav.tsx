@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet"
 
 import {
-  dashboardNavigation,
+  dashboardNavigationSections,
   isDashboardNavItemActive,
   resolveDashboardSectionTitle,
 } from "./dashboard-navigation"
@@ -44,23 +44,30 @@ export function DashboardMobileNav() {
         <SheetHeader className="border-b border-zinc-800 px-4 py-4">
           <SheetTitle className="text-white">Navigation</SheetTitle>
         </SheetHeader>
-        <nav aria-label="Navigation principale" className="space-y-1 overflow-y-auto p-3">
-          {dashboardNavigation.map((item) => {
-            const Icon = item.icon
-            const active = isDashboardNavItemActive(pathname, item.href)
-            return (
-              <SheetClose asChild key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-white aria-[current=page]:bg-zinc-800 aria-[current=page]:font-medium aria-[current=page]:text-white"
-                >
-                  <Icon size={18} aria-hidden="true" />
-                  {item.name}
-                </Link>
-              </SheetClose>
-            )
-          })}
+        <nav aria-label="Navigation principale" className="space-y-5 overflow-y-auto p-3">
+          {dashboardNavigationSections.map((section) => (
+            <div key={section.id}>
+              <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">{section.label}</p>
+              <div className="mt-2 space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon
+                  const active = isDashboardNavItemActive(pathname, item.href)
+                  return (
+                    <SheetClose asChild key={item.href}>
+                      <Link
+                        href={item.href}
+                        aria-current={active ? "page" : undefined}
+                        className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-white aria-[current=page]:bg-zinc-800 aria-[current=page]:font-medium aria-[current=page]:text-white"
+                      >
+                        <Icon size={18} aria-hidden="true" />
+                        {item.name}
+                      </Link>
+                    </SheetClose>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </SheetContent>
     </Sheet>

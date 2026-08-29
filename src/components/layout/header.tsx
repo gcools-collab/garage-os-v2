@@ -16,12 +16,14 @@ import type { GarageBrandingShellViewModel } from "@/features/branding"
 import { NotificationCenter, type NotificationCenterViewModel } from "@/features/notifications"
 
 import { DashboardMobileNav, DashboardSectionTitle } from "./dashboard-mobile-nav"
+import { isRealPhotoUrl, userInitials } from "./user-identity"
 
 type DashboardUserViewModel = {
   readonly displayName: string | null
   readonly email: string | null
   readonly garageName: string
   readonly role: string
+  readonly photoUrl?: string | null
 }
 
 const roleLabels: Readonly<Record<string, string>> = {
@@ -31,7 +33,6 @@ const roleLabels: Readonly<Record<string, string>> = {
 }
 
 export function Header({
-  branding,
   notifications,
   user,
 }: {
@@ -41,6 +42,8 @@ export function Header({
 }) {
   const identity = user.displayName?.trim() || user.email || "Utilisateur"
   const role = roleLabels[user.role] ?? user.role
+  const photoUrl = isRealPhotoUrl(user.photoUrl) ? user.photoUrl!.trim() : null
+  const initials = userInitials(user.displayName, user.email)
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-4 sm:px-8">
       <div className="flex min-w-0 items-center gap-2">
@@ -53,8 +56,8 @@ export function Header({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-auto min-w-0 gap-2 px-2" aria-label="Ouvrir le menu utilisateur">
               <Avatar size="sm">
-                {branding.logoUrl ? <AvatarImage src={branding.logoUrl} alt="" /> : null}
-                <AvatarFallback>{branding.initials}</AvatarFallback>
+                {photoUrl ? <AvatarImage src={photoUrl} alt="" /> : null}
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <span className="hidden max-w-48 truncate text-sm sm:block">{identity}</span>
             </Button>

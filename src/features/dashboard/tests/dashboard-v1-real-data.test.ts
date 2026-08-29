@@ -70,7 +70,9 @@ test("la page dashboard n'utilise plus buildGarageDashboard avec fixture par dé
   const source = readFileSync("src/app/(dashboard)/dashboard/page.tsx", "utf8")
 
   assert.match(source, /buildGarageDashboardFromBrief/)
+  assert.match(source, /DailyCockpit/)
   assert.doesNotMatch(source, /buildGarageDashboard\s*\(/)
+  assert.doesNotMatch(source, /DailyBriefCard/)
 })
 
 test("DashboardService filtre les véhicules sur le garage actif uniquement", () => {

@@ -26,7 +26,7 @@
     "test:public-leads": "tsx --test src/features/public-leads/tests/*.test.tsx",
     "test:scheduling": "tsx --test src/features/scheduling/tests/*.test.tsx",
     "test:commercial": "tsx --test src/features/commercial/commercial.test.tsx src/features/notifications/notifications.test.ts",
-    "test:intelligence": "tsx --test src/features/intelligence/intelligence.test.tsx src/features/intelligence/daily-brief.test.tsx src/features/dashboard/tests/dashboard-v1-real-data.test.ts",
+    "test:intelligence": "tsx --test src/features/intelligence/intelligence.test.tsx src/features/intelligence/daily-brief.test.tsx src/features/dashboard/tests/dashboard-v1-real-data.test.ts src/features/dashboard/tests/daily-cockpit.test.tsx",
     "test:copilot": "tsx --test src/features/copilot/tests/*.test.ts",
     "test:copilot-actions": "tsx --test src/features/copilot-actions/tests/*.test.ts",
     "test:tenant": "tsx --test src/features/tenant/tenant.test.ts",
