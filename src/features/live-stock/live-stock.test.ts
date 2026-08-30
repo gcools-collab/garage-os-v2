@@ -65,6 +65,7 @@ function vehicle(overrides: Partial<LiveStockVehicle> = {}): LiveStockVehicle {
     fuelType: "Essence",
     transmission: "Automatique",
     bodyType: "Berline",
+    stockCategory: null,
     powerHp: 130,
     fiscalPower: 7,
     doors: 5,
@@ -155,7 +156,7 @@ test("le mapper convertit le prix en centimes et rejette les photos d'un autre t
     const record: PublicVehicleRecord = {
       id: vehicle().id, garage_id: "garage-a", live_slug: vehicle().slug,
       brand: "Peugeot", model: "308", version: "GT", year: 2022, mileage: 35000,
-      fuel: "Essence", gearbox: "Automatique", body_type: "Berline", power_din: 130,
+      fuel: "Essence", gearbox: "Automatique", body_type: "Berline", stock_category: null, power_din: 130,
       fiscal_power: 7, doors: 5, seats: 5, color: "Bleu",
       first_registration_date: "2022-04-01", selling_price: 24990,
       description: "Description", status: "PUBLISHED", publication_status: "PUBLISHED",

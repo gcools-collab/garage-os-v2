@@ -10,7 +10,7 @@ import { PremiumHomepage, PremiumAssetGallery } from "../components"
 
 const garage = (theme: "default" | "black-yellow" | "midnight" = "default"): PublicGarageContext => ({ garageId: "garage-1", garageSlug: "premium-cars", displayName: "Premium Cars", status: "ACTIVE", basePath: "/g/premium-cars", liveTheme: getLiveThemeDefinition(theme), branding: { displayName: "Premium Cars", legalName: "Premium Cars SAS", logoUrl: null, faviconUrl: null, phone: "0327000000", formattedPhone: "03 27 00 00 00", email: "contact@premium.test", formattedAddress: "1 rue Automobile, Raismes", shortDescription: "Une sélection automobile exigeante.", socialLinks: { facebookUrl: null, instagramUrl: null }, themeKey: theme, colors: { primary: null, secondary: null, accent: null } } })
 const TEST_IMAGE = "/test-vehicle.jpg"
-const vehicle = (id: string): LiveStockVehicle => ({ id, garageId: "garage-1", slug: `bmw-m3-${id}`, make: "BMW", model: "M3", version: "Competition", title: "BMW M3 Competition", year: 2020, mileageKm: 45000, fuelType: "Essence", transmission: "Automatique", bodyType: "Berline", powerHp: 510, fiscalPower: 42, doors: 4, seats: 5, color: "Noir", registrationDate: "2020-06-01", priceCents: 7000000, previousPriceCents: null, description: "BMW M3 disponible.", equipment: [], status: "PUBLISHED", publicationStatus: "PUBLISHED", publishedAt: "2026-07-20T10:00:00.000Z", soldAt: null, createdAt: "2026-07-20T10:00:00.000Z", updatedAt: "2026-07-20T10:00:00.000Z", co2Emissions: 220, critAir: 1, euroStandard: "Euro 6", ownersCount: 1, photos: [{ id: `photo-${id}`, path: `${id}.webp`, url: TEST_IMAGE, alt: "BMW M3 noire", position: 0, isCover: true, width: 1600, height: 1200 }] })
+const vehicle = (id: string): LiveStockVehicle => ({ id, garageId: "garage-1", slug: `bmw-m3-${id}`, make: "BMW", model: "M3", version: "Competition", title: "BMW M3 Competition", year: 2020, mileageKm: 45000, fuelType: "Essence", transmission: "Automatique", bodyType: "Berline", stockCategory: null, powerHp: 510, fiscalPower: 42, doors: 4, seats: 5, color: "Noir", registrationDate: "2020-06-01", priceCents: 7000000, previousPriceCents: null, description: "BMW M3 disponible.", equipment: [], status: "PUBLISHED", publicationStatus: "PUBLISHED", publishedAt: "2026-07-20T10:00:00.000Z", soldAt: null, createdAt: "2026-07-20T10:00:00.000Z", updatedAt: "2026-07-20T10:00:00.000Z", co2Emissions: 220, critAir: 1, euroStandard: "Euro 6", ownersCount: 1, photos: [{ id: `photo-${id}`, path: `${id}.webp`, url: TEST_IMAGE, alt: "BMW M3 noire", position: 0, isCover: true, width: 1600, height: 1200 }] })
 
 test("builder prepares every premium homepage section", () => {
   const premium = new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1"), vehicle("2")]))
@@ -25,6 +25,8 @@ test("builder prepares every premium homepage section", () => {
 
 test("homepage renders real stock and customer actions", () => {
   const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(garage(), [vehicle("1")]))} />)
+  assert.match(html, /Votre prochain véhicule est ici/)
+  assert.match(html, /justify-center/)
   assert.match(html, /Découvrir nos véhicules/)
   assert.match(html, /name="brand"/)
   assert.match(html, /name="model"/)

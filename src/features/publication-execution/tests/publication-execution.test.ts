@@ -32,7 +32,7 @@ function vehicle(overrides: Partial<LiveStockVehicle> = {}): LiveStockVehicle {
   return {
     id: "vehicle-1", garageId: "garage-1", slug: "bmw-m3-2015", make: "BMW", model: "M3",
     version: "Competition", title: "BMW M3 Competition", year: 2015, mileageKm: 63_000,
-    fuelType: "Essence", transmission: "Automatique", bodyType: "Berline", powerHp: 450,
+    fuelType: "Essence", transmission: "Automatique", bodyType: "Berline", stockCategory: null, powerHp: 450,
     fiscalPower: 34, doors: 4, seats: 5, color: "Bleu", registrationDate: "2015-05-10",
     priceCents: 6_799_000, previousPriceCents: null,
     description: "BMW M3 Competition entretenue et disponible immédiatement.", equipment: [],

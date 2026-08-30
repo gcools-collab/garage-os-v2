@@ -1,4 +1,5 @@
 import { Car, CheckCircle2, FileText, Gauge, KeyRound, MapPin, Phone, ShieldCheck, Wrench } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 import type { PublicProgramPageViewModel, PublicServicesPageViewModel } from "../types"
@@ -72,9 +73,24 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
                     </div>
                   ) : null}
                   {service.id === "ENGINE_CLEANING" ? (
-                    <p className="mt-4 rounded-2xl border border-[var(--live-border)] p-4 text-sm text-[var(--live-muted-foreground)]">
-                      Option diagnostic électronique : passage de la valise, lecture des défauts et voyants, effacement lorsque cela est possible, puis remise d’un rapport. Un défaut ne peut pas toujours être effacé.
-                    </p>
+                    <div className="mt-5 space-y-4">
+                      <div className="rounded-2xl border border-[var(--live-border)] p-4">
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">Décalaminage</h3>
+                        <p className="mt-2 text-sm text-[var(--live-muted-foreground)]">Nettoyage préventif du moteur.</p>
+                      </div>
+                      <div className="rounded-2xl border border-[var(--live-border)] p-4">
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">Diagnostic électronique</h3>
+                        <ul className="mt-3 grid gap-2 text-sm">
+                          {["Passage de la valise", "Lecture des défauts et voyants", "Effacement lorsque cela est possible", "Remise d’un rapport"].map((item) => (
+                            <li key={item} className="flex items-start gap-2">
+                              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="mt-3 text-sm text-[var(--live-muted-foreground)]">Un défaut ne peut pas toujours être effacé.</p>
+                      </div>
+                    </div>
                   ) : null}
                   <Link href={service.href} className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[var(--live-border-strong)] px-5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{service.actionLabel}</Link>
                 </article>
@@ -95,7 +111,14 @@ export function PublicProgramPage({ page }: { readonly page: PublicProgramPageVi
       <main className="mx-auto max-w-5xl px-5 py-16 md:px-8">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--live-primary)]">{page.eyebrow}</p>
         <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">{page.title}</h1>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--live-muted-foreground)]">{page.description}</p>
+        {page.description ? <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--live-muted-foreground)]">{page.description}</p> : null}
+
+        {page.media ? (
+          <figure className="mt-8 overflow-hidden rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)]">
+            <Image src={page.media.src} alt={page.media.alt} width={1600} height={520} className="h-auto w-full object-contain" />
+            <figcaption className="px-5 py-3 text-sm text-[var(--live-muted-foreground)]">{page.media.attribution}</figcaption>
+          </figure>
+        ) : null}
 
         <div className="mt-8 flex flex-wrap gap-3">
           <PublicSiteActionLink item={page.action} className={actionClassName} />

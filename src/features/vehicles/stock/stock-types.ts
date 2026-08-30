@@ -38,6 +38,7 @@ export type StockVehicle = {
   seats: number | null
   first_registration_date: string | null
   body_type: string | null
+  stock_category: "PARTICULIER" | "UTILITAIRE" | null
   upholstery: string | null
   crit_air: number | null
   created_at: string

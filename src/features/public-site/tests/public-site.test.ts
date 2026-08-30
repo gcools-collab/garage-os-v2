@@ -12,6 +12,7 @@ import {
   buildVehiclePublicCard,
   buildVehiclePublicSeo,
   classifyPublicVehicleCategory,
+  resolvePublicStockCategory,
 } from "../builders"
 import { getPublicVehicleImageSizes } from "../presentation"
 import { loadPublicSiteRecord } from "../repositories/public-site-source"
@@ -44,7 +45,7 @@ function vehicle(id: string, overrides: Partial<LiveStockVehicle> = {}): LiveSto
     id, garageId: garage.garageId, slug: `bmw-m3-${id}`, make: "BMW", model: "M3",
     version: "Competition", title: "BMW M3 Competition", year: 2020,
     mileageKm: 45_000, fuelType: "Essence", transmission: "Automatique",
-    bodyType: "Berline", powerHp: 510, fiscalPower: 42, doors: 4, seats: 5,
+    bodyType: "Berline", stockCategory: null, powerHp: 510, fiscalPower: 42, doors: 4, seats: 5,
     color: "Noir", registrationDate: "2020-06-01", priceCents: 7_000_000,
     previousPriceCents: null, description: "Très belle BMW M3.", equipment: [],
     status: "PUBLISHED", publicationStatus: "PUBLISHED",
@@ -73,7 +74,7 @@ test("le builder garage prépare branding, navigation et coordonnées", () => {
 
 test("la homepage prépare toutes les sections sans entité brute", () => {
   const homepage = buildPublicHomepage(garage, [vehicle("1"), vehicle("2")])
-  assert.equal(homepage.hero.title, "Votre prochain véhicule commence ici")
+  assert.equal(homepage.hero.title, "Votre prochain véhicule est ici")
   assert.equal(homepage.featuredVehicles.length, 2)
   assert.equal(homepage.sections.find((item) => item.id === "REVIEWS")?.enabled, false)
   assert.equal("priceCents" in homepage.featuredVehicles[0], false)
@@ -104,13 +105,19 @@ test("le stock classe particuliers et utilitaires sans inventer une catégorie",
   assert.equal(classifyPublicVehicleCategory("Fourgon"), "utilitaire")
   assert.equal(classifyPublicVehicleCategory(null), null)
   assert.equal(classifyPublicVehicleCategory("Carrosserie inconnue"), null)
+  assert.equal(resolvePublicStockCategory({ stockCategory: "UTILITAIRE", bodyType: "Berline" }), "utilitaire")
+  assert.equal(resolvePublicStockCategory({ stockCategory: "PARTICULIER", bodyType: "Fourgon" }), "particulier")
+  assert.equal(resolvePublicStockCategory({ stockCategory: null, bodyType: "Fourgon" }), "utilitaire")
+  assert.equal(resolvePublicStockCategory({ stockCategory: null, bodyType: null }), null)
   const source = [
     vehicle("1"),
-    vehicle("2", { make: "Renault", model: "Kangoo", bodyType: "Fourgon" }),
-    vehicle("3", { make: "Peugeot", model: "Boxer", bodyType: null }),
+    vehicle("2", { make: "Renault", model: "Kangoo", bodyType: null, stockCategory: "UTILITAIRE" }),
+    vehicle("3", { make: "Peugeot", model: "Boxer", bodyType: null, stockCategory: null }),
   ]
+  const all = buildPublicStock(garage, source, {})
   const particuliers = buildPublicStock(garage, source, { category: "particulier" })
   const utilitaires = buildPublicStock(garage, source, { category: "utilitaire" })
+  assert.deepEqual(all.vehicles.map((item) => item.name), ["BMW M3", "Renault Kangoo", "Peugeot Boxer"])
   assert.deepEqual(particuliers.vehicles.map((item) => item.name), ["BMW M3"])
   assert.deepEqual(utilitaires.vehicles.map((item) => item.name), ["Renault Kangoo"])
   assert.equal(particuliers.emptyMessage, null)

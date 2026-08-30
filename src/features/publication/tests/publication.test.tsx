@@ -53,6 +53,7 @@ function vehicle(overrides: Partial<LiveStockVehicle> = {}): LiveStockVehicle {
     fuelType: "Essence",
     transmission: "Automatique",
     bodyType: "Berline",
+    stockCategory: null,
     powerHp: 450,
     fiscalPower: 34,
     doors: 4,

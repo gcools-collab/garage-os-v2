@@ -145,7 +145,7 @@ export class StockService {
         id, brand, model, version, trim, year, mileage, status,
         purchase_price, selling_price, vin, registration_number,
         fuel, gearbox, color, description, power_din, fiscal_power,
-        doors, seats, first_registration_date, body_type, upholstery,
+        doors, seats, first_registration_date, body_type, stock_category, upholstery,
         crit_air, created_at,
         vehicle_costs (amount),
         vehicle_images (url, storage_path, is_primary, display_order, created_at),
@@ -159,6 +159,7 @@ export class StockService {
     }
     if (query.missingSellingPrice) vehicleQuery = vehicleQuery.is("selling_price", null)
     if (query.missingVin) vehicleQuery = vehicleQuery.or("vin.is.null,vin.eq.")
+    if (query.missingStockCategory) vehicleQuery = vehicleQuery.is("stock_category", null)
     if (query.missingRegistration) {
       vehicleQuery = vehicleQuery.or("registration_number.is.null,registration_number.eq.")
     }

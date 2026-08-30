@@ -50,7 +50,7 @@
     "test:legacy-import": "tsx --test src/features/legacy-import/tests/*.test.ts",
     "test:media-studio": "tsx --test src/features/media-studio/tests/*.test.ts",
     "test:vehicle-media": "tsx --test src/features/vehicles/tests/vehicle-media.test.ts",
-    "test:stock-acceptance": "tsx --test src/features/vehicles/tests/stock-acceptance.test.ts",
+    "test:stock-acceptance": "tsx --test src/features/vehicles/tests/stock-acceptance.test.ts src/features/vehicles/tests/vehicle-schema.test.ts",
     "test:customers": "tsx --test src/features/customers/tests/*.test.ts",
     "test:billing": "tsx --test src/features/billing/tests/*.test.ts"
   },

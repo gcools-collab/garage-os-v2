@@ -36,11 +36,11 @@ export function PublicHomepage({ homepage }: { readonly homepage: PublicHomepage
         {heroImage ? <PublicMediaImage src={heroImage.url} alt={heroImage.alt} priority sizes="100vw" className="-z-20 object-cover" /> : null}
         <div className="absolute inset-0 -z-10 bg-[var(--live-background)]/75" />
         <div className="mx-auto flex min-h-[70vh] max-w-7xl items-center px-5 py-20 md:px-8">
-          <div className="max-w-3xl">
+          <div className="max-w-5xl">
             <p className="font-medium">{hero.eyebrow}</p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">{hero.title}</h1>
+            <h1 className="mt-4 max-w-[16ch] text-4xl font-semibold tracking-tight text-balance sm:max-w-[22ch] sm:text-5xl md:max-w-none md:text-6xl">{hero.title}</h1>
             <p className="mt-6 max-w-2xl text-lg">{hero.description}</p>
-            <div className="relative z-10 mt-8 flex flex-wrap gap-3">
+            <div className="relative z-10 mt-8 flex flex-wrap gap-4 sm:mt-10">
               <Link href={hero.primaryAction.href} className="rounded-lg bg-[var(--live-primary)] px-5 py-3 font-medium text-[var(--live-primary-foreground)]">{hero.primaryAction.label}</Link>
               {hero.secondaryAction ? <a href={hero.secondaryAction.href} className="rounded-lg border border-[var(--live-border)] px-5 py-3 font-medium">{hero.secondaryAction.label}</a> : null}
             </div>

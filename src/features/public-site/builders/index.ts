@@ -16,5 +16,6 @@ export {
   classifyPublicVehicleCategory,
   isPublicStockCategory,
   publicStockCategories,
+  resolvePublicStockCategory,
 } from "./public-vehicle-category"
 export type { PublicStockCategory } from "./public-vehicle-category"

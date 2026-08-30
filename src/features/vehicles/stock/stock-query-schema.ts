@@ -37,6 +37,7 @@ export const stockQuerySchema = z.object({
   missingRegistration: booleanParameter,
   missingPhoto: booleanParameter,
   missingCost: booleanParameter,
+  missingStockCategory: booleanParameter,
   marketplaceImported: booleanParameter,
   online: booleanParameter,
 })
@@ -56,6 +57,7 @@ export const stockOperationalFilterKeys = [
   "missingRegistration",
   "missingPhoto",
   "missingCost",
+  "missingStockCategory",
   "marketplaceImported",
   "online",
 ] as const
@@ -69,6 +71,7 @@ export const stockOperationalFilterLabels: Record<StockOperationalFilterKey, str
   missingRegistration: "Sans immatriculation",
   missingPhoto: "Sans photo",
   missingCost: "Sans coût enregistré",
+  missingStockCategory: "Catégorie de stock à renseigner",
   marketplaceImported: "Importé d’une marketplace",
   online: "Présent en ligne",
 }

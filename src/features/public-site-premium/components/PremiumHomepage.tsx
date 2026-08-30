@@ -21,11 +21,11 @@ export function PremiumHomepage({ homepage }: { readonly homepage: PremiumHomepa
         {heroImage ? <PublicMediaImage src={heroImage.url} alt={heroImage.alt} priority sizes="100vw" className="-z-20 object-cover" /> : null}
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[var(--live-overlay)] via-[var(--live-overlay)] to-[var(--live-overlay)]/70" />
         <div className={`${motion.reveal} relative z-10 mx-auto flex min-h-[560px] max-w-7xl flex-col justify-center px-5 pb-28 pt-20 md:min-h-[620px] md:px-8 lg:min-h-[660px]`}>
-          <div className="max-w-4xl text-[var(--live-hero-foreground)]">
+          <div className="max-w-5xl text-[var(--live-hero-foreground)] xl:max-w-6xl">
             <p className="inline-flex items-center rounded-full border border-[var(--live-hero-foreground)]/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em]">{homepage.hero.eyebrow}</p>
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl">{homepage.hero.title}</h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 opacity-90">{homepage.hero.description}</p>
-            <div className="relative z-20 mt-9 flex flex-wrap gap-3">
+            <h1 className="mt-6 max-w-[16ch] text-4xl font-semibold tracking-[-0.04em] text-balance sm:max-w-[22ch] sm:text-5xl md:max-w-none md:text-6xl xl:text-7xl">{homepage.hero.title}</h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 opacity-90 sm:mt-6 sm:text-lg sm:leading-8">{homepage.hero.description}</p>
+            <div className="relative z-20 mt-8 flex flex-wrap gap-4 sm:mt-10">
               {homepage.hero.actions.map(action => <Link key={action.href} href={action.href} className="inline-flex min-h-12 items-center rounded-xl bg-[var(--live-primary)] px-5 py-3 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{action.label}</Link>)}
               {homepage.garage.phoneHref ? <a href={homepage.garage.phoneHref} className="inline-flex min-h-12 items-center rounded-xl border border-[var(--live-hero-foreground)]/40 px-5 py-3 font-semibold text-[var(--live-hero-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">Nous appeler</a> : null}
             </div>
@@ -34,7 +34,7 @@ export function PremiumHomepage({ homepage }: { readonly homepage: PremiumHomepa
         </div>
       </section>
       <section className="relative z-10 mx-auto -mt-8 max-w-7xl px-5 md:px-8"><PremiumQuickSearch search={homepage.search} /></section>
-      {homepage.latest.vehicles.length ? <section className="bg-[var(--live-surface-muted)]"><div className="mx-auto max-w-7xl px-5 py-16 md:px-8"><SectionHeading heading={homepage.latest.heading} /><div className={`${motion.stagger} mt-9 grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3`}>{homepage.latest.vehicles.map(vehicle => <PremiumVehicleCard key={vehicle.id} vehicle={vehicle} />)}</div><Link href={stockHref} className="mt-9 inline-flex min-h-12 items-center rounded-xl bg-[var(--live-primary)] px-6 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">Voir tous nos véhicules</Link></div></section> : null}
+      {homepage.latest.vehicles.length ? <section className="bg-[var(--live-surface-muted)]"><div className="mx-auto max-w-7xl px-5 py-16 md:px-8"><SectionHeading heading={homepage.latest.heading} /><div className={`${motion.stagger} mt-9 grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3`}>{homepage.latest.vehicles.map(vehicle => <PremiumVehicleCard key={vehicle.id} vehicle={vehicle} />)}</div><div className="mt-10 flex justify-center"><Link href={stockHref} className="inline-flex min-h-12 items-center rounded-xl bg-[var(--live-primary)] px-6 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">Voir tous nos véhicules</Link></div></div></section> : null}
       {homepage.services.items.length ? <section className="mx-auto max-w-7xl px-5 py-16 md:px-8"><SectionHeading heading={homepage.services.heading} centered /><FeatureGrid items={homepage.services.items} /></section> : null}
       <section className="mx-auto max-w-7xl px-5 py-16 md:px-8">
         <div className="rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)] p-8 md:p-10">

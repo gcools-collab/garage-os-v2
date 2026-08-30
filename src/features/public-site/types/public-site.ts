@@ -172,6 +172,11 @@ export interface PublicProgramPageViewModel {
   readonly details: readonly PublicProgramDetailViewModel[]
   readonly steps: readonly PublicProgramStepViewModel[]
   readonly reassurance: readonly string[]
+  readonly media: {
+    readonly src: string
+    readonly alt: string
+    readonly attribution: string
+  } | null
   readonly contact: PublicProgramContactViewModel
   readonly action: PublicNavigationItemViewModel
   readonly secondaryAction: PublicNavigationItemViewModel | null

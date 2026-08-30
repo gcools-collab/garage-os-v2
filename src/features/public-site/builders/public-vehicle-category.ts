@@ -1,3 +1,5 @@
+import { parseVehicleStockCategory, type VehicleStockCategory } from "@/features/vehicles/stock-category"
+
 export const publicStockCategories = ["particulier", "utilitaire"] as const
 
 export type PublicStockCategory = (typeof publicStockCategories)[number]
@@ -61,6 +63,23 @@ export function classifyPublicVehicleCategory(
   if (utilityKeywords.some((keyword) => matchesKeyword(normalized, keyword))) return "utilitaire"
   if (passengerKeywords.some((keyword) => matchesKeyword(normalized, keyword))) return "particulier"
   return null
+}
+
+export function resolvePublicStockCategory(vehicle: {
+  readonly stockCategory?: VehicleStockCategory | null
+  readonly bodyType?: string | null
+}): PublicStockCategory | null {
+  if (vehicle.stockCategory === "PARTICULIER") return "particulier"
+  if (vehicle.stockCategory === "UTILITAIRE") return "utilitaire"
+  return classifyPublicVehicleCategory(vehicle.bodyType)
+}
+
+export function toVehicleStockCategory(category: PublicStockCategory): VehicleStockCategory {
+  return category === "utilitaire" ? "UTILITAIRE" : "PARTICULIER"
+}
+
+export function parseVehicleStockCategoryFromUnknown(value: unknown): VehicleStockCategory | null {
+  return parseVehicleStockCategory(value)
 }
 
 export function isPublicStockCategory(value: string | undefined): value is PublicStockCategory {

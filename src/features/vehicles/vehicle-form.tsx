@@ -15,6 +15,7 @@ import {
   initialVehicleActionState,
   type VehicleActionState,
 } from "./schema"
+import { vehicleStockCategories, vehicleStockCategoryLabels } from "./stock-category"
 
 export type VehicleFormVehicle = {
   id: string
@@ -41,6 +42,7 @@ export type VehicleFormVehicle = {
   transmission: string | null
   owners_count: number | null
   first_registration_date: string | null
+  stock_category: "PARTICULIER" | "UTILITAIRE" | null
 }
 
 type VehicleFormProps =
@@ -51,7 +53,7 @@ type FieldProps = {
   label: string
   name: string
   errors?: VehicleActionState["errors"]
-  children: ReactElement<ComponentProps<typeof Input>>
+  children: ReactElement<ComponentProps<typeof Input> & ComponentProps<"select">>
 }
 
 function Field({ label, name, errors, children }: FieldProps) {
@@ -162,6 +164,27 @@ export function VehicleForm({ mode = "create", vehicle }: VehicleFormProps) {
                 required
                 aria-invalid={Boolean(state.errors?.purchasePrice)}
               />
+            </Field>
+            <Field
+              label="Catégorie de stock"
+              name="stockCategory"
+              errors={state.errors}
+            >
+              <select
+                id={`${prefix}-stock-category`}
+                name="stockCategory"
+                required
+                defaultValue={vehicle?.stock_category ?? ""}
+                aria-invalid={Boolean(state.errors?.stockCategory)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Sélectionner</option>
+                {vehicleStockCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {vehicleStockCategoryLabels[category]}
+                  </option>
+                ))}
+              </select>
             </Field>
             <Field
               label="Prix de vente affiché (€)"

@@ -32,12 +32,14 @@ export function VehiclePublicCard({ vehicle }: { readonly vehicle: VehiclePublic
           <div><dt className="sr-only">Énergie</dt><dd>{vehicle.fuel}</dd></div>
           <div><dt className="sr-only">Boîte</dt><dd>{vehicle.gearbox}</dd></div>
         </dl>
-        <Link
-          href={vehicle.href}
-          className="mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[var(--live-primary)] px-4 text-center font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2"
-        >
-          Voir le véhicule
-        </Link>
+        <div className="mt-auto pt-2">
+          <Link
+            href={vehicle.href}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[var(--live-primary)] px-4 text-center font-medium text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            Voir le véhicule
+          </Link>
+        </div>
       </div>
     </article>
   )

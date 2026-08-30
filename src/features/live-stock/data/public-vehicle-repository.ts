@@ -10,7 +10,7 @@ import { createPublicSupabaseClient } from "./public-supabase-client"
 
 export const PUBLIC_VEHICLE_COLUMNS = [
   "id", "garage_id", "live_slug", "brand", "model", "version", "year",
-  "mileage", "fuel", "gearbox", "body_type", "power_din", "fiscal_power",
+  "mileage", "fuel", "gearbox", "body_type", "stock_category", "power_din", "fiscal_power",
   "doors", "seats", "color", "first_registration_date", "selling_price",
   "description", "status", "publication_status", "published_at", "created_at",
   "updated_at", "co2_emissions", "crit_air", "euro_standard", "owners_count",

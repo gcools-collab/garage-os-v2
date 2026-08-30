@@ -69,6 +69,9 @@ export function mapPublicVehicle(
     fuelType: record.fuel,
     transmission: record.gearbox,
     bodyType: record.body_type,
+    stockCategory: record.stock_category === "PARTICULIER" || record.stock_category === "UTILITAIRE"
+      ? record.stock_category
+      : null,
     powerHp: record.power_din,
     fiscalPower: record.fiscal_power,
     doors: record.doors,

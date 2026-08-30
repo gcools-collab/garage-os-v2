@@ -92,7 +92,18 @@ export function StockVehicleList({ vehicles }: { vehicles: StockVehicle[] }) {
                     {vehicle.year ?? "Année inconnue"} · {formatVehicleMileage(vehicle.mileage)}
                   </p>
                 </div>
-                <StatusBadge status={vehicle.status} />
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {vehicle.stock_category ? (
+                    <span className="rounded-full border px-2.5 py-1 text-xs font-medium">
+                      {vehicle.stock_category === "UTILITAIRE" ? "Utilitaire" : "Particulier"}
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-900">
+                      Catégorie à renseigner
+                    </span>
+                  )}
+                  <StatusBadge status={vehicle.status} />
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

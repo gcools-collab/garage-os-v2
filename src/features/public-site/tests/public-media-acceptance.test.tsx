@@ -56,6 +56,7 @@ function vehicleRecord(overrides: Partial<PublicVehicleRecord> = {}): PublicVehi
     fuel: "Essence",
     gearbox: "Manuelle",
     body_type: null,
+    stock_category: null,
     power_din: null,
     fiscal_power: null,
     doors: null,

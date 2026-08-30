@@ -14,7 +14,7 @@ import type {
   VehiclePublicCardViewModel,
 } from "../types"
 import { buildEnabledPublicServices } from "../services"
-import { classifyPublicVehicleCategory } from "./public-vehicle-category"
+import { resolvePublicStockCategory } from "./public-vehicle-category"
 
 export const CARGO_BOOKING_HREF = "https://www.cargo.fr/Location/Booking?id=5947&name=Raismes"
 
@@ -158,7 +158,7 @@ export function buildPublicHomepage(
     garage,
     hero: {
       eyebrow: garage.name,
-      title: "Votre prochain véhicule commence ici",
+      title: "Votre prochain véhicule est ici",
       description: garage.description,
       image: heroImage ? { url: heroImage.url, alt: heroImage.alt } : null,
       primaryAction: { label: "Découvrir nos véhicules", href: `${garage.homeHref}/stock` },
@@ -211,7 +211,7 @@ export function buildPublicStock(
     && (!query.fuel || vehicle.fuelType === query.fuel)
     && (!query.gearbox || vehicle.transmission === query.gearbox)
     && (!query.bodyType || vehicle.bodyType === query.bodyType)
-    && (!query.category || classifyPublicVehicleCategory(vehicle.bodyType) === query.category)
+    && (!query.category || resolvePublicStockCategory(vehicle) === query.category)
     && (!query.minPrice || (vehicle.priceCents ?? -1) >= query.minPrice * 100)
     && (!query.maxPrice || (vehicle.priceCents ?? Number.MAX_SAFE_INTEGER) <= query.maxPrice * 100)
     && (!query.minYear || (vehicle.year ?? -1) >= query.minYear)
@@ -228,8 +228,8 @@ export function buildPublicStock(
   const page = Math.min(totalPages, Math.max(1, query.page ?? 1))
   const base = `${garage.homeHref}/stock`
   const categoryCounts = {
-    particulier: source.filter((vehicle) => classifyPublicVehicleCategory(vehicle.bodyType) === "particulier").length,
-    utilitaire: source.filter((vehicle) => classifyPublicVehicleCategory(vehicle.bodyType) === "utilitaire").length,
+    particulier: source.filter((vehicle) => resolvePublicStockCategory(vehicle) === "particulier").length,
+    utilitaire: source.filter((vehicle) => resolvePublicStockCategory(vehicle) === "utilitaire").length,
   }
   const emptyByCategory = {
     all: "Aucun véhicule ne correspond à ces critères.",
@@ -239,7 +239,7 @@ export function buildPublicStock(
   return {
     garage,
     title: "Nos véhicules disponibles",
-    description: "Découvrez le stock actuellement proposé par le garage, classé selon la carrosserie renseignée.",
+    description: "Découvrez le stock actuellement proposé par le garage, classé entre véhicules particuliers et utilitaires.",
     vehicles: sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
       .map((vehicle) => buildVehiclePublicCard(vehicle, garage)),
     resultLabel: `${filtered.length} véhicule${filtered.length > 1 ? "s" : ""}`,
@@ -331,20 +331,24 @@ export function buildPublicProgram(
   return kind === "RENTAL" ? {
     garage,
     eyebrow: "Partenaire Cargo",
-    title: "Location de véhicules avec Cargo",
-    description: "Nous vous orientons vers Cargo, notre partenaire location à Raismes. La réservation est opérée par Cargo : le garage vous accompagne, sans se substituer à leur plateforme.",
-    benefits: ["Partenariat Cargo", "Réservation opérée par Cargo", "Devis possible auprès du garage"],
+    title: "Location de véhicules",
+    description: "Réservez en ligne chez Cargo, notre partenaire location à Raismes.",
+    benefits: ["Partenaire Cargo", "Réservation en ligne", "Devis possible auprès du garage"],
     details: [
-      { label: "Partenaire", value: "La flotte et la réservation en ligne sont opérées par Cargo." },
+      { label: "Partenaire", value: "La réservation en ligne est opérée par Cargo." },
       { label: "Durée de location", value: "De 1 jour à plusieurs mois, jusqu’à 12 mois selon les disponibilités Cargo." },
-      { label: "Réservation", value: "Réservez directement chez Cargo. Pour un besoin spécifique, demandez un devis à notre équipe." },
       { label: "Documents à prévoir", value: "Permis de conduire valide, pièce d’identité et justificatif de domicile récent, selon les conditions Cargo." },
       { label: "Conditions", value: "Dépôt de garantie et moyen de paiement à votre nom demandés au retrait, selon les conditions Cargo." },
     ],
     steps: [],
-    reassurance: ["La réservation en ligne est confirmée et gérée par Cargo, pas par le garage."],
+    reassurance: [],
+    media: {
+      src: "/partners/cargo-location.png",
+      alt: "Visuel officiel CarGo, loueur de véhicules",
+      attribution: "Visuel CarGo",
+    },
     contact,
-    action: { label: "Réserver chez Cargo", href: CARGO_BOOKING_HREF, external: true },
+    action: { label: "Réserver en ligne", href: CARGO_BOOKING_HREF, external: true },
     secondaryAction: { label: "Demander un devis", href: `${garage.homeHref}/contact?project=rental` },
   } : {
     garage,
@@ -360,6 +364,7 @@ export function buildPublicProgram(
       { title: "Vente et versement", description: "Une fois la vente conclue, le montant convenu vous est reversé selon les modalités du contrat." },
     ],
     reassurance: ["Aucune vente sans votre accord préalable", "Interlocuteur dédié pour le suivi de votre dossier", "Présentation professionnelle de votre véhicule"],
+    media: null,
     contact,
     action: { label: "Déposer mon véhicule", href: `${garage.homeHref}/contact?project=consignment` },
     secondaryAction: callAction,

@@ -28,6 +28,7 @@ export type LiveStockVehicle = {
   readonly fuelType: string | null
   readonly transmission: string | null
   readonly bodyType: string | null
+  readonly stockCategory: "PARTICULIER" | "UTILITAIRE" | null
   readonly powerHp: number | null
   readonly fiscalPower: number | null
   readonly doors: number | null

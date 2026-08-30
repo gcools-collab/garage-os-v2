@@ -34,6 +34,7 @@ export type PublicVehicleRecord = {
   readonly fuel: string | null
   readonly gearbox: string | null
   readonly body_type: string | null
+  readonly stock_category: "PARTICULIER" | "UTILITAIRE" | null
   readonly power_din: number | null
   readonly fiscal_power: number | null
   readonly doors: number | null

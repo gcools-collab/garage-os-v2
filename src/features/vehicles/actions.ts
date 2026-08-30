@@ -38,6 +38,7 @@ function toVehicleRow(vehicle: VehicleInput) {
     transmission: vehicle.transmission ?? null,
     owners_count: vehicle.ownersCount ?? null,
     first_registration_date: vehicle.firstRegistrationDate ?? null,
+    stock_category: vehicle.stockCategory,
   }
 }
 

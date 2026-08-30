@@ -134,10 +134,10 @@ export function PublicContactPage({
       )}
 
       {showProjectSelector ? (
-        <section className="mx-auto mt-8 max-w-4xl px-5 md:px-8">
-          <div className="rounded-2xl border border-[var(--live-border)] p-6">
+        <section className="mx-auto mt-8 max-w-4xl px-5 pb-20 md:px-8 md:pb-24">
+          <div className="rounded-2xl border border-[var(--live-border)] p-6 md:p-8">
             <h2 className="text-2xl font-semibold">Comment pouvons-nous vous aider ?</h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {contact.journeys.map((journey) => (
                 <a key={journey.href} href={journey.href} className="rounded-xl border border-[var(--live-border)] px-4 py-3 text-sm font-medium hover:bg-[var(--live-surface-muted)] focus-visible:outline-2 focus-visible:outline-[var(--live-focus-ring)]">{journey.label}</a>
               ))}

@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { vehicleStockCategories } from "./stock-category"
+
 const currentYear = new Date().getFullYear()
 
 const optionalText = (maxLength: number) =>
@@ -82,6 +84,7 @@ export const vehicleSchema = z
     transmission: optionalText(50),
     ownersCount: optionalInteger(0, 99),
     firstRegistrationDate: optionalDate,
+    stockCategory: z.enum(vehicleStockCategories, { message: "La catégorie de stock est obligatoire." }),
   })
   .superRefine((vehicle, context) => {
     if (
@@ -135,5 +138,6 @@ export function parseVehicleFormData(formData: FormData) {
     transmission: formData.get("transmission"),
     ownersCount: formData.get("ownersCount"),
     firstRegistrationDate: formData.get("firstRegistrationDate"),
+    stockCategory: formData.get("stockCategory"),
   })
 }
