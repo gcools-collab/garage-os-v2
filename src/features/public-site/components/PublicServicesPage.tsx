@@ -1,9 +1,9 @@
 import { Car, CheckCircle2, FileText, Gauge, KeyRound, MapPin, Phone, ShieldCheck, Wrench } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
 
 import type { PublicProgramPageViewModel, PublicServicesPageViewModel } from "../types"
 import type { PublicServiceIcon } from "../services"
+import { PublicPartnerMedia } from "./PublicPartnerMedia"
 import { PublicSiteActionLink } from "./PublicSiteActionLink"
 import { PublicSiteLayout } from "./PublicSiteLayout"
 
@@ -34,6 +34,16 @@ const plateTariffs = [
   { label: "Plexiglas", value: "26,60 € par plaque" },
 ] as const
 
+const engineCleaningOffers = [
+  { title: "Jusqu’à 1,9 L", price: "39,90 € TTC", detail: "Durée indicative : 1 h" },
+  { title: "2 L et plus", price: "49,90 € TTC", detail: "Durée indicative : 1 h 30" },
+] as const
+
+const engineCleaningSupplements = [
+  { title: "Traitement choc double machine", items: ["+19,90 € jusqu’à 1,9 L", "+29,90 € à partir de 2 L"] },
+  { title: "Diagnostic avec rapport", items: ["Option : 30 €", "Passage de la valise", "Lecture des défauts et voyants", "Effacement lorsque cela est possible", "Remise d’un rapport"] },
+] as const
+
 export function PublicServicesPage({ page }: { readonly page: PublicServicesPageViewModel }) {
   return (
     <PublicSiteLayout garage={page.garage}>
@@ -48,7 +58,7 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
             {page.services.map((service) => {
               const Icon = icons[service.icon]
               return (
-                <article key={service.id} className="rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)] p-7">
+                <article key={service.id} className={`rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)] p-7${service.id === "ENGINE_CLEANING" ? " sm:col-span-2" : ""}`}>
                   <span className="grid size-12 place-items-center rounded-xl bg-[var(--live-primary)] text-[var(--live-primary-foreground)]"><Icon aria-hidden="true" /></span>
                   <h2 className="mt-6 text-2xl font-semibold">{service.title}</h2>
                   <p className="mt-3 text-[var(--live-muted-foreground)]">{service.description}</p>
@@ -74,22 +84,36 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
                   ) : null}
                   {service.id === "ENGINE_CLEANING" ? (
                     <div className="mt-5 space-y-4">
-                      <div className="rounded-2xl border border-[var(--live-border)] p-4">
-                        <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">Décalaminage</h3>
-                        <p className="mt-2 text-sm text-[var(--live-muted-foreground)]">Nettoyage préventif du moteur.</p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {engineCleaningOffers.map((offer) => (
+                          <div key={offer.title} className="rounded-2xl border border-[var(--live-border)] p-4">
+                            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">{offer.title}</h3>
+                            <p className="mt-2 text-xl font-semibold">{offer.price}</p>
+                            <p className="mt-1 text-sm text-[var(--live-muted-foreground)]">{offer.detail}</p>
+                          </div>
+                        ))}
                       </div>
-                      <div className="rounded-2xl border border-[var(--live-border)] p-4">
-                        <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">Diagnostic électronique</h3>
-                        <ul className="mt-3 grid gap-2 text-sm">
-                          {["Passage de la valise", "Lecture des défauts et voyants", "Effacement lorsque cela est possible", "Remise d’un rapport"].map((item) => (
-                            <li key={item} className="flex items-start gap-2">
-                              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                        <p className="mt-3 text-sm text-[var(--live-muted-foreground)]">Un défaut ne peut pas toujours être effacé.</p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {engineCleaningSupplements.map((offer) => (
+                          <div key={offer.title} className="rounded-2xl border border-[var(--live-border)] p-4">
+                            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">{offer.title}</h3>
+                            <ul className="mt-3 grid gap-2 text-sm">
+                              {offer.items.map((item) => (
+                                <li key={item} className="flex items-start gap-2">
+                                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                            {offer.title.startsWith("Diagnostic") ? (
+                              <p className="mt-3 text-sm text-[var(--live-muted-foreground)]">Un défaut ne peut pas toujours être effacé.</p>
+                            ) : null}
+                          </div>
+                        ))}
                       </div>
+                      <p className="rounded-2xl border border-[var(--live-border)] p-4 text-sm text-[var(--live-muted-foreground)]">
+                        Le décalaminage ne répare pas une panne mécanique et ne débouche pas un FAP défectueux.
+                      </p>
                     </div>
                   ) : null}
                   <Link href={service.href} className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[var(--live-border-strong)] px-5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{service.actionLabel}</Link>
@@ -113,12 +137,7 @@ export function PublicProgramPage({ page }: { readonly page: PublicProgramPageVi
         <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">{page.title}</h1>
         {page.description ? <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--live-muted-foreground)]">{page.description}</p> : null}
 
-        {page.media ? (
-          <figure className="mt-8 overflow-hidden rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)]">
-            <Image src={page.media.src} alt={page.media.alt} width={1600} height={520} className="h-auto w-full object-contain" />
-            <figcaption className="px-5 py-3 text-sm text-[var(--live-muted-foreground)]">{page.media.attribution}</figcaption>
-          </figure>
-        ) : null}
+        {page.media ? <PublicPartnerMedia src={page.media.src} alt={page.media.alt} attribution={page.media.attribution} /> : null}
 
         <div className="mt-8 flex flex-wrap gap-3">
           <PublicSiteActionLink item={page.action} className={actionClassName} />

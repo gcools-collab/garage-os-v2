@@ -221,6 +221,7 @@ test("header uses the garage logo when a resolvable logo URL exists", () => {
   const html = renderToStaticMarkup(<PremiumHomepage homepage={new PremiumHomepageBuilder().build(buildPublicHomepage(branded, []))} />)
   assert.match(html, /sap-logo\.png/)
   assert.match(html, /alt="Service Auto aux Particuliers"/)
+  assert.match(html, /object-contain/)
   assert.doesNotMatch(html, />Service Auto aux Particuliers<\/span>/)
 })
 

@@ -86,7 +86,7 @@ export function PublicSiteHeader({ garage }: { readonly garage: GaragePublicView
   return (
     <header className="border-b border-[var(--live-border)] bg-[var(--live-background)]">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-5 md:px-8">
-        <PublicSiteBrand garage={garage} compact />
+        <PublicSiteBrand garage={garage} placement="header" />
         <DesktopLinks navigation={garage.navigation} pathname={pathname} />
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {garage.phoneHref ? (
@@ -129,7 +129,7 @@ export function PublicSiteHeader({ garage }: { readonly garage: GaragePublicView
             className="fixed inset-x-0 top-0 z-50 max-h-dvh overflow-y-auto border-b border-[var(--live-border)] bg-[var(--live-background)] px-4 pb-6 pt-3 shadow-[0_16px_40px_var(--live-shadow-color)]"
           >
             <div className="flex items-center justify-between gap-3">
-              <PublicSiteBrand garage={garage} compact />
+              <PublicSiteBrand garage={garage} placement="menu" />
               <button
                 type="button"
                 className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-[var(--live-border-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]"
