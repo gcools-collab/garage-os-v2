@@ -17,7 +17,7 @@
     "test:acquisition-recommendation": "tsx --test src/features/acquisition/recommendation/tests/*.test.ts",
     "test:acquisition-market": "tsx --test src/features/acquisition/market/tests/*.test.ts src/features/acquisition/market/ai/tests/*.test.ts",
     "test:acquisition-market-geography": "tsx --test src/features/acquisition/market/geography/tests/*.test.ts",
-    "test:market": "tsx --test src/features/market/market-analysis.test.ts",
+    "test:market": "tsx --test src/features/market/market-analysis.test.ts src/features/market/providers/leboncoin/leboncoin-bridge-client.test.ts",
     "test:market-intelligence": "tsx --test src/features/market-intelligence/engine/market.test.ts src/features/market-intelligence/presentation/market-dashboard.test.ts src/features/market-intelligence/components/dashboard/market-dashboard.test.tsx src/features/market-intelligence/tests/market-v1-real-data.test.tsx",
     "test:documents": "tsx --test src/features/vehicles/documents/vehicle-documents.test.ts",
     "test:live": "tsx --test src/features/public/lib/live-engine.test.ts src/features/public/lib/catalog-query.test.ts src/features/public/lib/catalog-search.test.ts src/features/public/components/hero/hero.test.tsx src/features/public/components/collections/collections.test.tsx src/features/public/components/featured/featured.test.tsx src/features/public/components/vehicle-detail/vehicle-detail.test.tsx src/features/public/components/catalog/catalog.test.tsx",

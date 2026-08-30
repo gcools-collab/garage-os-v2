@@ -160,16 +160,29 @@ export class LeboncoinAcquisitionProvider implements VehicleAcquisitionProvider 
   }
 
   async getListing(url: string): Promise<AcquisitionListing> {
-    const response = await fetch(new URL("/listing", this.bridgeUrl), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Internal-Api-Key": this.apiKey,
-      },
-      body: JSON.stringify({ url }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(21_000),
-    })
+    const targetUrl = new URL("/listing", this.bridgeUrl)
+    let response: Response
+    try {
+      response = await fetch(targetUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Api-Key": this.apiKey,
+        },
+        body: JSON.stringify({ url }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(21_000),
+      })
+    } catch (error) {
+      console.error("Acquisition bridge unreachable", {
+        provider: "leboncoin",
+        targetUrl: targetUrl.toString(),
+        errorType: error instanceof Error ? error.constructor.name : "UnknownError",
+      })
+      throw new Error(
+        `Le bridge Leboncoin est injoignable à l’adresse configurée (${targetUrl}). Vérifiez qu’il est démarré et que LEBONCOIN_BRIDGE_URL pointe vers la bonne adresse.`
+      )
+    }
 
     if (!response.ok) {
       throw new Error(`Le bridge Leboncoin a répondu avec le statut ${response.status}.`)

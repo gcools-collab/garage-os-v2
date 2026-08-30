@@ -24,10 +24,23 @@ export class LeboncoinBridgeClient implements LeboncoinClient {
 
   private async request(path: string, body: object): Promise<unknown> {
     const targetUrl = `${this.baseUrl.replace(/\/$/, "")}${path}`
-    const response = await fetch(targetUrl, {
-      method: "POST", headers: { "Content-Type": "application/json", "X-Internal-Api-Key": this.apiKey },
-      body: JSON.stringify(body), signal: AbortSignal.timeout(this.timeoutMs), cache: "no-store",
-    })
+    let response: Response
+    try {
+      response = await fetch(targetUrl, {
+        method: "POST", headers: { "Content-Type": "application/json", "X-Internal-Api-Key": this.apiKey },
+        body: JSON.stringify(body), signal: AbortSignal.timeout(this.timeoutMs), cache: "no-store",
+      })
+    } catch (error) {
+      console.error("Market bridge unreachable", {
+        provider: "leboncoin",
+        operation: path,
+        targetUrl,
+        errorType: error instanceof Error ? error.constructor.name : "UnknownError",
+      })
+      throw new Error(
+        `Le bridge Leboncoin est injoignable à l’adresse configurée (${targetUrl}). Vérifiez qu’il est démarré et que LEBONCOIN_BRIDGE_URL pointe vers la bonne adresse.`
+      )
+    }
     const rawResponse = await response.text()
     let payload: unknown = null
     try {

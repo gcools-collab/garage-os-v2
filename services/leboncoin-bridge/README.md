@@ -89,3 +89,19 @@ Les tests injectent un faux gateway : aucun appel à Leboncoin n'est effectué.
 ## Recommandation de déploiement
 
 Déployer dans un conteneur séparé, sans exposition Internet publique, sur le même réseau privé que Garage OS. Injecter la clé via un gestionnaire de secrets, terminer TLS au niveau de l'ingress, limiter les ressources et le nombre de workers, puis ajouter avant production : rate limiting, métriques, traces, cache court, circuit breaker et tests contractuels réguliers contre le modèle TypeScript. Une validation juridique et des conditions d'utilisation de Leboncoin est indispensable avant tout usage SaaS réel.
+
+### Pourquoi ce n'est pas branché sur Vercel
+
+`vercel_app.py` reste dans ce dossier comme adaptateur ASGI utilisable par n'importe quelle plateforme (Vercel Functions Python, un conteneur, etc.), mais **le `vercel.json` racine ne le déploie plus automatiquement**. Une tentative précédente y déclarait un bloc `services`/`bindings` qui aurait injecté `LEBONCOIN_BRIDGE_URL` tout seul dans le projet frontend — ce ne sont pas des clés reconnues par la configuration Vercel actuelle (pas de déploiement multi-service ni de binding d'URL inter-services dans `vercel.json`), donc rien n'était réellement déployé ni injecté : le bridge n'a jamais été joignable en production via ce mécanisme, ce qui produit le message applicatif « Le service d'analyse du marché n'est pas configuré. ».
+
+Tant que ce bridge doit rester sans exposition publique (recommandation ci-dessus), le déployer sur une plateforme purement serverless publique comme Vercel est de toute façon discutable. Concrètement, pour le rendre joignable :
+
+1. Déployez `services/leboncoin-bridge` où vous le souhaitez (conteneur privé, VM, ou une éventuelle fonction Python séparée) — c'est un choix d'infrastructure qui n'est pas fixé par ce dépôt.
+2. Notez l'URL de base résultante (ex. `https://leboncoin-bridge.internal.example.com`) et la valeur de `LEBONCOIN_BRIDGE_API_KEY` que vous lui avez injectée.
+3. Sur le projet Vercel du frontend Next.js : Project → Settings → Environment Variables, ajoutez **manuellement** :
+   - `LEBONCOIN_BRIDGE_URL` = cette URL de base (sans slash final), pour les environnements Production **et** Preview si vous voulez tester avant merge.
+   - `LEBONCOIN_BRIDGE_API_KEY` = le même secret que celui configuré côté bridge.
+4. Redéployez le frontend (une variable d'environnement Vercel n'est prise en compte qu'au prochain build/déploiement, jamais à chaud).
+5. Pour vérifier que les deux variables sont bien exposées au runtime sans jamais afficher leur valeur : `vercel env ls` liste les noms de variables configurées par environnement, ou en local `node -e "console.log(!!process.env.LEBONCOIN_BRIDGE_URL, !!process.env.LEBONCOIN_BRIDGE_API_KEY)"` doit afficher `true true`.
+
+En local, la même logique s'applique : `LEBONCOIN_BRIDGE_URL`/`LEBONCOIN_BRIDGE_API_KEY` dans `.env.local` (voir `.env.example` à la racine) ne suffisent pas seuls — le bridge doit aussi être réellement lancé (`uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8080`, section « Lancement local » ci-dessus) et l'URL configurée doit correspondre exactement à son adresse et son port. Sinon l'application affiche « Analyse impossible : fetch failed » (ou, avec les messages introduits par GO-0100, une explication indiquant que le bridge est injoignable à l'adresse configurée).
