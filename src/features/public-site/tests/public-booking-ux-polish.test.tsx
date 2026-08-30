@@ -152,6 +152,6 @@ test("appointment summary appears only after slot selection in form markup contr
 
 test("registration keeps its own form heading and procedure steps", () => {
   const form = buildPublicRequestForm("REGISTRATION")
-  assert.match(form.title, /carte grise/)
+  assert.match(form.title, /immatriculation/)
   assert.equal(form.steps.find((step) => step.id === "procedure")?.title, "Votre démarche")
 })

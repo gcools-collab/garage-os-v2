@@ -312,6 +312,9 @@ test("rend les paramètres avec un seul h1 et le vrai displayName", () => {
   assert.equal((html.match(/<h1/g) ?? []).length, 1)
   assert.match(html, /S\.A\.P/)
   assert.doesNotMatch(html, /Garage Martin/)
+  assert.match(html, /Logo de la vitrine/)
+  assert.match(html, /garage-branding/)
+  assert.match(html, /logo_path/)
 })
 
 test("persists successive theme changes through the repository dependency", async () => {

@@ -5,6 +5,7 @@ export interface PublicNavigationItemViewModel {
   readonly label: string
   readonly href: string
   readonly children?: readonly PublicNavigationItemViewModel[]
+  readonly external?: boolean
 }
 
 export interface GaragePublicViewModel {
@@ -75,6 +76,7 @@ export interface PublicHomepageViewModel {
 }
 
 export type PublicStockSort = "newest" | "price-asc" | "price-desc" | "year-desc" | "mileage-asc"
+export type PublicStockCategoryFilter = "particulier" | "utilitaire"
 
 export interface PublicStockQuery {
   readonly brand?: string
@@ -82,6 +84,7 @@ export interface PublicStockQuery {
   readonly fuel?: string
   readonly gearbox?: string
   readonly bodyType?: string
+  readonly category?: PublicStockCategoryFilter
   readonly minPrice?: number
   readonly maxPrice?: number
   readonly minYear?: number
@@ -111,6 +114,14 @@ export interface PublicStockViewModel {
     readonly previousHref: string | null
     readonly nextHref: string | null
   }
+  readonly categories: readonly {
+    readonly id: "all" | PublicStockCategoryFilter
+    readonly label: string
+    readonly href: string
+    readonly active: boolean
+    readonly count: number
+    readonly emptyMessage: string
+  }[]
   readonly emptyMessage: string | null
 }
 

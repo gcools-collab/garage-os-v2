@@ -35,14 +35,14 @@ test("homepage renders real stock and customer actions", () => {
   assert.doesNotMatch(html, /sélectionnés pour vous|véhicules à découvrir/i)
   assert.match(html, /Prendre rendez-vous/)
   assert.match(html, /Nous contacter/)
-  assert.match(html, /Voir \/ essayer un véhicule/)
+  assert.match(html, /Demander un essai/)
   assert.doesNotMatch(html, /Diagnostic/)
   assert.doesNotMatch(html, /financement/i)
   assert.match(html, /Navigation principale/)
   assert.match(html, /Actions rapides/)
 })
 
-test("customer actions only expose enabled appointment workflows",()=>{const configured={...garage(),serviceConfigurations:(["VEHICLE_SALES","ENGINE_CLEANING","REGISTRATION"] as const).map((serviceKey,displayOrder)=>({serviceKey,status:"ENABLED" as const,displayOrder,publicTitle:null,publicDescription:null,publicCtaLabel:null}))};const premium=new PremiumHomepageBuilder().build(buildPublicHomepage(configured,[]));assert.deepEqual(premium.appointmentActions.map(action=>action.label),["Voir / essayer un véhicule","Décalaminage","Carte grise"]);assert.doesNotMatch(premium.appointmentActions.map(action=>action.label).join(" "),/Diagnostic|Carrosserie|Mécanique/)})
+test("customer actions only expose enabled appointment workflows",()=>{const configured={...garage(),serviceConfigurations:(["VEHICLE_SALES","ENGINE_CLEANING","REGISTRATION"] as const).map((serviceKey,displayOrder)=>({serviceKey,status:"ENABLED" as const,displayOrder,publicTitle:null,publicDescription:null,publicCtaLabel:null}))};const premium=new PremiumHomepageBuilder().build(buildPublicHomepage(configured,[]));assert.deepEqual(premium.appointmentActions.map(action=>action.label),["Demander un essai","Décalaminage","Démarches d’immatriculation"]);assert.doesNotMatch(premium.appointmentActions.map(action=>action.label).join(" "),/Diagnostic|Carrosserie|Mécanique/)})
 
 test("empty stock and missing coordinates stay honest",()=>{const sparse={...garage(),branding:{...garage().branding,phone:null,email:null,formattedAddress:null}};const premium=new PremiumHomepageBuilder().build(buildPublicHomepage(sparse,[]));const html=renderToStaticMarkup(<PremiumHomepage homepage={premium}/>);assert.doesNotMatch(html,/Nos véhicules disponibles|Voir tous nos véhicules/);assert.doesNotMatch(html,/href="tel:/);assert.deepEqual(premium.contactActions.map(action=>action.label),["Formulaire de contact"]);assert.match(html,/Prendre rendez-vous/);assert.match(html,/Nous contacter/)})
 

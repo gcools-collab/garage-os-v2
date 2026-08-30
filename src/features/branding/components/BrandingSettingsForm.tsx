@@ -93,6 +93,27 @@ export function BrandingSettingsForm({
       ) : null}
       <Card>
         <CardHeader>
+          <CardTitle>Logo de la vitrine</CardTitle>
+          <CardDescription>
+            Le logo déjà enregistré s’affiche sur le site public. Le téléversement depuis Paramètres n’est pas encore branché.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <p className="text-sm text-muted-foreground">
+            Le bucket <code>garage-branding</code> et le champ <code>logo_path</code> existent déjà pour la lecture publique.
+            Il manque une action serveur qui : accepte un fichier image (PNG, WebP ou JPEG, taille limitée),
+            l’écrit dans <code>{`{garageId}/logo.ext`}</code>, met à jour <code>garage_branding.logo_path</code>,
+            et refuse tout chemin hors tenant. Les uploads véhicules ou 360 ne peuvent pas être réutilisés tels quels.
+          </p>
+          <label className="grid gap-2 text-sm font-medium">
+            Téléverser un logo
+            <Input type="file" accept="image/png,image/webp,image/jpeg" disabled />
+          </label>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Identité</CardTitle>
           <CardDescription>Les noms et la présentation publique de votre établissement.</CardDescription>
         </CardHeader>

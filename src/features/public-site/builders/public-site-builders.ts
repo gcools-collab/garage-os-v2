@@ -14,6 +14,9 @@ import type {
   VehiclePublicCardViewModel,
 } from "../types"
 import { buildEnabledPublicServices } from "../services"
+import { classifyPublicVehicleCategory } from "./public-vehicle-category"
+
+export const CARGO_BOOKING_HREF = "https://www.cargo.fr/Location/Booking?id=5947&name=Raismes"
 
 const money = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -30,6 +33,10 @@ function publicTelephoneHref(phone: string | null) {
 function unique(values: readonly (string | null)[]) {
   return [...new Set(values.filter((value): value is string => Boolean(value?.trim())))]
     .sort((left, right) => left.localeCompare(right, "fr"))
+}
+
+export function publicMapsDirectionsHref(address: string) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
 }
 
 export function buildPublicVehicleSlug(vehicle: {
@@ -76,7 +83,15 @@ export function buildGaragePublicViewModel(
     openingHours: [],
     homeHref: base,
     navigation: [
-      { label: "Nos véhicules", href: `${base}/stock`, children: [{ label: "Tous nos véhicules", href: `${base}/stock` }] },
+      {
+        label: "Nos véhicules",
+        href: `${base}/stock`,
+        children: [
+          { label: "Tous nos véhicules", href: `${base}/stock` },
+          { label: "Véhicules particuliers", href: `${base}/stock?category=particulier` },
+          { label: "Véhicules utilitaires", href: `${base}/stock?category=utilitaire` },
+        ],
+      },
       serviceIds.has("RENTAL") ? { label: "Location", href: `${base}/location` } : null,
       services.some((service) => service.id !== "VEHICLE_SALES") ? { label: "Services", href: `${base}/services` } : null,
       serviceIds.has("CONSIGNMENT") ? { label: "Dépôt-vente", href: `${base}/depot-vente` } : null,
@@ -148,7 +163,7 @@ export function buildPublicHomepage(
       image: heroImage ? { url: heroImage.url, alt: heroImage.alt } : null,
       primaryAction: { label: "Découvrir nos véhicules", href: `${garage.homeHref}/stock` },
       secondaryAction: garage.phoneHref
-        ? { label: "Appeler le garage", href: garage.phoneHref }
+        ? { label: "Nous appeler", href: garage.phoneHref }
         : null,
     },
     sections: [
@@ -196,6 +211,7 @@ export function buildPublicStock(
     && (!query.fuel || vehicle.fuelType === query.fuel)
     && (!query.gearbox || vehicle.transmission === query.gearbox)
     && (!query.bodyType || vehicle.bodyType === query.bodyType)
+    && (!query.category || classifyPublicVehicleCategory(vehicle.bodyType) === query.category)
     && (!query.minPrice || (vehicle.priceCents ?? -1) >= query.minPrice * 100)
     && (!query.maxPrice || (vehicle.priceCents ?? Number.MAX_SAFE_INTEGER) <= query.maxPrice * 100)
     && (!query.minYear || (vehicle.year ?? -1) >= query.minYear)
@@ -211,10 +227,19 @@ export function buildPublicStock(
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
   const page = Math.min(totalPages, Math.max(1, query.page ?? 1))
   const base = `${garage.homeHref}/stock`
+  const categoryCounts = {
+    particulier: source.filter((vehicle) => classifyPublicVehicleCategory(vehicle.bodyType) === "particulier").length,
+    utilitaire: source.filter((vehicle) => classifyPublicVehicleCategory(vehicle.bodyType) === "utilitaire").length,
+  }
+  const emptyByCategory = {
+    all: "Aucun véhicule ne correspond à ces critères.",
+    particulier: "Aucun véhicule particulier n’est actuellement proposé.",
+    utilitaire: "Aucun véhicule utilitaire n’est actuellement proposé.",
+  } as const
   return {
     garage,
     title: "Nos véhicules disponibles",
-    description: "Découvrez le stock actuellement proposé par le garage.",
+    description: "Découvrez le stock actuellement proposé par le garage, classé selon la carrosserie renseignée.",
     vehicles: sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
       .map((vehicle) => buildVehiclePublicCard(vehicle, garage)),
     resultLabel: `${filtered.length} véhicule${filtered.length > 1 ? "s" : ""}`,
@@ -233,7 +258,12 @@ export function buildPublicStock(
       previousHref: page > 1 ? queryString(base, query, page - 1) : null,
       nextHref: page < totalPages ? queryString(base, query, page + 1) : null,
     },
-    emptyMessage: filtered.length ? null : "Aucun véhicule ne correspond à ces critères.",
+    categories: [
+      { id: "all" as const, label: "Tous les véhicules", href: queryString(base, { ...query, category: undefined }, 1), active: !query.category, count: source.length, emptyMessage: emptyByCategory.all },
+      { id: "particulier" as const, label: "Véhicules particuliers", href: queryString(base, { ...query, category: "particulier" }, 1), active: query.category === "particulier", count: categoryCounts.particulier, emptyMessage: emptyByCategory.particulier },
+      { id: "utilitaire" as const, label: "Véhicules utilitaires", href: queryString(base, { ...query, category: "utilitaire" }, 1), active: query.category === "utilitaire", count: categoryCounts.utilitaire, emptyMessage: emptyByCategory.utilitaire },
+    ],
+    emptyMessage: filtered.length ? null : (query.category ? emptyByCategory[query.category] : emptyByCategory.all),
   }
 }
 
@@ -257,10 +287,10 @@ export function buildPublicContact(
     mapLabel: garage.address ?? "Localisation du garage",
     journeys: [
       ["Acheter un véhicule", "buy"],
-      ["Réserver un essai", "test-drive"],
+      ["Demander un essai", "test-drive"],
       ["Faire reprendre mon véhicule", "trade-in"],
       ["Déposer un véhicule", "consignment"],
-      ["Demander une carte grise", "registration"],
+      ["Démarches d’immatriculation", "registration"],
       ["Prendre rendez-vous pour un décalaminage", "engine-cleaning"],
       ["Demande libre", "other"],
     ].filter(([, project]) => project === "other" || serviceProjects.has(project))
@@ -294,27 +324,28 @@ export function buildPublicProgram(
   const garage = buildGaragePublicViewModel(garageRecord)
   const service = garage.services.find((item) => item.id === kind)
   if (!service) return null
-  const phoneHref = garage.phone ? `tel:${garage.phone.replace(/\s/g, "")}` : null
-  const mapHref = garage.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(garage.address)}` : null
+  const phoneHref = garage.phoneHref
+  const mapHref = garage.address ? publicMapsDirectionsHref(garage.address) : null
   const contact = { phoneHref, phoneLabel: garage.phone, address: garage.address, mapHref }
-  const callAction: PublicNavigationItemViewModel | null = phoneHref ? { label: "Appeler le garage", href: phoneHref } : null
+  const callAction: PublicNavigationItemViewModel | null = phoneHref ? { label: "Nous appeler", href: phoneHref } : null
   return kind === "RENTAL" ? {
     garage,
-    eyebrow: "Location",
-    title: "Une solution de mobilité adaptée à votre besoin",
-    description: "Contactez notre équipe pour connaître les véhicules et conditions actuellement disponibles.",
-    benefits: ["Un accompagnement direct", "Des disponibilités confirmées par le garage", "Une demande sans engagement"],
+    eyebrow: "Partenaire Cargo",
+    title: "Location de véhicules avec Cargo",
+    description: "Nous vous orientons vers Cargo, notre partenaire location à Raismes. La réservation est opérée par Cargo : le garage vous accompagne, sans se substituer à leur plateforme.",
+    benefits: ["Partenariat Cargo", "Réservation opérée par Cargo", "Devis possible auprès du garage"],
     details: [
-      { label: "Durée de location", value: "De 1 jour à plusieurs mois, jusqu’à 12 mois selon les disponibilités." },
-      { label: "Réservation", value: "Une demande de devis en ligne, confirmée directement par le garage." },
-      { label: "Documents à prévoir", value: "Permis de conduire valide, pièce d’identité et justificatif de domicile récent." },
-      { label: "Conditions", value: "Dépôt de garantie et moyen de paiement à votre nom demandés au retrait du véhicule." },
+      { label: "Partenaire", value: "La flotte et la réservation en ligne sont opérées par Cargo." },
+      { label: "Durée de location", value: "De 1 jour à plusieurs mois, jusqu’à 12 mois selon les disponibilités Cargo." },
+      { label: "Réservation", value: "Réservez directement chez Cargo. Pour un besoin spécifique, demandez un devis à notre équipe." },
+      { label: "Documents à prévoir", value: "Permis de conduire valide, pièce d’identité et justificatif de domicile récent, selon les conditions Cargo." },
+      { label: "Conditions", value: "Dépôt de garantie et moyen de paiement à votre nom demandés au retrait, selon les conditions Cargo." },
     ],
     steps: [],
-    reassurance: [],
+    reassurance: ["La réservation en ligne est confirmée et gérée par Cargo, pas par le garage."],
     contact,
-    action: { label: "Demander un devis", href: `${garage.homeHref}/contact?project=rental` },
-    secondaryAction: callAction,
+    action: { label: "Réserver chez Cargo", href: CARGO_BOOKING_HREF, external: true },
+    secondaryAction: { label: "Demander un devis", href: `${garage.homeHref}/contact?project=rental` },
   } : {
     garage,
     eyebrow: "Dépôt-vente",

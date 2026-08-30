@@ -1,14 +1,18 @@
+import { Mail, MapPin } from "lucide-react"
 import type { PublicRequestFormViewModel, PublicRequestSource, PublicVehicleContextViewModel } from "@/features/public-leads"
 import { PublicRequestForm } from "@/features/public-leads"
 import type { PublicOfferPresentation } from "@/features/service-catalog/builders/public-offer-presentation-builder"
 import type { AvailabilitySlot } from "@/features/scheduling/types/scheduling"
+import { publicMapsDirectionsHref } from "../builders"
 import type { PublicContactViewModel } from "../types"
+import { PublicCallButton } from "./PublicCallButton"
 import { PublicSiteLayout } from "./PublicSiteLayout"
+import { PublicSocialIcon } from "./PublicSocialIcon"
 
 const projectLabels: Readonly<Record<string, string>> = {
   "engine-cleaning": "Décalaminage moteur",
-  registration: "Carte grise",
-  "test-drive": "Essai véhicule",
+  registration: "Démarches d’immatriculation",
+  "test-drive": "Demander un essai",
   "trade-in": "Reprise véhicule",
   consignment: "Dépôt-vente",
   buy: "Achat véhicule",
@@ -45,9 +49,7 @@ export function PublicContactPage({
   const showProjectSelector = !selectedProject
   const changeRequestHref = `${contact.garage.homeHref}/contact`
   const selectedLabel = selectedProject ? projectLabels[selectedProject] ?? request?.form.title ?? "Demande" : null
-  const mapHref = contact.garage.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.garage.address)}`
-    : null
+  const mapHref = contact.garage.address ? publicMapsDirectionsHref(contact.garage.address) : null
 
   return (
     <PublicSiteLayout garage={contact.garage}>
@@ -60,13 +62,23 @@ export function PublicContactPage({
               {selectedProject && projectSubtitles[selectedProject] ? (
                 <p className="mt-2 text-[var(--live-muted-foreground)]">{projectSubtitles[selectedProject]}</p>
               ) : null}
+              {selectedProject === "test-drive" ? (
+                <p className="mt-2 text-sm text-[var(--live-muted-foreground)]">
+                  Cette demande doit être confirmée par l’équipe. Le créneau n’est jamais définitivement réservé tant que le garage ne vous a pas recontacté.
+                </p>
+              ) : null}
             </div>
             <a href={changeRequestHref} className="text-sm font-medium underline underline-offset-4">Changer de demande</a>
           </div>
-          {contact.garage.address ? (
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--live-muted-foreground)]">
-              <span>{contact.garage.name} — {contact.garage.address}</span>
-              {mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">Itinéraire</a> : null}
+          {contact.garage.address || contact.phoneHref ? (
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              {contact.phoneHref ? <PublicCallButton href={contact.phoneHref} className="inline-flex min-h-10 items-center gap-2 font-semibold hover:underline" /> : null}
+              {mapHref ? (
+                <a href={mapHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-medium underline underline-offset-4">
+                  <MapPin className="size-4 shrink-0" aria-hidden="true" />
+                  Obtenir mon itinéraire
+                </a>
+              ) : null}
             </div>
           ) : null}
         </header>
@@ -74,13 +86,50 @@ export function PublicContactPage({
         <div className="mx-auto max-w-4xl px-5 pt-10 md:px-8">
           <h1 className="text-4xl font-semibold">{contact.title}</h1>
           <p className="mt-4 text-[var(--live-muted-foreground)]">{contact.description}</p>
-          {contact.phoneHref || contact.garage.address ? (
-            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-              {contact.phoneHref ? <a href={contact.phoneHref} className="font-semibold hover:underline">{contact.garage.phone}</a> : null}
-              {contact.garage.address ? <span className="text-[var(--live-muted-foreground)]">{contact.garage.address}</span> : null}
-              {mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">Itinéraire</a> : null}
-            </div>
-          ) : null}
+          <div className="mt-6 grid gap-3 text-sm">
+            {contact.phoneHref ? (
+              <PublicCallButton
+                href={contact.phoneHref}
+                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl bg-[var(--live-primary)] px-4 font-semibold text-[var(--live-primary-foreground)]"
+              />
+            ) : null}
+            {contact.emailHref ? (
+              <a href={contact.emailHref} className="inline-flex items-center gap-2 font-medium hover:underline">
+                <Mail className="size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
+                {contact.garage.email}
+              </a>
+            ) : null}
+            {mapHref ? (
+              <a href={mapHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-2 font-medium hover:underline">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
+                <span>
+                  <span className="block text-[var(--live-muted-foreground)]">{contact.garage.address}</span>
+                  Calculer mon temps de route
+                </span>
+              </a>
+            ) : contact.garage.address ? (
+              <p className="inline-flex items-center gap-2 text-[var(--live-muted-foreground)]">
+                <MapPin className="size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
+                {contact.garage.address}
+              </p>
+            ) : null}
+            {contact.garage.socialLinks.length ? (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {contact.garage.socialLinks.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--live-border-strong)] px-3 font-medium"
+                    >
+                      <PublicSocialIcon label={link.label} />
+                      {link.label}
+                    </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
 

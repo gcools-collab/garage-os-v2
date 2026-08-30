@@ -53,7 +53,7 @@ test("sans project, le sélecteur générique reste visible", () => {
   )
 
   assert.match(html, /Comment pouvons-nous vous aider/)
-  assert.match(html, /Demander une carte grise/)
+  assert.match(html, /Démarches d’immatriculation/)
   assert.doesNotMatch(html, /Changer de demande/)
 })
 
@@ -74,7 +74,7 @@ test("avec project=registration, le formulaire s'ouvre directement sans second c
 
   assert.doesNotMatch(html, /Comment pouvons-nous vous aider/)
   assert.match(html, /Changer de demande/)
-  assert.match(html, /Préparer une demande de carte grise/)
+  assert.match(html, /Préparer une demande d’immatriculation/)
   assert.match(html, /name="requestType" value="REGISTRATION"/)
 })
 

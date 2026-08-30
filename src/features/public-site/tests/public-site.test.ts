@@ -11,6 +11,7 @@ import {
   buildPublicVehicleSlug,
   buildVehiclePublicCard,
   buildVehiclePublicSeo,
+  classifyPublicVehicleCategory,
 } from "../builders"
 import { getPublicVehicleImageSizes } from "../presentation"
 import { loadPublicSiteRecord } from "../repositories/public-site-source"
@@ -96,6 +97,26 @@ test("le stock filtre, trie et pagine de manière déterministe", () => {
   assert.equal(stock.vehicles.length, 1)
   assert.equal(stock.vehicles[0].name, "Audi A3")
   assert.equal(stock.resultLabel, "1 véhicule")
+})
+
+test("le stock classe particuliers et utilitaires sans inventer une catégorie", () => {
+  assert.equal(classifyPublicVehicleCategory("Berline"), "particulier")
+  assert.equal(classifyPublicVehicleCategory("Fourgon"), "utilitaire")
+  assert.equal(classifyPublicVehicleCategory(null), null)
+  assert.equal(classifyPublicVehicleCategory("Carrosserie inconnue"), null)
+  const source = [
+    vehicle("1"),
+    vehicle("2", { make: "Renault", model: "Kangoo", bodyType: "Fourgon" }),
+    vehicle("3", { make: "Peugeot", model: "Boxer", bodyType: null }),
+  ]
+  const particuliers = buildPublicStock(garage, source, { category: "particulier" })
+  const utilitaires = buildPublicStock(garage, source, { category: "utilitaire" })
+  assert.deepEqual(particuliers.vehicles.map((item) => item.name), ["BMW M3"])
+  assert.deepEqual(utilitaires.vehicles.map((item) => item.name), ["Renault Kangoo"])
+  assert.equal(particuliers.emptyMessage, null)
+  const emptyUtility = buildPublicStock(garage, [vehicle("1")], { category: "utilitaire" })
+  assert.equal(emptyUtility.emptyMessage, "Aucun véhicule utilitaire n’est actuellement proposé.")
+  assert.ok(emptyUtility.categories.some((item) => item.label === "Véhicules particuliers" && item.id === "particulier"))
 })
 
 test("le contact est dérivé uniquement du branding", () => {

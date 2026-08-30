@@ -3,6 +3,7 @@ import Link from "next/link"
 
 import type { PublicProgramPageViewModel, PublicServicesPageViewModel } from "../types"
 import type { PublicServiceIcon } from "../services"
+import { PublicSiteActionLink } from "./PublicSiteActionLink"
 import { PublicSiteLayout } from "./PublicSiteLayout"
 
 const icons = {
@@ -13,6 +14,24 @@ const icons = {
   TOOLS: Wrench,
   SHIELD: ShieldCheck,
 } satisfies Readonly<Record<PublicServiceIcon, typeof Car>>
+
+const registrationProcedures = [
+  "Carte grise",
+  "Cession",
+  "Changement d’adresse",
+  "Duplicata après perte",
+  "Fiche d’identification",
+  "Première immatriculation française",
+  "WW provisoire",
+  "Déclaration d’achat professionnelle",
+  "Plaques",
+] as const
+
+const plateTariffs = [
+  { label: "Aluminium", value: "10 € par plaque" },
+  { label: "Provisoire rose", value: "15 €" },
+  { label: "Plexiglas", value: "26,60 € par plaque" },
+] as const
 
 export function PublicServicesPage({ page }: { readonly page: PublicServicesPageViewModel }) {
   return (
@@ -32,6 +51,31 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
                   <span className="grid size-12 place-items-center rounded-xl bg-[var(--live-primary)] text-[var(--live-primary-foreground)]"><Icon aria-hidden="true" /></span>
                   <h2 className="mt-6 text-2xl font-semibold">{service.title}</h2>
                   <p className="mt-3 text-[var(--live-muted-foreground)]">{service.description}</p>
+                  {service.id === "REGISTRATION" ? (
+                    <div className="mt-5 space-y-4">
+                      <ul className="grid gap-2 text-sm sm:grid-cols-2">
+                        {registrationProcedures.map((item) => (
+                          <li key={item} className="flex items-start gap-2">
+                            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                      <dl className="grid gap-2 rounded-2xl border border-[var(--live-border)] p-4 text-sm">
+                        {plateTariffs.map((tariff) => (
+                          <div key={tariff.label} className="flex items-baseline justify-between gap-3">
+                            <dt className="text-[var(--live-muted-foreground)]">{tariff.label}</dt>
+                            <dd className="font-medium">{tariff.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  ) : null}
+                  {service.id === "ENGINE_CLEANING" ? (
+                    <p className="mt-4 rounded-2xl border border-[var(--live-border)] p-4 text-sm text-[var(--live-muted-foreground)]">
+                      Option diagnostic électronique : passage de la valise, lecture des défauts et voyants, effacement lorsque cela est possible, puis remise d’un rapport. Un défaut ne peut pas toujours être effacé.
+                    </p>
+                  ) : null}
                   <Link href={service.href} className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[var(--live-border-strong)] px-5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{service.actionLabel}</Link>
                 </article>
               )
@@ -44,6 +88,8 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
 }
 
 export function PublicProgramPage({ page }: { readonly page: PublicProgramPageViewModel }) {
+  const actionClassName = "inline-flex min-h-12 items-center rounded-xl bg-[var(--live-primary)] px-6 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]"
+  const secondaryClassName = "inline-flex min-h-12 items-center rounded-xl border border-[var(--live-border-strong)] px-6 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]"
   return (
     <PublicSiteLayout garage={page.garage}>
       <main className="mx-auto max-w-5xl px-5 py-16 md:px-8">
@@ -51,12 +97,35 @@ export function PublicProgramPage({ page }: { readonly page: PublicProgramPageVi
         <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">{page.title}</h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--live-muted-foreground)]">{page.description}</p>
 
-        <ul className="mt-10 grid gap-4 sm:grid-cols-3">{page.benefits.map((benefit) => <li key={benefit} className="rounded-2xl border border-[var(--live-border)] p-5 font-medium">{benefit}</li>)}</ul>
-
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link href={page.action.href} className="inline-flex min-h-12 items-center rounded-xl bg-[var(--live-primary)] px-6 font-semibold text-[var(--live-primary-foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{page.action.label}</Link>
-          {page.secondaryAction ? <a href={page.secondaryAction.href} className="inline-flex min-h-12 items-center rounded-xl border border-[var(--live-border-strong)] px-6 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{page.secondaryAction.label}</a> : null}
+        <div className="mt-8 flex flex-wrap gap-3">
+          <PublicSiteActionLink item={page.action} className={actionClassName} />
+          {page.secondaryAction ? <PublicSiteActionLink item={page.secondaryAction} className={secondaryClassName} /> : null}
         </div>
+
+        {page.steps.length ? (
+          <section className="mt-12" aria-labelledby="program-steps-heading">
+            <h2 id="program-steps-heading" className="text-2xl font-semibold">Comment ça marche</h2>
+            <ol className="mt-6 grid gap-5 sm:grid-cols-2">
+              {page.steps.map((step, index) => (
+                <li key={step.title} className="rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)] p-6">
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-[var(--live-primary)] text-sm font-semibold text-[var(--live-primary-foreground)]">{index + 1}</span>
+                  <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--live-muted-foreground)]">{step.description}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
+        {page.benefits.length ? (
+          <ul className="mt-8 flex flex-wrap gap-2">
+            {page.benefits.map((benefit) => (
+              <li key={benefit} className="rounded-full border border-[var(--live-border)] px-3 py-1.5 text-sm font-medium">
+                {benefit}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
         {page.details.length ? (
           <section className="mt-16" aria-labelledby="program-details-heading">
@@ -69,21 +138,6 @@ export function PublicProgramPage({ page }: { readonly page: PublicProgramPageVi
                 </div>
               ))}
             </dl>
-          </section>
-        ) : null}
-
-        {page.steps.length ? (
-          <section className="mt-16" aria-labelledby="program-steps-heading">
-            <h2 id="program-steps-heading" className="text-2xl font-semibold">Comment ça marche</h2>
-            <ol className="mt-6 grid gap-5 sm:grid-cols-2">
-              {page.steps.map((step, index) => (
-                <li key={step.title} className="rounded-2xl border border-[var(--live-border)] bg-[var(--live-surface)] p-6">
-                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-[var(--live-primary)] text-sm font-semibold text-[var(--live-primary-foreground)]">{index + 1}</span>
-                  <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--live-muted-foreground)]">{step.description}</p>
-                </li>
-              ))}
-            </ol>
           </section>
         ) : null}
 
@@ -116,7 +170,7 @@ export function PublicProgramPage({ page }: { readonly page: PublicProgramPageVi
                 </span>
               ) : null}
               {page.contact.mapHref ? (
-                <a href={page.contact.mapHref} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">Itinéraire</a>
+                <a href={page.contact.mapHref} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">Obtenir mon itinéraire</a>
               ) : null}
             </div>
           </section>

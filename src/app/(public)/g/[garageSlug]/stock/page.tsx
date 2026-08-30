@@ -5,6 +5,7 @@ import {
   buildPublicStock,
   getPublicSiteRecord,
   PublicStockPage,
+  isPublicStockCategory,
   type PublicStockQuery,
   type PublicStockSort,
 } from "@/features/public-site"
@@ -25,6 +26,10 @@ function query(raw: RawParams): PublicStockQuery {
   return {
     brand: text(raw.brand), model: text(raw.model), fuel: text(raw.fuel),
     gearbox: text(raw.gearbox), bodyType: text(raw.bodyType),
+    category: (() => {
+      const category = text(raw.category)
+      return isPublicStockCategory(category) ? category : undefined
+    })(),
     minPrice: number(raw.minPrice), maxPrice: number(raw.maxPrice),
     minYear: number(raw.minYear), maxMileage: number(raw.maxMileage),
     sort: sort && sorts.has(sort as PublicStockSort) ? sort as PublicStockSort : "newest",

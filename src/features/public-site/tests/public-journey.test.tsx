@@ -62,15 +62,21 @@ test("navigation, services, location et dépôt-vente utilisent leurs ViewModels
   const rental = buildPublicProgram(garage, "RENTAL")
   const consignment = buildPublicProgram(garage, "CONSIGNMENT")
   assert.ok(rental && consignment)
-  assert.match(renderToStaticMarkup(<PublicServicesPage page={services} />), /Décalaminage moteur/)
-  assert.match(renderToStaticMarkup(<PublicProgramPage page={rental} />), /solution de mobilité/)
+  const servicesHtml = renderToStaticMarkup(<PublicServicesPage page={services} />)
+  assert.match(servicesHtml, /Décalaminage moteur/)
+  assert.match(servicesHtml, /Démarches d’immatriculation/)
+  assert.match(servicesHtml, /WW provisoire/)
+  assert.match(servicesHtml, /26,60/)
+  assert.match(servicesHtml, /diagnostic électronique/i)
+  assert.match(servicesHtml, /ne peut pas toujours être effacé/)
+  assert.match(renderToStaticMarkup(<PublicProgramPage page={rental} />), /Location de véhicules avec Cargo/)
   assert.match(renderToStaticMarkup(<PublicProgramPage page={consignment} />), /Confiez-nous la vente/)
 })
 
 test("le centre de contact prépare les sept parcours attendus", () => {
   const contact = buildPublicContact(garage)
   assert.equal(contact.journeys.length, 7)
-  assert.match(contact.journeys.map((item) => item.label).join(" "), /Réserver un essai/)
+  assert.match(contact.journeys.map((item) => item.label).join(" "), /Demander un essai/)
 })
 
 test("les routes du parcours public V2 existent", () => {
@@ -90,9 +96,13 @@ test("la location expose durée, documents, conditions, téléphone et itinérai
   assert.equal(rental.contact.phoneHref, "tel:0327000000")
   assert.ok(rental.contact.mapHref?.includes("google.com/maps"))
   const html = renderToStaticMarkup(<PublicProgramPage page={rental} />)
+  assert.match(html, /Réserver chez Cargo/)
   assert.match(html, /Demander un devis/)
-  assert.match(html, /Itinéraire/)
+  assert.match(html, /Obtenir mon itinéraire/)
   assert.match(html, /Informations pratiques/)
+  assert.match(html, /cargo\.fr\/Location\/Booking/)
+  assert.match(html, /rel="noopener noreferrer"/)
+  assert.match(html, /opérée par Cargo/)
 })
 
 test("le dépôt-vente expose ses étapes et sa réassurance", () => {
@@ -105,6 +115,25 @@ test("le dépôt-vente expose ses étapes et sa réassurance", () => {
   assert.match(html, /Estimation de votre véhicule/)
   assert.match(html, /Nos engagements/)
   assert.match(html, /Déposer mon véhicule/)
+  assert.match(html, /Nous appeler/)
+  assert.ok(html.indexOf("Comment ça marche") < html.indexOf("Présentation professionnelle"))
+})
+
+test("le footer public expose identité, appel, e-mail, itinéraire et réseaux", () => {
+  const branded = {
+    ...garage,
+    branding: {
+      ...garage.branding,
+      socialLinks: { facebookUrl: "https://facebook.com/sap", instagramUrl: "https://instagram.com/sap" },
+    },
+  }
+  const html = renderToStaticMarkup(<PublicSiteLayout garage={buildGaragePublicViewModel(branded)}><p>contenu</p></PublicSiteLayout>)
+  assert.match(html, /Facebook/)
+  assert.match(html, /Instagram/)
+  assert.match(html, /Mentions légales/)
+  assert.match(html, /Confidentialité/)
+  assert.match(html, /Obtenir mon itinéraire/)
+  assert.match(html, /Nous appeler/)
 })
 
 test("le parcours location est résolu et ouvre un vrai formulaire (plus de demande vide)", () => {
@@ -121,11 +150,14 @@ test("le parcours location est résolu et ouvre un vrai formulaire (plus de dema
   assert.doesNotMatch(html, /Cette demande n.est pas disponible/)
 })
 
-test("l'en-tête public expose un accès téléphone et rendez-vous, y compris sur mobile", () => {
+test("l'en-tête public expose Nous appeler à droite, sans Rendez-vous, avec un menu mobile", () => {
   const services = buildPublicServices(garage)
   const html = renderToStaticMarkup(<PublicSiteLayout garage={services.garage}><p>contenu</p></PublicSiteLayout>)
   assert.match(html, /href="tel:0327000000"/)
-  assert.match(html, /Rendez-vous/)
+  assert.match(html, /Nous appeler/)
+  assert.match(html, /Ouvrir le menu/)
+  assert.doesNotMatch(html, /Rendez-vous/)
+  assert.doesNotMatch(html, /Appeler le garage/)
 })
 
 test("les cartes véhicule alignent leur CTA en bas de carte quelle que soit la description", () => {

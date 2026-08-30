@@ -45,7 +45,8 @@ test("un essai contextualisé affiche le véhicule sans champ véhicule inutile"
   assert.match(html, /Audi A7/)
   assert.match(html, /34 990/)
   assert.doesNotMatch(html, /name="brand"|name="model"/)
-  assert.match(html, /Demander mon essai/)
+  assert.match(html, /Demander un essai/)
+  assert.match(html, /confirmée par l’équipe/)
 })
 
 test("contact contextualise un véhicule unique sans charger tout le stock", () => {

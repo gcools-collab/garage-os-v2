@@ -1,4 +1,5 @@
 export {
+  CARGO_BOOKING_HREF,
   buildGaragePublicViewModel,
   buildPublicContact,
   buildPublicHomepage,
@@ -9,4 +10,11 @@ export {
   buildPublicVehicleSlug,
   buildVehiclePublicSeo,
   buildVehiclePublicCard,
+  publicMapsDirectionsHref,
 } from "./public-site-builders"
+export {
+  classifyPublicVehicleCategory,
+  isPublicStockCategory,
+  publicStockCategories,
+} from "./public-vehicle-category"
+export type { PublicStockCategory } from "./public-vehicle-category"

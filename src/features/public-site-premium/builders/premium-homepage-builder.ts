@@ -11,14 +11,14 @@ export class PremiumHomepageBuilder {
     const years = homepage.quickSearch.years
     const serviceIds = new Set(homepage.garage.services.map((service) => service.id))
     const appointmentActions = [
-      serviceIds.has("VEHICLE_SALES") ? { label: "Voir / essayer un véhicule", href: `${contact}?project=test-drive` } : null,
+      serviceIds.has("VEHICLE_SALES") ? { label: "Demander un essai", href: `${contact}?project=test-drive` } : null,
       serviceIds.has("ENGINE_CLEANING") ? { label: "Décalaminage", href: `${contact}?project=engine-cleaning` } : null,
-      serviceIds.has("REGISTRATION") ? { label: "Carte grise", href: `${contact}?project=registration` } : null,
+      serviceIds.has("REGISTRATION") ? { label: "Démarches d’immatriculation", href: `${contact}?project=registration` } : null,
     ].filter((action): action is NonNullable<typeof action> => action !== null)
     const contactActions = [
-      phoneHref ? { label: "Appeler le garage", href: phoneHref } : null,
+      phoneHref ? { label: "Nous appeler", href: phoneHref } : null,
       homepage.garage.email ? { label: "Envoyer un e-mail", href: `mailto:${homepage.garage.email}` } : null,
-      homepage.garage.address ? { label: "Itinéraire", href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(homepage.garage.address)}` } : null,
+      homepage.garage.address ? { label: "Obtenir mon itinéraire", href: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(homepage.garage.address)}` } : null,
       { label: "Formulaire de contact", href: contact },
     ].filter((action): action is NonNullable<typeof action> => action !== null)
     return {
