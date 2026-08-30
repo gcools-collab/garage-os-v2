@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 
-import { findLogoContentBox, punchWhitePixels } from "../presentation/logo-crop"
+import { findLogoContentBox } from "../presentation/logo-crop"
 
 function imageData(width: number, height: number, paint: (x: number, y: number) => [number, number, number, number]) {
   const data = new Uint8ClampedArray(width * height * 4)
@@ -40,20 +40,28 @@ test("recadre aussi un fond blanc sale de JPEG", () => {
   assert.equal(box.top, 4)
 })
 
-test("rend le blanc périphérique transparent", () => {
-  const data = imageData(8, 8, (x, y) => (
-    x >= 2 && x <= 5 && y >= 2 && y <= 5 ? [12, 12, 12, 255] : [250, 250, 248, 255]
-  ))
-  assert.equal(punchWhitePixels(data), true)
-  assert.equal(data[0], 0)
-  assert.equal(data[3], 0)
-  const content = ((2 * 8 + 2) * 4)
-  assert.equal(data[content], 12)
-  assert.equal(data[content + 3], 255)
+test("conserve le blanc intérieur et la bordure colorée d’un médaillon", () => {
+  const data = imageData(24, 24, (x, y) => {
+    const dx = x - 11.5
+    const dy = y - 11.5
+    const distance = Math.hypot(dx, dy)
+    if (distance > 8) return [255, 255, 255, 255]
+    if (distance > 6.5) return [210, 170, 30, 255]
+    if (x >= 10 && x <= 13 && y >= 9 && y <= 14) return [12, 12, 12, 255]
+    return [255, 255, 255, 255]
+  })
+  const box = findLogoContentBox(data, 24, 24)
+  assert.ok(box)
+  assert.ok(box.left <= 4)
+  assert.ok(box.top <= 4)
+  const innerWhite = ((12 * 24 + 8) * 4)
+  assert.equal(data[innerWhite], 255)
+  assert.equal(data[innerWhite + 3], 255)
+  const gold = ((4 * 24 + 12) * 4)
+  assert.equal(data[gold], 210)
 })
 
 test("laisse intact un logo déjà rempli", () => {
   const data = imageData(12, 12, () => [30, 80, 160, 255])
   assert.equal(findLogoContentBox(data, 12, 12), null)
-  assert.equal(punchWhitePixels(data), false)
 })

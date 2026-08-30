@@ -3,21 +3,27 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { isResolvableVehicleImageUrl } from "@/features/vehicles/vehicle-image-presentation"
-import { findLogoContentBox, punchWhitePixels } from "../presentation/logo-crop"
+import { findLogoContentBox } from "../presentation/logo-crop"
 import type { GaragePublicViewModel } from "../types"
 
 export type PublicSiteBrandPlacement = "header" | "footer" | "menu"
 
+const medallionClassName: Record<PublicSiteBrandPlacement, string> = {
+  header: "relative size-12 shrink-0 overflow-hidden rounded-full bg-white sm:size-14",
+  menu: "relative size-12 shrink-0 overflow-hidden rounded-full bg-white",
+  footer: "relative size-12 shrink-0 overflow-hidden rounded-full bg-white",
+}
+
 const imageClassName: Record<PublicSiteBrandPlacement, string> = {
-  header: "h-14 w-auto max-h-14 max-w-[16rem] bg-transparent object-contain object-left sm:h-16 sm:max-h-16 sm:max-w-[20rem]",
-  menu: "h-14 w-auto max-h-14 max-w-[16rem] bg-transparent object-contain object-left",
-  footer: "h-14 w-auto max-h-14 max-w-[18rem] bg-transparent object-contain object-left",
+  header: "size-full object-contain object-center",
+  menu: "size-full object-contain object-center",
+  footer: "size-full object-contain object-center",
 }
 
 const linkClassName: Record<PublicSiteBrandPlacement, string> = {
-  header: "flex min-h-14 min-w-0 max-w-[16rem] items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)] sm:min-h-16 sm:max-w-[20rem]",
-  menu: "flex min-h-14 min-w-0 max-w-[16rem] items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]",
-  footer: "flex min-h-14 min-w-0 max-w-[18rem] items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]",
+  header: "flex min-h-12 min-w-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)] sm:min-h-14",
+  menu: "flex min-h-12 min-w-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]",
+  footer: "flex min-h-12 min-w-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--live-focus-ring)]",
 }
 
 function cropLogoSrc(source: string): Promise<string | null> {
@@ -38,14 +44,8 @@ function cropLogoSrc(source: string): Promise<string | null> {
         context.drawImage(image, 0, 0)
         const pixels = context.getImageData(0, 0, canvas.width, canvas.height)
         const box = findLogoContentBox(pixels.data, pixels.width, pixels.height)
-        const punched = punchWhitePixels(pixels.data)
-        if (!box && !punched) {
-          resolve(null)
-          return
-        }
-        context.putImageData(pixels, 0, 0)
         if (!box) {
-          resolve(canvas.toDataURL("image/png"))
+          resolve(null)
           return
         }
         const cropped = document.createElement("canvas")
@@ -93,7 +93,6 @@ export function PublicSiteBrand({
     ? garage.logoUrl
     : null
   const displaySrc = cropped?.source === source ? cropped.src : source
-  const framed = Boolean(source && cropped?.source === source)
 
   useEffect(() => {
     if (!source) return
@@ -113,13 +112,15 @@ export function PublicSiteBrand({
       className={linkClassName[resolvedPlacement]}
     >
       {source ? (
-        // eslint-disable-next-line @next/next/no-img-element -- garage logos stay object-contain without next/image cropping
-        <img
-          src={displaySrc ?? source}
-          alt={garage.name}
-          onError={() => setFailed(true)}
-          className={`${imageClassName[resolvedPlacement]}${framed ? "" : " mix-blend-multiply"}`}
-        />
+        <span className={medallionClassName[resolvedPlacement]}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- garage logos stay object-contain without next/image cropping */}
+          <img
+            src={displaySrc ?? source}
+            alt={garage.name}
+            onError={() => setFailed(true)}
+            className={imageClassName[resolvedPlacement]}
+          />
+        </span>
       ) : (
         <span className={`min-w-0 truncate font-semibold tracking-tight ${resolvedPlacement === "menu" ? "text-sm" : "text-sm sm:text-base"}`}>
           {garage.name}
