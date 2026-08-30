@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import test from "node:test"
-import { Vehicle360GalleryBuilder, Vehicle360PublicationBuilder, Vehicle360SequenceEngine, Vehicle360ValidationEngine, Vehicle360ViewerBuilder, nextCircularFrame } from ".."
+import { Vehicle360GalleryBuilder, Vehicle360PublicationBuilder, Vehicle360SequenceEngine, Vehicle360ValidationEngine, Vehicle360ViewerBuilder, nextCircularFrame, validateVehicle360File } from ".."
 import type { Vehicle360Frame, Vehicle360Sequence } from "../types"
 
 const frame = (position: number, overrides: Partial<Vehicle360Frame> = {}): Vehicle360Frame => ({
@@ -51,6 +51,24 @@ test("detects inaccessible, duplicate and discontinuous frames", () => {
   const frames = [frame(1), frame(1, { id: "duplicate" }), frame(3, { publicUrl: null })]
   const coverage = new Vehicle360ValidationEngine().validate(sequence(3, { frames }))
   assert.deepEqual(coverage.blockers.map((item) => item.id).sort(), ["accessible", "minimum", "order", "positions"])
+})
+
+test("rejects unsupported, oversized and duplicate frame content", () => {
+  assert.match(validateVehicle360File({ type: "video/mp4", size: 1024 }) ?? "", /format/)
+  assert.match(validateVehicle360File({ type: "image/jpeg", size: 16 * 1024 * 1024 }) ?? "", /15 Mo/)
+  assert.equal(validateVehicle360File({ type: "image/webp", size: 1024 }), null)
+
+  const duplicate = new Vehicle360ValidationEngine().validate(sequence(12, {
+    frames: Array.from({ length: 12 }, (_, index) => frame(index + 1, {
+      checksum: index < 2 ? "same-content" : `checksum-${index}`,
+    })),
+  }))
+  assert.ok(duplicate.blockers.some((item) => item.id === "duplicates"))
+
+  const invalidMime = new Vehicle360ValidationEngine().validate(sequence(12, {
+    frames: [frame(1, { mimeType: "image/gif" }), ...Array.from({ length: 11 }, (_, index) => frame(index + 2))],
+  }))
+  assert.ok(invalidMime.blockers.some((item) => item.id === "files"))
 })
 
 test("builds editor, media image projections and explicit start frame", () => {

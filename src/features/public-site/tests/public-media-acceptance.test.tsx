@@ -226,11 +226,15 @@ test("header uses the garage logo when a resolvable logo URL exists", () => {
 test("Next Image allows Supabase storage hosts and bypasses the Vercel optimizer for remote media", () => {
   const config = readFileSync("next.config.ts", "utf8")
   const media = readFileSync("src/features/public-site/components/PublicMediaImage.tsx", "utf8")
+  const assetMedia = readFileSync("src/features/media/components/AssetImage.tsx", "utf8")
   assert.match(config, /hostname: "\*\.supabase\.co"/)
   assert.match(config, /pathname: "\/storage\/v1\/object\/public\/\*\*"/)
   assert.match(media, /unoptimized=\{remote\}/)
   assert.match(media, /onError/)
   assert.match(media, /Photo à venir/)
+  assert.match(assetMedia, /unoptimized=\{remote\}/)
+  assert.match(assetMedia, /onError/)
+  assert.match(assetMedia, /Photo à venir/)
 })
 
 test("sticky CTA keeps destinations and accessible labels with professional icons", () => {

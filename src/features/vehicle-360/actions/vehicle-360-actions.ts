@@ -1,6 +1,6 @@
 "use server"
 
-import { randomUUID } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { getActiveGarageSession } from "@/features/tenant"
@@ -8,8 +8,12 @@ import { createClient } from "@/lib/supabase/server"
 import { Vehicle360SequenceEngine, Vehicle360ValidationEngine } from "../engine"
 import { getVehicle360Sequence } from "../repositories"
 import type { Vehicle360SequenceStatus } from "../types"
+import {
+  VEHICLE_360_MAX_FRAMES,
+  vehicle360ExtensionForMime,
+  validateVehicle360File,
+} from "../validation/vehicle-360-upload-validation"
 
-const MIME_EXTENSIONS: Readonly<Record<string, string>> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }
 async function editableSession() {
   const session = await getActiveGarageSession()
   return session?.garageId && (session.memberRole === "owner" || session.memberRole === "admin") ? session : null
@@ -60,15 +64,25 @@ export async function uploadVehicle360Frames(vehicleId: string, formData: FormDa
   const supabase = await createClient()
   let position = sequence.frames.length + 1
   const result: Vehicle360UploadResult = { uploaded: 0, skipped: 0, errors: [] }
-  const remaining = Math.max(0, 48 - sequence.frames.length)
+  const remaining = Math.max(0, VEHICLE_360_MAX_FRAMES - sequence.frames.length)
+  const knownChecksums = new Set(sequence.frames.flatMap((frame) => frame.checksum ? [frame.checksum] : []))
 
   for (const file of files.slice(0, remaining)) {
-    const extension = MIME_EXTENSIONS[file.type]
-    if (!extension || file.size > 15 * 1024 * 1024) {
+    const validationError = validateVehicle360File(file)
+    if (validationError) {
       result.skipped += 1
-      result.errors.push(`${file.name} : format ou taille non accepté.`)
+      result.errors.push(`${file.name} : ${validationError}.`)
       continue
     }
+    const checksum = createHash("sha256").update(Buffer.from(await file.arrayBuffer())).digest("hex")
+    if (knownChecksums.has(checksum)) {
+      result.skipped += 1
+      result.errors.push(`${file.name} : image déjà présente.`)
+      continue
+    }
+    knownChecksums.add(checksum)
+    const extension = vehicle360ExtensionForMime(file.type)
+    if (!extension) continue
     const frameId = randomUUID()
     const path = `${session.garageId}/${vehicleId}/${sequence.id}/${frameId}.${extension}`
     const { error: uploadError } = await supabase.storage.from("vehicle-360").upload(path, file, { contentType: file.type, upsert: false })
@@ -79,7 +93,7 @@ export async function uploadVehicle360Frames(vehicleId: string, formData: FormDa
     }
     const { error } = await supabase.from("vehicle_360_frames").insert({
       id: frameId, garage_id: session.garageId, vehicle_id: vehicleId, sequence_id: sequence.id,
-      storage_path: path, position, status: "READY", file_size: file.size, mime_type: file.type,
+      storage_path: path, position, status: "READY", file_size: file.size, mime_type: file.type, checksum,
     })
     if (error) {
       await supabase.storage.from("vehicle-360").remove([path])
@@ -92,7 +106,7 @@ export async function uploadVehicle360Frames(vehicleId: string, formData: FormDa
   }
 
   if (files.length > remaining) {
-    result.errors.push(`Limite de 48 vues atteinte — ${files.length - remaining} fichier(s) ignoré(s).`)
+    result.errors.push(`Limite de ${VEHICLE_360_MAX_FRAMES} vues atteinte — ${files.length - remaining} fichier(s) ignoré(s).`)
   }
 
   const { count } = await supabase.from("vehicle_360_frames").select("id", { count: "exact", head: true }).eq("sequence_id", sequence.id).eq("status", "READY")

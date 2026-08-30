@@ -1,5 +1,6 @@
 import type { Vehicle360CoverageRule, Vehicle360CoverageViewModel, Vehicle360Sequence } from "../types"
 import { Vehicle360SequenceEngine } from "../engine/vehicle-360-sequence-engine"
+import { isVehicle360MimeType, VEHICLE_360_MAX_FRAME_SIZE } from "./vehicle-360-upload-validation"
 
 const rule = (id: string, label: string, state: Vehicle360CoverageRule["state"], description: string): Vehicle360CoverageRule => ({ id, label, state, description })
 
@@ -8,6 +9,11 @@ export class Vehicle360ValidationEngine {
     const ready = new Vehicle360SequenceEngine().order(sequence.frames.filter((frame) => frame.status === "READY"))
     const positions = ready.map((frame) => frame.position)
     const duplicates = new Set(positions).size !== positions.length
+    const checksums = ready.flatMap((frame) => frame.checksum ? [frame.checksum] : [])
+    const duplicateContent = new Set(checksums).size !== checksums.length
+    const invalidFiles = ready.filter((frame) =>
+      !isVehicle360MimeType(frame.mimeType) || (frame.fileSize ?? 0) > VEHICLE_360_MAX_FRAME_SIZE
+    )
     const continuous = positions.every((position, index) => index === 0 || position === positions[index - 1] + 1)
     const ratios = ready.flatMap((frame) => frame.width && frame.height ? [frame.width / frame.height] : [])
     const mixedRatio = ratios.length > 1 && Math.max(...ratios) - Math.min(...ratios) > 0.2
@@ -20,6 +26,8 @@ export class Vehicle360ValidationEngine {
         : rule("minimum", "Nombre d’images", "PASS", "Le nombre d’images recommandé est atteint."),
       ready.some((frame) => !frame.publicUrl) ? rule("accessible", "Images accessibles", "BLOCKER", "Une image est inaccessible.") : rule("accessible", "Images accessibles", "PASS", "Toutes les images sont accessibles."),
       duplicates ? rule("positions", "Positions uniques", "BLOCKER", "Des positions sont dupliquées.") : rule("positions", "Positions uniques", "PASS", "Les positions sont uniques."),
+      duplicateContent ? rule("duplicates", "Images distinctes", "BLOCKER", "Des images identiques sont présentes plusieurs fois.") : rule("duplicates", "Images distinctes", "PASS", "Aucun doublon de contenu n’est détecté."),
+      invalidFiles.length ? rule("files", "Fichiers compatibles", "BLOCKER", "Une image possède un format ou une taille non accepté.") : rule("files", "Fichiers compatibles", "PASS", "Tous les fichiers sont compatibles."),
       continuous ? rule("order", "Ordre continu", "PASS", "L’ordre de la séquence est continu.") : rule("order", "Ordre continu", "BLOCKER", "La séquence contient un trou dans l’ordre."),
       mixedRatio ? rule("ratio", "Format cohérent", "WARNING", "Les ratios d’image sont hétérogènes.") : rule("ratio", "Format cohérent", "PASS", "Les formats sont cohérents."),
       totalSize > 300 * 1024 * 1024 ? rule("weight", "Poids total", "WARNING", "Le poids total dépasse 300 Mo.") : rule("weight", "Poids total", "PASS", "Le poids total est raisonnable."),
