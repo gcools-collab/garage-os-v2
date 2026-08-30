@@ -93,3 +93,11 @@ export type ActiveGarageBranding = {
   readonly branding: GarageBranding
   readonly canEdit: boolean
 }
+
+export type GarageLogoActionResult =
+  | { readonly success: true; readonly logoUrl: string | null }
+  | {
+    readonly success: false
+    readonly code: "UNAUTHENTICATED" | "NO_ACTIVE_GARAGE" | "FORBIDDEN" | "VALIDATION_ERROR" | "STORAGE_ERROR" | "DATABASE_ERROR"
+    readonly message: string
+  }

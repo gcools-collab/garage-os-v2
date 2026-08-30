@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 
 import type { GarageBrandingShellViewModel } from "@/features/branding"
 
@@ -12,13 +13,22 @@ export { dashboardNavigation } from "./dashboard-navigation"
 
 export function Sidebar({ branding }: { readonly branding: GarageBrandingShellViewModel }) {
   const pathname = usePathname() ?? ""
+  const [logoFailed, setLogoFailed] = useState(false)
 
   return (
     <aside className="hidden min-h-screen w-72 flex-col bg-zinc-950 p-5 text-white md:flex">
       <div className="mb-8 flex min-w-0 items-center gap-3">
-        {branding.logoUrl ? (
+        {branding.logoUrl && !logoFailed ? (
           <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-zinc-800">
-            <Image src={branding.logoUrl} alt="" fill sizes="48px" className="object-cover" unoptimized />
+            <Image
+              src={branding.logoUrl}
+              alt=""
+              fill
+              sizes="48px"
+              className="object-contain p-1"
+              unoptimized
+              onError={() => setLogoFailed(true)}
+            />
           </span>
         ) : (
           <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-zinc-800 text-sm font-semibold">

@@ -10,7 +10,9 @@ import type {
   GarageBrandingSettingsViewModel,
   GarageBrandingUpdateInput,
   GarageBrandingUpdateResult,
+  GarageLogoActionResult,
 } from "../types"
+import { GarageLogoUploader } from "./GarageLogoUploader"
 
 function Field({
   label,
@@ -65,10 +67,14 @@ export function buildGarageBrandingUpdateInput(formData: FormData): GarageBrandi
 export function BrandingSettingsForm({
   settings,
   updateBranding,
+  uploadLogo,
+  removeLogo,
   themeSelector,
 }: {
   readonly settings: GarageBrandingSettingsViewModel
   readonly updateBranding: (input: GarageBrandingUpdateInput) => Promise<GarageBrandingUpdateResult>
+  readonly uploadLogo: (formData: FormData) => Promise<GarageLogoActionResult>
+  readonly removeLogo: () => Promise<GarageLogoActionResult>
   readonly themeSelector: ReactNode
 }) {
   const [result, setResult] = useState<GarageBrandingUpdateResult | null>(null)
@@ -87,31 +93,29 @@ export function BrandingSettingsForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <div className="space-y-6">
       {settings.readOnlyMessage ? (
         <p className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">{settings.readOnlyMessage}</p>
       ) : null}
       <Card>
         <CardHeader>
-          <CardTitle>Logo de la vitrine</CardTitle>
+          <CardTitle>Logo du garage</CardTitle>
           <CardDescription>
-            Le logo déjà enregistré s’affiche sur le site public. Le téléversement depuis Paramètres n’est pas encore branché.
+            Ce logo s’affiche dans l’en-tête et le pied de page de votre site public, ainsi que dans Garage OS.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3">
-          <p className="text-sm text-muted-foreground">
-            Le bucket <code>garage-branding</code> et le champ <code>logo_path</code> existent déjà pour la lecture publique.
-            Il manque une action serveur qui : accepte un fichier image (PNG, WebP ou JPEG, taille limitée),
-            l’écrit dans <code>{`{garageId}/logo.ext`}</code>, met à jour <code>garage_branding.logo_path</code>,
-            et refuse tout chemin hors tenant. Les uploads véhicules ou 360 ne peuvent pas être réutilisés tels quels.
-          </p>
-          <label className="grid gap-2 text-sm font-medium">
-            Téléverser un logo
-            <Input type="file" accept="image/png,image/webp,image/jpeg" disabled />
-          </label>
+        <CardContent>
+          <GarageLogoUploader
+            logoUrl={settings.logoUrl}
+            garageName={settings.values.displayName}
+            canEdit={settings.canEdit}
+            uploadLogo={uploadLogo}
+            removeLogo={removeLogo}
+          />
         </CardContent>
       </Card>
 
+      <form onSubmit={submit} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Identité</CardTitle>
@@ -175,6 +179,7 @@ export function BrandingSettingsForm({
           </Button>
         </div>
       ) : null}
-    </form>
+      </form>
+    </div>
   )
 }

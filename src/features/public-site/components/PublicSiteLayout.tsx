@@ -19,7 +19,7 @@ export function PublicSiteLayout({ garage, children }: { readonly garage: Garage
       <footer className="border-t border-[var(--live-border)] bg-[var(--live-surface)]">
         <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 text-sm md:grid-cols-3 md:px-8">
           <div className="min-w-0 space-y-3">
-            <PublicSiteBrand garage={garage} compact />
+            <PublicSiteBrand garage={garage} />
             <p className="text-[var(--live-muted-foreground)]">{garage.name}</p>
           </div>
           <div className="space-y-3">

@@ -5,7 +5,7 @@ import type { GarageBrandingMedia } from "../presentation"
 
 export const GARAGE_BRANDING_BUCKET = "garage-branding"
 
-function publicMediaUrl(
+export function publicMediaUrl(
   supabase: SupabaseClient,
   garageId: string,
   path: string | null

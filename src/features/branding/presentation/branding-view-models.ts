@@ -60,15 +60,18 @@ export function buildGarageLiveBrandingViewModel(
 export function buildGarageBrandingSettingsViewModel({
   branding,
   canEdit,
+  logoUrl = null,
 }: {
   readonly branding: GarageBranding
   readonly canEdit: boolean
+  readonly logoUrl?: string | null
 }): GarageBrandingSettingsViewModel {
   return {
     title: "Identité du garage",
     description: "Gérez les informations utilisées dans Garage OS et sur votre futur site public.",
     canEdit,
     readOnlyMessage: canEdit ? null : "Seuls les propriétaires et administrateurs peuvent modifier le branding.",
+    logoUrl,
     values: {
       displayName: branding.displayName,
       legalName: branding.legalName ?? "",

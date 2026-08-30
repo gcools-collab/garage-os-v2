@@ -8,6 +8,7 @@ export type {
   GarageBrandingSocialLinks,
   GarageBrandingUpdateInput,
   GarageBrandingUpdateResult,
+  GarageLogoActionResult,
 } from "./garage-branding"
 export type {
   GarageBrandingSettingsViewModel,

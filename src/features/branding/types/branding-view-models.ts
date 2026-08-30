@@ -28,6 +28,7 @@ export type GarageBrandingSettingsViewModel = {
   readonly description: string
   readonly canEdit: boolean
   readonly readOnlyMessage: string | null
+  readonly logoUrl: string | null
   readonly values: {
     readonly displayName: string
     readonly legalName: string

@@ -7,8 +7,9 @@ import {
   BrandingSettingsForm,
   buildGarageBrandingSettingsViewModel,
   getActiveGarageBranding,
+  getActiveGarageBrandingMedia,
 } from "@/features/branding"
-import { updateActiveGarageBranding } from "@/features/branding/actions"
+import { removeGarageLogo, updateActiveGarageBranding, uploadGarageLogo } from "@/features/branding/actions"
 import {
   listSelectableLiveThemes,
   LiveThemeSelector,
@@ -21,7 +22,8 @@ import { createClient } from "@/lib/supabase/server"
 export default async function GarageBrandingSettingsPage() {
   const activeBranding = await getActiveGarageBranding()
   if (!activeBranding) redirect("/select-garage")
-  const settings = buildGarageBrandingSettingsViewModel(activeBranding)
+  const media = await getActiveGarageBrandingMedia()
+  const settings = buildGarageBrandingSettingsViewModel({ ...activeBranding, logoUrl: media?.logoUrl ?? null })
   const selectedTheme = resolveLiveTheme({
     themeKey: activeBranding.branding.themeKey,
     colors: activeBranding.branding.colors,
@@ -44,6 +46,8 @@ export default async function GarageBrandingSettingsPage() {
       <BrandingSettingsForm
         settings={settings}
         updateBranding={updateActiveGarageBranding}
+        uploadLogo={uploadGarageLogo}
+        removeLogo={removeGarageLogo}
         themeSelector={
           <LiveThemeSelector
             themes={listSelectableLiveThemes()}
