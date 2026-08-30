@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
 import { buildPublicRequestForm, resolvePublicRequestType } from "../builders"
-import { isPublicRequestAvailable } from "../engine"
+import { isPublicRequestAvailable, shouldCreatePublicAppointment } from "../engine"
 import { PublicRequestForm } from "../components"
 import { validatePublicRequest } from "../validation"
 import type { GarageServiceConfiguration } from "../../public-site/services"
@@ -47,6 +47,21 @@ test("un essai contextualisé affiche le véhicule sans champ véhicule inutile"
   assert.doesNotMatch(html, /name="brand"|name="model"/)
   assert.match(html, /Demander un essai/)
   assert.match(html, /confirmée par l’équipe/)
+})
+
+test("une demande d’essai ne réserve jamais un créneau et ne déclenche aucun paiement", () => {
+  assert.equal(shouldCreatePublicAppointment("TEST_DRIVE", "2026-09-10T10:00:00Z"), false)
+  assert.equal(shouldCreatePublicAppointment("ENGINE_CLEANING", "2026-09-10T10:00:00Z"), true)
+  assert.equal(shouldCreatePublicAppointment("ENGINE_CLEANING", null), false)
+
+  const action = readFileSync("src/features/public-leads/actions/public-request-actions.ts", "utf8")
+  const page = readFileSync("src/app/(public)/g/[garageSlug]/contact/page.tsx", "utf8")
+  const component = readFileSync("src/features/public-leads/components/PublicRequestForm.tsx", "utf8")
+  assert.match(action, /shouldCreatePublicAppointment\(data\.requestType, data\.appointmentStartsAt\)/)
+  assert.match(action, /PENDING_CONFIRMATION/)
+  assert.match(action, /Aucun créneau n’est réservé/)
+  assert.doesNotMatch(page.match(/const schedulableTypes[\s\S]*?\]\)/)?.[0] ?? "", /TEST_DRIVE/)
+  assert.match(component, /Statut : À confirmer/)
 })
 
 test("contact contextualise un véhicule unique sans charger tout le stock", () => {

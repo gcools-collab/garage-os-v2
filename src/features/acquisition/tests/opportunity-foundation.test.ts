@@ -85,3 +85,15 @@ test("migration enforces private multi-garage RLS and document storage paths", (
   assert.match(sql, /validate_acquisition_status_transition/)
   assert.match(sql, /revoke all on public\.acquisition_opportunities from anon/)
 })
+
+test("incremental storage policy matches the written acquisition document path", () => {
+  const sql = readFileSync(resolve("supabase/migrations/20260830000059_fix_acquisition_document_storage_insert_policy.sql"), "utf8")
+  const action = readFileSync(resolve("src/features/acquisition/actions/opportunity-actions.ts"), "utf8")
+  assert.match(action, /`\$\{resolved\.garageId\}\/\$\{opportunity\.id\}\/\$\{crypto\.randomUUID\(\)\}\.\$\{extension\}`/)
+  assert.match(sql, /array_length\(storage\.foldername\(name\), 1\) = 2/)
+  assert.doesNotMatch(sql, /array_length\(storage\.foldername\(name\), 1\) = 3/)
+  assert.match(sql, /ao\.garage_id::text = \(storage\.foldername\(name\)\)\[1\]/)
+  assert.match(sql, /ao\.id::text = \(storage\.foldername\(name\)\)\[2\]/)
+  assert.match(sql, /gm\.user_id = auth\.uid\(\)/)
+  assert.match(sql, /bucket_id = 'acquisition-documents'/)
+})

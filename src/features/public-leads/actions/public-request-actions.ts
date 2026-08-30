@@ -4,7 +4,7 @@ import { createHash } from "node:crypto"
 import { revalidatePath } from "next/cache"
 import { resolvePublicGarageContext } from "@/features/live-stock/data/public-garage-repository"
 import { buildPublicLeadReference } from "@/features/leads/engine"
-import { isPublicRequestAvailable } from "../engine"
+import { isPublicRequestAvailable, shouldCreatePublicAppointment } from "../engine"
 import { createPublicCustomerRequest } from "../repositories"
 import type { PublicRequestState } from "../types"
 import { validatePublicRequest } from "../validation"
@@ -39,7 +39,7 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
   let appointmentStatus: "PENDING" | "CONFIRMED" | "AWAITING_PAYMENT" | undefined
   let paymentUrl: string | undefined
   let registrationUrl: string | undefined
-  if (data.appointmentStartsAt) {
+  if (shouldCreatePublicAppointment(data.requestType, data.appointmentStartsAt)) {
     const persistedOptionIds = (data.offerOptionIds ?? []).filter((id) => /^[0-9a-f-]{36}$/i.test(id))
     const booking = await bookPublicAppointment({
       offerSlug: data.offerSlug,
@@ -61,8 +61,9 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
     if (data.requestType === "REGISTRATION" && booking.appointmentId) { const token = await createPublicRegistrationCase({ garageSlug: data.garageSlug, appointmentId: booking.appointmentId, leadId: result.leadId, fingerprint, procedure: String(data.payload.procedure ?? "OTHER"), registration: typeof data.payload.registration === "string" ? data.payload.registration : null, brand: typeof data.payload.brand === "string" ? data.payload.brand : null, model: typeof data.payload.model === "string" ? data.payload.model : null }); if (token) registrationUrl = `/g/${data.garageSlug}/registration/${token}` }
   }
   revalidatePath("/leads"); revalidatePath("/commercial"); revalidatePath("/dashboard"); revalidatePath("/notifications")
-  const bookingMessage = appointmentStatus === "CONFIRMED" ? " Votre rendez-vous est confirmé." : appointmentStatus === "PENDING" ? " Le garage doit encore confirmer votre rendez-vous." : appointmentStatus === "AWAITING_PAYMENT" ? " Votre créneau est réservé temporairement et devra être payé pour être confirmé." : ""
-  return { status: "success", paymentUrl, registrationUrl, message: `Votre demande a bien été transmise.${bookingMessage || ` L’équipe de ${garage.displayName} vous recontactera rapidement.`}`, reference: buildPublicLeadReference(result.leadId), appointmentStatus }
+  const pendingTestDrive = data.requestType === "TEST_DRIVE"
+  const bookingMessage = pendingTestDrive ? " Votre demande d’essai est à confirmer par le garage. Aucun créneau n’est réservé à ce stade." : appointmentStatus === "CONFIRMED" ? " Votre rendez-vous est confirmé." : appointmentStatus === "PENDING" ? " Le garage doit encore confirmer votre rendez-vous." : appointmentStatus === "AWAITING_PAYMENT" ? " Votre créneau est réservé temporairement et devra être payé pour être confirmé." : ""
+  return { status: "success", paymentUrl, registrationUrl, message: `Votre demande a bien été transmise.${bookingMessage || ` L’équipe de ${garage.displayName} vous recontactera rapidement.`}`, reference: buildPublicLeadReference(result.leadId), appointmentStatus, confirmationStatus: pendingTestDrive ? "PENDING_CONFIRMATION" : undefined }
   } catch (error) {
     console.error("Public request submission failed", { operation: "submit_public_customer_request", errorType: error instanceof Error ? error.name : "UnknownError" })
     return { status: "persistence_error", message: humanError }

@@ -12,3 +12,10 @@ export function isPublicRequestAvailable(type: PublicRequestType, services: read
   return !required || services.some((service) => service.serviceKey === required && service.status === "ENABLED")
 }
 
+export function shouldCreatePublicAppointment(
+  type: PublicRequestType,
+  appointmentStartsAt: string | null,
+): appointmentStartsAt is string {
+  return type !== "TEST_DRIVE" && appointmentStartsAt !== null
+}
+

@@ -32,7 +32,6 @@ type Props = {
 }
 
 const schedulableTypes = new Set([
-  "TEST_DRIVE",
   "ENGINE_CLEANING",
   "REGISTRATION",
   "CONSIGNMENT",
