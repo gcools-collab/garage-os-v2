@@ -175,7 +175,7 @@ export interface PublicProgramPageViewModel {
   readonly media: {
     readonly src: string
     readonly alt: string
-    readonly attribution: string
+    readonly attribution?: string
   } | null
   readonly contact: PublicProgramContactViewModel
   readonly action: PublicNavigationItemViewModel

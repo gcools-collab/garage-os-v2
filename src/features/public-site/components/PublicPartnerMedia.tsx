@@ -9,7 +9,7 @@ export function PublicPartnerMedia({
 }: {
   readonly src: string
   readonly alt: string
-  readonly attribution: string
+  readonly attribution?: string
 }) {
   const [failed, setFailed] = useState(false)
   return (
@@ -28,7 +28,9 @@ export function PublicPartnerMedia({
           onError={() => setFailed(true)}
         />
       )}
-      <figcaption className="px-5 py-3 text-sm text-[var(--live-muted-foreground)]">{attribution}</figcaption>
+      {attribution ? (
+        <figcaption className="px-5 py-3 text-sm text-[var(--live-muted-foreground)]">{attribution}</figcaption>
+      ) : null}
     </figure>
   )
 }

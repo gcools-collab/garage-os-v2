@@ -213,6 +213,15 @@ test("header and floating dock expose the garage phone and two distinct actions"
   assert.match(floating, /href="tel:0327000000"/)
 })
 
+test("public brand crops whitespace and keeps object-contain without a square backdrop", () => {
+  const brand = readFileSync("src/features/public-site/components/PublicSiteBrand.tsx", "utf8")
+  const crop = readFileSync("src/features/public-site/presentation/logo-crop.ts", "utf8")
+  assert.match(brand, /object-contain/)
+  assert.match(brand, /bg-transparent/)
+  assert.match(brand, /mix-blend-multiply/)
+  assert.match(crop, /punchWhitePixels/)
+})
+
 test("header uses the garage logo when a resolvable logo URL exists", () => {
   const branded = {
     ...garage,

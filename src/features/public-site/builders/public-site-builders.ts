@@ -332,7 +332,7 @@ export function buildPublicProgram(
     garage,
     eyebrow: "Partenaire Cargo",
     title: "Location de véhicules",
-    description: "Réservez en ligne chez Cargo, notre partenaire location à Raismes.",
+    description: "",
     benefits: ["Partenaire Cargo", "Réservation en ligne", "Devis possible auprès du garage"],
     details: [
       { label: "Partenaire", value: "La réservation en ligne est opérée par Cargo." },
@@ -345,7 +345,7 @@ export function buildPublicProgram(
     media: {
       src: "/partners/cargo-location.png",
       alt: "Visuel officiel CarGo, loueur de véhicules",
-      attribution: "Visuel CarGo",
+      attribution: "",
     },
     contact,
     action: { label: "Réserver en ligne", href: CARGO_BOOKING_HREF, external: true },

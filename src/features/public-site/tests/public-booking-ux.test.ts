@@ -93,10 +93,15 @@ test("SAP commercial rules expose concise labels, durations and shock supplement
   const plus = offers.find((offer) => offer.slug === "engine-cleaning-2l-plus")
   assert.ok(under)
   assert.ok(plus)
-  assert.equal(under.selectLabel, "Décalaminage moteur < 2L — 39,90 €")
+  assert.equal(under.selectLabel, "Décalaminage jusqu’à 1,9 L — 39,90 €")
+  assert.equal(plus.selectLabel, "Décalaminage 2 L et plus — 49,90 €")
   assert.equal(plus.durationMinutes, SAP_ENGINE_CLEANING_OFFER_OVERRIDES["engine-cleaning-2l-plus"].durationMinutes)
   assert.equal(under.options[0]?.amountCents, 1990)
   assert.equal(plus.options[0]?.amountCents, 2990)
+  assert.match(plus.options[0]?.name ?? "", /2 L et plus/)
+  assert.equal(under.options.length, 2)
+  assert.match(under.options[1]?.name ?? "", /Diagnostic électronique/)
+  assert.equal(under.options[1]?.amountCents, 3000)
   assert.equal(under.options[0]?.durationDeltaMinutes, 0)
   assert.equal(
     resolveSelectedOfferTotal({ offer: under, selectedOptionIds: [under.options[0].id] }),

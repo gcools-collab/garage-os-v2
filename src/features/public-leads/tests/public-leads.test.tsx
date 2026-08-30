@@ -36,6 +36,21 @@ test("la RPC crée tâche, notification et événements",()=>{const sql=readFile
 test("le builder détail n'expose pas les clés JSON brutes",()=>{assert.match(readFileSync("src/features/leads/builders/lead-view-models.ts","utf8"),/requestDetailLabels/);assert.doesNotMatch(readFileSync("src/features/leads/components/LeadDetail.tsx","utf8"),/JSON\.stringify|Object\.entries/)})
 test("les CTA véhicule ciblent les parcours spécialisés",()=>{const source=readFileSync("src/features/public-site/vehicle-detail/builders/vehicle-cta-section-builder.ts","utf8");assert.match(source,/project=buy/);assert.match(source,/project=test-drive/);assert.match(source,/project=trade-in/)})
 test("le formulaire est accessible et expose un état d'envoi",()=>{const html=renderToStaticMarkup(<PublicRequestForm form={buildPublicRequestForm("GENERAL_CONTACT")} garageSlug="sap" vehicleSlug={null} source="CONTACT_CENTER" publicPageUrl="/g/sap/contact"/>);assert.match(html,/aria-live/);assert.match(html,/consentContact/);assert.match(html,/Être recontacté/)})
+test("le formulaire décalaminage expose le diagnostic et le traitement choc 2 L et plus", () => {
+  const html = renderToStaticMarkup(
+    <PublicRequestForm form={buildPublicRequestForm("ENGINE_CLEANING")} garageSlug="sap" vehicleSlug={null} source="SERVICE_PAGE" publicPageUrl="/g/sap/contact?project=engine-cleaning" />,
+  )
+  assert.match(html, /Décalaminage jusqu’à 1,9 L/)
+  assert.match(html, /Décalaminage 2 L et plus/)
+  assert.match(html, /39,90/)
+  assert.match(html, /49,90/)
+  assert.match(html, /Traitement choc double machine/)
+  assert.match(html, /\+29,90 € à partir de 2 L/)
+  assert.match(html, /Diagnostic électronique avec rapport/)
+  assert.match(html, /Option : 30 €/)
+  assert.match(html, /panne mécanique/)
+  assert.match(html, /FAP défectueux/)
+})
 test("les erreurs publiques restent humaines",()=>{const source=readFileSync("src/features/public-leads/actions/public-request-actions.ts","utf8");assert.match(source,/Nous n’avons pas pu transmettre/);assert.doesNotMatch(source,/error\.message|stacktrace/)})
 
 test("un essai contextualisé affiche le véhicule sans champ véhicule inutile", () => {

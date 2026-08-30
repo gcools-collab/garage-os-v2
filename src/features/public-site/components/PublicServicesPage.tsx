@@ -34,14 +34,11 @@ const plateTariffs = [
   { label: "Plexiglas", value: "26,60 € par plaque" },
 ] as const
 
-const engineCleaningOffers = [
-  { title: "Jusqu’à 1,9 L", price: "39,90 € TTC", detail: "Durée indicative : 1 h" },
-  { title: "2 L et plus", price: "49,90 € TTC", detail: "Durée indicative : 1 h 30" },
-] as const
-
-const engineCleaningSupplements = [
-  { title: "Traitement choc double machine", items: ["+19,90 € jusqu’à 1,9 L", "+29,90 € à partir de 2 L"] },
-  { title: "Diagnostic avec rapport", items: ["Option : 30 €", "Passage de la valise", "Lecture des défauts et voyants", "Effacement lorsque cela est possible", "Remise d’un rapport"] },
+const engineCleaningTariffs = [
+  { label: "Jusqu’à 1,9 L", value: "39,90 € TTC" },
+  { label: "2 L et plus", value: "49,90 € TTC" },
+  { label: "Traitement choc", value: "+19,90 € jusqu’à 1,9 L · +29,90 € à partir de 2 L" },
+  { label: "Diagnostic avec rapport", value: "Option : 30 €" },
 ] as const
 
 export function PublicServicesPage({ page }: { readonly page: PublicServicesPageViewModel }) {
@@ -58,10 +55,10 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
             {page.services.map((service) => {
               const Icon = icons[service.icon]
               return (
-                <article key={service.id} className={`rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)] p-7${service.id === "ENGINE_CLEANING" ? " sm:col-span-2" : ""}`}>
+                <article key={service.id} className="flex flex-col rounded-3xl border border-[var(--live-border)] bg-[var(--live-surface)] p-6">
                   <span className="grid size-12 place-items-center rounded-xl bg-[var(--live-primary)] text-[var(--live-primary-foreground)]"><Icon aria-hidden="true" /></span>
-                  <h2 className="mt-6 text-2xl font-semibold">{service.title}</h2>
-                  <p className="mt-3 text-[var(--live-muted-foreground)]">{service.description}</p>
+                  <h2 className="mt-5 text-2xl font-semibold">{service.title}</h2>
+                  <p className="mt-2 text-[var(--live-muted-foreground)]">{service.description}</p>
                   {service.id === "REGISTRATION" ? (
                     <div className="mt-5 space-y-4">
                       <ul className="grid gap-2 text-sm sm:grid-cols-2">
@@ -83,40 +80,21 @@ export function PublicServicesPage({ page }: { readonly page: PublicServicesPage
                     </div>
                   ) : null}
                   {service.id === "ENGINE_CLEANING" ? (
-                    <div className="mt-5 space-y-4">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {engineCleaningOffers.map((offer) => (
-                          <div key={offer.title} className="rounded-2xl border border-[var(--live-border)] p-4">
-                            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">{offer.title}</h3>
-                            <p className="mt-2 text-xl font-semibold">{offer.price}</p>
-                            <p className="mt-1 text-sm text-[var(--live-muted-foreground)]">{offer.detail}</p>
+                    <div className="mt-4 flex-1">
+                      <dl className="grid gap-2 rounded-2xl border border-[var(--live-border)] p-4 text-sm">
+                        {engineCleaningTariffs.map((tariff) => (
+                          <div key={tariff.label} className="flex items-baseline justify-between gap-3">
+                            <dt className="text-[var(--live-muted-foreground)]">{tariff.label}</dt>
+                            <dd className="text-right font-medium">{tariff.value}</dd>
                           </div>
                         ))}
-                      </div>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {engineCleaningSupplements.map((offer) => (
-                          <div key={offer.title} className="rounded-2xl border border-[var(--live-border)] p-4">
-                            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--live-primary)]">{offer.title}</h3>
-                            <ul className="mt-3 grid gap-2 text-sm">
-                              {offer.items.map((item) => (
-                                <li key={item} className="flex items-start gap-2">
-                                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--live-primary)]" aria-hidden="true" />
-                                  {item}
-                                </li>
-                              ))}
-                            </ul>
-                            {offer.title.startsWith("Diagnostic") ? (
-                              <p className="mt-3 text-sm text-[var(--live-muted-foreground)]">Un défaut ne peut pas toujours être effacé.</p>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                      <p className="rounded-2xl border border-[var(--live-border)] p-4 text-sm text-[var(--live-muted-foreground)]">
-                        Le décalaminage ne répare pas une panne mécanique et ne débouche pas un FAP défectueux.
+                      </dl>
+                      <p className="mt-3 text-xs leading-5 text-[var(--live-muted-foreground)]">
+                        Ne répare pas une panne mécanique et ne débouche pas un FAP défectueux.
                       </p>
                     </div>
                   ) : null}
-                  <Link href={service.href} className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[var(--live-border-strong)] px-5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{service.actionLabel}</Link>
+                  <Link href={service.href} className="mt-5 inline-flex min-h-11 items-center self-start rounded-xl border border-[var(--live-border-strong)] px-5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--live-focus-ring)]">{service.actionLabel}</Link>
                 </article>
               )
             })}

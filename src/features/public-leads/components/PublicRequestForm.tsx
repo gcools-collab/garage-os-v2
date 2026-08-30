@@ -8,6 +8,8 @@ import type { PublicRequestFormViewModel, PublicRequestSource, PublicRequestStat
 import { submitPublicCustomerRequest } from "../actions"
 import type { AvailabilitySlot } from "@/features/scheduling/types/scheduling"
 import { PublicSlotSelector } from "@/features/scheduling/components/PublicSlotSelector"
+import { buildPublicOfferPresentations } from "@/features/service-catalog/builders/public-offer-presentation-builder"
+import { SAP_ENGINE_CLEANING_FALLBACK_OFFERS } from "@/features/service-catalog/config/sap-engine-cleaning-catalog"
 import { PublicOfferSelector } from "./PublicOfferSelector"
 import { PublicAppointmentSummary } from "./PublicAppointmentSummary"
 
@@ -67,8 +69,14 @@ export function PublicRequestForm({
   readonly offers?: readonly PublicOfferPresentation[]
   readonly compactFormHeading?: boolean
 }) {
+  const catalogOffers = useMemo(
+    () => form.type === "ENGINE_CLEANING" && offers.length === 0
+      ? buildPublicOfferPresentations(SAP_ENGINE_CLEANING_FALLBACK_OFFERS)
+      : offers,
+    [form.type, offers],
+  )
   const [startedAt] = useState(() => Date.now())
-  const [selectedOfferSlug, setSelectedOfferSlug] = useState(offers[0]?.slug ?? "")
+  const [selectedOfferSlug, setSelectedOfferSlug] = useState(catalogOffers[0]?.slug ?? "")
   const [selectedOptionIds, setSelectedOptionIds] = useState<readonly string[]>([])
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null)
   const [state, action] = useActionState(submitPublicCustomerRequest, initial)
@@ -76,7 +84,7 @@ export function PublicRequestForm({
 
   useEffect(() => { if (state.status === "validation_error") formRef.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus() }, [state.status])
 
-  const selectedOffer = offers.find((offer) => offer.slug === selectedOfferSlug) ?? offers[0] ?? null
+  const selectedOffer = catalogOffers.find((offer) => offer.slug === selectedOfferSlug) ?? catalogOffers[0] ?? null
   const offerAvailability = selectedOfferSlug ? availabilityByOfferSlug?.[selectedOfferSlug] : undefined
   const baseAvailability = offerAvailability ?? availability
   const visibleSlots = useMemo(
@@ -100,11 +108,11 @@ export function PublicRequestForm({
     {showStepProgress ? <ol aria-label="Progression du formulaire" className="mt-6 flex flex-wrap gap-3 text-xs text-[var(--live-muted-foreground)]">{form.steps.map((step, index) => <li key={step.id} className="flex items-center gap-2"><span aria-hidden className="grid size-6 place-items-center rounded-full border border-[var(--live-border)] font-semibold">{index + 1}</span>{step.title}</li>)}</ol> : null}
     <form ref={formRef} action={action} className={compactFormHeading ? "mt-2 space-y-6" : "mt-6 space-y-7"}>
       <input type="hidden" name="garageSlug" value={garageSlug}/><input type="hidden" name="vehicleSlug" value={vehicleSlug ?? ""}/><input type="hidden" name="requestType" value={form.type}/><input type="hidden" name="source" value={source}/><input type="hidden" name="publicPageUrl" value={publicPageUrl}/><input type="hidden" name="formStartedAt" value={startedAt}/><label className="sr-only" aria-hidden>Site internet<input name="website" tabIndex={-1} autoComplete="off"/></label>
-      {offers.length ? (
+      {catalogOffers.length ? (
         <fieldset className="grid gap-5 border-0 p-0 sm:grid-cols-2">
           <legend className="mb-4 w-full text-lg font-semibold">Prestation</legend>
           <PublicOfferSelector
-            offers={offers}
+            offers={catalogOffers}
             onOfferChange={(slug) => {
               setSelectedOfferSlug(slug)
               setSelectedSlot(null)

@@ -1,6 +1,7 @@
 import type { PublicServiceOffer } from "../repositories/public-service-catalog-repository"
 import {
   resolveSapOfferDurationMinutes,
+  SAP_ELECTRONIC_DIAGNOSTIC_OPTION,
   SAP_ENGINE_CLEANING_OFFER_OVERRIDES,
   SAP_SHOCK_OPTION_BY_OFFER_SLUG,
 } from "../config/sap-engine-cleaning-catalog"
@@ -86,19 +87,40 @@ function buildOptionPresentations(
       durationDeltaMinutes: 0 as const,
     }))
 
-  if (persisted.length) return persisted
+  const presented = persisted.length
+    ? persisted
+    : (() => {
+        const fallback = SAP_SHOCK_OPTION_BY_OFFER_SLUG[offer.slug]
+        if (!fallback) return []
+        return [{
+          id: `config:${offer.slug}:${fallback.code}`,
+          offerId: offer.id,
+          code: fallback.code,
+          name: fallback.name,
+          supplementLabel: fallback.amountCents === 2990
+            ? "+29,90 € à partir de 2 L"
+            : "+19,90 € jusqu’à 1,9 L",
+          amountCents: fallback.amountCents,
+          durationDeltaMinutes: 0 as const,
+        }]
+      })()
 
-  const fallback = SAP_SHOCK_OPTION_BY_OFFER_SLUG[offer.slug]
-  if (!fallback) return []
-  return [{
-    id: `config:${offer.slug}:${fallback.code}`,
-    offerId: offer.id,
-    code: fallback.code,
-    name: fallback.name,
-    supplementLabel: `+${money(fallback.amountCents, offer.currency)}`,
-    amountCents: fallback.amountCents,
-    durationDeltaMinutes: 0,
-  }]
+  if (!SAP_ENGINE_CLEANING_OFFER_OVERRIDES[offer.slug]) return presented
+  if (presented.some((option) => option.code === SAP_ELECTRONIC_DIAGNOSTIC_OPTION.code || /diagnostic/i.test(option.name))) {
+    return presented
+  }
+  return [
+    ...presented,
+    {
+      id: `config:${offer.slug}:${SAP_ELECTRONIC_DIAGNOSTIC_OPTION.code}`,
+      offerId: offer.id,
+      code: SAP_ELECTRONIC_DIAGNOSTIC_OPTION.code,
+      name: SAP_ELECTRONIC_DIAGNOSTIC_OPTION.name,
+      supplementLabel: "Option : 30 €",
+      amountCents: SAP_ELECTRONIC_DIAGNOSTIC_OPTION.amountCents,
+      durationDeltaMinutes: 0,
+    },
+  ]
 }
 
 export function buildPublicOfferPresentations(

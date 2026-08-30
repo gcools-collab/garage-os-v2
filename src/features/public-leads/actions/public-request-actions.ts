@@ -29,7 +29,9 @@ export async function submitPublicCustomerRequest(_state: PublicRequestState, fo
     garageSlug: garage.garageSlug, vehicleSlug: data.vehicleSlug, requestType: data.requestType, source: data.source,
     customerName: `${data.firstName} ${data.lastName}`.trim(), phone: data.phone, email: data.email,
     preferredDate: data.preferredDate, preferredTime: data.preferredTime, message: data.message,
-    payload: data.payload, publicPageUrl: data.publicPageUrl, consentContact: data.consentContact,
+    payload: data.requestType === "ENGINE_CLEANING"
+      ? { ...data.payload, offerSlug: data.offerSlug, selectedOptions: data.offerOptionIds }
+      : data.payload, publicPageUrl: data.publicPageUrl, consentContact: data.consentContact,
     consentMarketing: data.consentMarketing, fingerprint,
   })
   if (result.outcome !== "success" || !result.leadId) {

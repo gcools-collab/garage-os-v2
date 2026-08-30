@@ -5,8 +5,29 @@ export type LogoCropBox = {
   readonly height: number
 }
 
-function isEmptyPixel(r: number, g: number, b: number, a: number) {
-  return a < 16 || (r > 246 && g > 246 && b > 246)
+export function isLogoBackgroundPixel(r: number, g: number, b: number, a: number) {
+  if (a < 24) return true
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  return max >= 228 && min >= 208 && max - min <= 36
+}
+
+export function punchWhitePixels(data: Uint8ClampedArray): boolean {
+  let changed = false
+  for (let index = 0; index < data.length; index += 4) {
+    if (!isLogoBackgroundPixel(data[index] ?? 0, data[index + 1] ?? 0, data[index + 2] ?? 0, data[index + 3] ?? 0)) {
+      continue
+    }
+    if ((data[index + 3] ?? 0) === 0 && (data[index] ?? 0) === 0 && (data[index + 1] ?? 0) === 0 && (data[index + 2] ?? 0) === 0) {
+      continue
+    }
+    data[index] = 0
+    data[index + 1] = 0
+    data[index + 2] = 0
+    data[index + 3] = 0
+    changed = true
+  }
+  return changed
 }
 
 export function findLogoContentBox(
@@ -22,7 +43,7 @@ export function findLogoContentBox(
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const index = (y * width + x) * 4
-      if (isEmptyPixel(data[index] ?? 0, data[index + 1] ?? 0, data[index + 2] ?? 0, data[index + 3] ?? 0)) {
+      if (isLogoBackgroundPixel(data[index] ?? 0, data[index + 1] ?? 0, data[index + 2] ?? 0, data[index + 3] ?? 0)) {
         continue
       }
       if (x < minX) minX = x
@@ -39,6 +60,6 @@ export function findLogoContentBox(
   const bottom = Math.min(height, maxY + 1 + pad)
   const box = { left, top, width: right - left, height: bottom - top }
   if (box.width < 8 || box.height < 8) return null
-  if (box.width * box.height > width * height * 0.82) return null
+  if (box.width * box.height > width * height * 0.92) return null
   return box
 }
